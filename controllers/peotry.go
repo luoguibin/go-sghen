@@ -6,13 +6,11 @@ import (
 	"errors"
 	"strconv"
 	"strings"
-
-	"github.com/astaxie/beego"
 )
 
 // PeotryController operations for Peotry
 type PeotryController struct {
-	beego.Controller
+	BaseController
 }
 
 // URLMapping ...

@@ -6,13 +6,11 @@ import (
 	"errors"
 	"strconv"
 	"strings"
-
-	"github.com/astaxie/beego"
 )
 
 // UserController operations for User
 type UserController struct {
-	beego.Controller
+	BaseController
 }
 
 // URLMapping ...

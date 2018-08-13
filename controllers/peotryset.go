@@ -6,13 +6,11 @@ import (
 	"errors"
 	"strconv"
 	"strings"
-
-	"github.com/astaxie/beego"
 )
 
 // PeotrysetController operations for Peotryset
 type PeotrysetController struct {
-	beego.Controller
+	BaseController
 }
 
 // URLMapping ...

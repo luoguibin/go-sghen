@@ -22,6 +22,12 @@ func init() {
 			),
 		),
 
+		beego.NSNamespace("/peotryimage",
+			beego.NSInclude(
+				&controllers.PeotryimageController{},
+			),
+		),
+
 		beego.NSNamespace("/peotryset",
 			beego.NSInclude(
 				&controllers.PeotrysetController{},
