@@ -13,6 +13,8 @@ type UserController struct {
 	BaseController
 }
 
+//https://blog.csdn.net/wangshubo1989/article/details/74529333
+
 // URLMapping ...
 func (c *UserController) URLMapping() {
 	c.Mapping("Post", c.Post)
