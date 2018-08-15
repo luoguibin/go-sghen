@@ -12,9 +12,10 @@ import (
 
 type Peotry struct {
 	Id       int64     `orm:"column(p_id);pk" json:"id"`
-	SId      int64     `orm:"column(s_id);null" json:"setId"`
-	// UId      *User     `orm:"column(u_id);rel(fk)" json:"userId"`
-	UId      int64     `orm:"column(u_id);" json:"userId"`
+	SId      *Peotryset     `orm:"column(s_id);rel(fk);" json:"set"`
+	// SId      int64     `orm:"column(s_id);" json:"set"`
+	UId      *User     `orm:"column(u_id);rel(fk);" json:"user"`
+	// UId      int64     `orm:"column(u_id);" json:"userId"`
 	PTitle   string    `orm:"column(p_title);size(20);null" json:"title"`
 	PTime    time.Time `orm:"column(p_time);type(datetime);null" json:"time"`
 	PContent string    `orm:"column(p_content);null" json:"content"`
@@ -106,7 +107,7 @@ func GetAllPeotry(query map[string]string, fields []string, sortby []string, ord
 
 	var l []Peotry
 	qs = qs.OrderBy(sortFields...)
-	if _, err = qs.Limit(limit, offset).All(&l, fields...); err == nil {
+	if _, err = qs.Limit(limit, offset).RelatedSel().All(&l, fields...); err == nil {
 		if len(fields) == 0 {
 			for _, v := range l {
 				ml = append(ml, v)

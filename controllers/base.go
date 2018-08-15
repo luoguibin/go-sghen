@@ -27,11 +27,11 @@ func init() {
 //     c.ServeJSON()
 // }
 
-// func (c *BaseController) AllowCross() {
-//     c.Ctx.ResponseWriter.Header().Set("Access-Control-Allow-Origin", "*")       //允许访问源
-//     c.Ctx.ResponseWriter.Header().Set("Access-Control-Allow-Methods", "POST, GET, PUT, OPTIONS")    //允许post访问
-//     c.Ctx.ResponseWriter.Header().Set("Access-Control-Allow-Headers", "Content-Type,Authorization") //header的类型
-//     c.Ctx.ResponseWriter.Header().Set("Access-Control-Max-Age", "1728000")
-//     c.Ctx.ResponseWriter.Header().Set("Access-Control-Allow-Credentials", "true")
-//     c.Ctx.ResponseWriter.Header().Set("content-type", "application/json") //返回数据格式是json
-// }
+func (c *BaseController) BaseGetTest() {
+	var jsonObj = make(map[string]interface{})
+	jsonObj["code"] = 1000
+	jsonObj["message"] = "ok"
+
+	c.Data["json"] = jsonObj
+	c.ServeJSON()
+}

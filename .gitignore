@@ -2,7 +2,7 @@
 
 # compiled output
 /tests
-SghenApi.*
+SghenApi*
 lastupdate.tmp
 swagger*
 

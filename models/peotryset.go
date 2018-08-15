@@ -11,8 +11,8 @@ import (
 
 type Peotryset struct {
 	Id    int64  `orm:"column(s_id);pk" json:"id"`
-	//UId   *User  `orm:"column(u_id);rel(fk)" json:"userId"`
-	UId   int64  `orm:"column(u_id);" json:"userId"`
+	UId   *User  `orm:"column(u_id);rel(fk)" json:"userId"`
+	// UId   int64  `orm:"column(u_id);" json:"userId"`
 	SName string `orm:"column(s_name);size(100)" json:"name"`
 }
 

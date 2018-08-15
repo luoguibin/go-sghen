@@ -14,6 +14,8 @@ import (
 )
 
 func init() {
+	beego.Router("/", &controllers.BaseController{}, "GET:BaseGetTest")
+
 	ns := beego.NewNamespace("/v1",
 
 		beego.NSNamespace("/peotry",
