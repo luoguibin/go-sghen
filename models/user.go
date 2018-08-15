@@ -153,3 +153,15 @@ func DeleteUser(id int64) (err error) {
 	}
 	return
 }
+
+
+func GetUserByToken(token string) (v *User, err error) {
+	o := orm.NewOrm()
+	v = &User{UToken: token}
+	if err = o.Read(v); err == nil {
+		return v, nil
+	}
+	return nil, err
+	// err = errors.New("Error: invalid query key/value pair")
+	// return user, err
+}

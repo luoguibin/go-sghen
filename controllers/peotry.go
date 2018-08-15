@@ -6,6 +6,8 @@ import (
 	"errors"
 	"strconv"
 	"strings"
+	"time"
+	"fmt"
 )
 
 // PeotryController operations for Peotry
@@ -37,6 +39,12 @@ func (c *PeotryController) Post() {
 		var v models.Peotry
 
 		if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
+			v.UId = &models.User{Id: 15625045984}
+			v.PTime = time.Now()
+			idStr := v.PTime.Format("20060102") + "01"
+			v.Id, _ = strconv.ParseInt(idStr, 10, 64)
+			fmt.Println(v.PTime)
+
 			if _, err := models.AddPeotry(&v); err == nil {
 				data[models.RESP_DATA] = v
 			} else {
