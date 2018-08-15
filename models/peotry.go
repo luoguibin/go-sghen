@@ -107,6 +107,7 @@ func GetAllPeotry(query map[string]string, fields []string, sortby []string, ord
 
 	var l []Peotry
 	qs = qs.OrderBy(sortFields...)
+	//windows mysql 5.7.21 不需要RelatedSel() ？？？
 	if _, err = qs.Limit(limit, offset).RelatedSel().All(&l, fields...); err == nil {
 		if len(fields) == 0 {
 			for _, v := range l {
