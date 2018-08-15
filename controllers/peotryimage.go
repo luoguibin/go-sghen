@@ -31,17 +31,20 @@ func (c *PeotryimageController) URLMapping() {
 // @router / [post]
 func (c *PeotryimageController) Post() {
 	var v models.Peotryimage
+	data := c.GetResponseData()
+
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
 		if _, err := models.AddPeotryimage(&v); err == nil {
-			c.Ctx.Output.SetStatus(201)
-			c.Data["json"] = v
+			data[models.RESP_DATA] = v
 		} else {
-			c.Data["json"] = err.Error()
+			data[models.RESP_CODE] = models.RESP_ERR
+			data[models.RESP_MSG] = err.Error()
 		}
 	} else {
-		c.Data["json"] = err.Error()
+		data[models.RESP_CODE] = models.RESP_ERR
+		data[models.RESP_MSG] = err.Error()
 	}
-	c.ServeJSON()
+	c.respToJSON(data)
 }
 
 // GetOne ...
@@ -55,12 +58,15 @@ func (c *PeotryimageController) GetOne() {
 	idStr := c.Ctx.Input.Param(":id")
 	id, _ := strconv.ParseInt(idStr, 10, 64)
 	v, err := models.GetPeotryimageById(id)
+	data := c.GetResponseData()
+			
 	if err != nil {
-		c.Data["json"] = err.Error()
+		data[models.RESP_CODE] = models.RESP_ERR
+		data[models.RESP_MSG] = err.Error()
 	} else {
-		c.Data["json"] = v
-	}
-	c.ServeJSON()
+		data[models.RESP_DATA] = v
+	}	
+	c.respToJSON(data)
 }
 
 // GetAll ...
@@ -82,6 +88,7 @@ func (c *PeotryimageController) GetAll() {
 	var query = make(map[string]string)
 	var limit int64 = 10
 	var offset int64
+	data := c.GetResponseData()
 
 	// fields: col1,col2,entity.col3
 	if v := c.GetString("fields"); v != "" {
@@ -108,8 +115,9 @@ func (c *PeotryimageController) GetAll() {
 		for _, cond := range strings.Split(v, ",") {
 			kv := strings.SplitN(cond, ":", 2)
 			if len(kv) != 2 {
-				c.Data["json"] = errors.New("Error: invalid query key/value pair")
-				c.ServeJSON()
+				data[models.RESP_CODE] = models.RESP_ERR
+				data[models.RESP_MSG] = errors.New("Error: invalid query key/value pair")
+				c.respToJSON(data)
 				return
 			}
 			k, v := kv[0], kv[1]
@@ -119,11 +127,12 @@ func (c *PeotryimageController) GetAll() {
 
 	l, err := models.GetAllPeotryimage(query, fields, sortby, order, offset, limit)
 	if err != nil {
-		c.Data["json"] = err.Error()
+		data[models.RESP_CODE] = models.RESP_ERR
+		data[models.RESP_MSG] = err.Error()
 	} else {
-		c.Data["json"] = l
+		data[models.RESP_DATA] = l
 	}
-	c.ServeJSON()
+	c.respToJSON(data)
 }
 
 // Put ...
@@ -138,16 +147,20 @@ func (c *PeotryimageController) Put() {
 	idStr := c.Ctx.Input.Param(":id")
 	id, _ := strconv.ParseInt(idStr, 10, 64)
 	v := models.Peotryimage{Id: id}
+	data := c.GetResponseData()
+
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
 		if err := models.UpdatePeotryimageById(&v); err == nil {
-			c.Data["json"] = "OK"
+			data[models.RESP_MSG] = "OK"
 		} else {
-			c.Data["json"] = err.Error()
+			data[models.RESP_CODE] = models.RESP_ERR
+			data[models.RESP_MSG] = err.Error()
 		}
 	} else {
-		c.Data["json"] = err.Error()
+		data[models.RESP_CODE] = models.RESP_ERR
+		data[models.RESP_MSG] = err.Error()
 	}
-	c.ServeJSON()
+	c.respToJSON(data)
 }
 
 // Delete ...
@@ -160,10 +173,13 @@ func (c *PeotryimageController) Put() {
 func (c *PeotryimageController) Delete() {
 	idStr := c.Ctx.Input.Param(":id")
 	id, _ := strconv.ParseInt(idStr, 10, 64)
+	data := c.GetResponseData()
+	
 	if err := models.DeletePeotryimage(id); err == nil {
-		c.Data["json"] = "OK"
+		data[models.RESP_MSG] = "OK"
 	} else {
-		c.Data["json"] = err.Error()
+		data[models.RESP_CODE] = models.RESP_ERR
+		data[models.RESP_MSG] = err.Error()
 	}
-	c.ServeJSON()
+	c.respToJSON(data)
 }

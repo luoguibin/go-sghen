@@ -31,17 +31,20 @@ func (c *PeotrysetController) URLMapping() {
 // @router / [post]
 func (c *PeotrysetController) Post() {
 	var v models.Peotryset
+	data := c.GetResponseData()
+
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
 		if _, err := models.AddPeotryset(&v); err == nil {
-			c.Ctx.Output.SetStatus(201)
-			c.Data["json"] = v
+			data[models.RESP_DATA] = v
 		} else {
-			c.Data["json"] = err.Error()
+			data[models.RESP_CODE] = models.RESP_ERR
+			data[models.RESP_MSG] = err.Error()
 		}
 	} else {
-		c.Data["json"] = err.Error()
+		data[models.RESP_CODE] = models.RESP_ERR
+		data[models.RESP_MSG] = err.Error()
 	}
-	c.ServeJSON()
+	c.respToJSON(data)
 }
 
 // GetOne ...
@@ -55,12 +58,15 @@ func (c *PeotrysetController) GetOne() {
 	idStr := c.Ctx.Input.Param(":id")
 	id, _ := strconv.ParseInt(idStr, 10, 64)
 	v, err := models.GetPeotrysetById(id)
+	data := c.GetResponseData()
+
 	if err != nil {
-		c.Data["json"] = err.Error()
+		data[models.RESP_CODE] = models.RESP_ERR
+		data[models.RESP_MSG] = err.Error()
 	} else {
-		c.Data["json"] = v
-	}
-	c.ServeJSON()
+		data[models.RESP_DATA] = v
+	}	
+	c.respToJSON(data)
 }
 
 // GetAll ...
@@ -82,6 +88,7 @@ func (c *PeotrysetController) GetAll() {
 	var query = make(map[string]string)
 	var limit int64 = 10
 	var offset int64
+	data := c.GetResponseData()
 
 	// fields: col1,col2,entity.col3
 	if v := c.GetString("fields"); v != "" {
@@ -108,8 +115,9 @@ func (c *PeotrysetController) GetAll() {
 		for _, cond := range strings.Split(v, ",") {
 			kv := strings.SplitN(cond, ":", 2)
 			if len(kv) != 2 {
-				c.Data["json"] = errors.New("Error: invalid query key/value pair")
-				c.ServeJSON()
+				data[models.RESP_CODE] = models.RESP_ERR
+				data[models.RESP_MSG] = errors.New("Error: invalid query key/value pair")
+				c.respToJSON(data)
 				return
 			}
 			k, v := kv[0], kv[1]
@@ -119,11 +127,12 @@ func (c *PeotrysetController) GetAll() {
 
 	l, err := models.GetAllPeotryset(query, fields, sortby, order, offset, limit)
 	if err != nil {
-		c.Data["json"] = err.Error()
+		data[models.RESP_CODE] = models.RESP_ERR
+		data[models.RESP_MSG] = err.Error()
 	} else {
-		c.Data["json"] = l
+		data[models.RESP_DATA] = l
 	}
-	c.ServeJSON()
+	c.respToJSON(data)
 }
 
 // Put ...
@@ -138,16 +147,20 @@ func (c *PeotrysetController) Put() {
 	idStr := c.Ctx.Input.Param(":id")
 	id, _ := strconv.ParseInt(idStr, 10, 64)
 	v := models.Peotryset{Id: id}
+	data := c.GetResponseData()
+
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
 		if err := models.UpdatePeotrysetById(&v); err == nil {
-			c.Data["json"] = "OK"
+			data[models.RESP_MSG] = "OK"
 		} else {
-			c.Data["json"] = err.Error()
+			data[models.RESP_CODE] = models.RESP_ERR
+			data[models.RESP_MSG] = err.Error()
 		}
 	} else {
-		c.Data["json"] = err.Error()
+		data[models.RESP_CODE] = models.RESP_ERR
+		data[models.RESP_MSG] = err.Error()
 	}
-	c.ServeJSON()
+	c.respToJSON(data)
 }
 
 // Delete ...
@@ -160,10 +173,13 @@ func (c *PeotrysetController) Put() {
 func (c *PeotrysetController) Delete() {
 	idStr := c.Ctx.Input.Param(":id")
 	id, _ := strconv.ParseInt(idStr, 10, 64)
+	data := c.GetResponseData()
+
 	if err := models.DeletePeotryset(id); err == nil {
-		c.Data["json"] = "OK"
+		data[models.RESP_MSG] = "OK"
 	} else {
-		c.Data["json"] = err.Error()
+		data[models.RESP_CODE] = models.RESP_ERR
+		data[models.RESP_MSG] = err.Error()
 	}
-	c.ServeJSON()
+	c.respToJSON(data)
 }

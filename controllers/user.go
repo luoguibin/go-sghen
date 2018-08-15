@@ -31,17 +31,20 @@ func (c *UserController) URLMapping() {
 // @router / [post]
 func (c *UserController) Post() {
 	var v models.User
+	data := c.GetResponseData()
+
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
 		if _, err := models.AddUser(&v); err == nil {
-			c.Ctx.Output.SetStatus(201)
-			c.Data["json"] = v
+			data[models.RESP_DATA] = v
 		} else {
-			c.Data["json"] = err.Error()
+			data[models.RESP_CODE] = models.RESP_ERR
+			data[models.RESP_MSG] = err.Error()
 		}
 	} else {
-		c.Data["json"] = err.Error()
+		data[models.RESP_CODE] = models.RESP_ERR
+		data[models.RESP_MSG] = err.Error()
 	}
-	c.ServeJSON()
+	c.respToJSON(data)
 }
 
 // GetOne ...
@@ -55,12 +58,15 @@ func (c *UserController) GetOne() {
 	idStr := c.Ctx.Input.Param(":id")
 	id, _ := strconv.ParseInt(idStr, 10, 64)
 	v, err := models.GetUserById(id)
+	data := c.GetResponseData()
+
 	if err != nil {
-		c.Data["json"] = err.Error()
+		data[models.RESP_CODE] = models.RESP_ERR
+		data[models.RESP_MSG] = err.Error()
 	} else {
-		c.Data["json"] = v
-	}
-	c.ServeJSON()
+		data[models.RESP_DATA] = v
+	}	
+	c.respToJSON(data)
 }
 
 // GetAll ...
@@ -82,6 +88,7 @@ func (c *UserController) GetAll() {
 	var query = make(map[string]string)
 	var limit int64 = 10
 	var offset int64
+	data := c.GetResponseData()
 
 	// fields: col1,col2,entity.col3
 	if v := c.GetString("fields"); v != "" {
@@ -108,8 +115,9 @@ func (c *UserController) GetAll() {
 		for _, cond := range strings.Split(v, ",") {
 			kv := strings.SplitN(cond, ":", 2)
 			if len(kv) != 2 {
-				c.Data["json"] = errors.New("Error: invalid query key/value pair")
-				c.ServeJSON()
+				data[models.RESP_CODE] = models.RESP_ERR
+				data[models.RESP_MSG] = errors.New("Error: invalid query key/value pair")
+				c.respToJSON(data)
 				return
 			}
 			k, v := kv[0], kv[1]
@@ -119,11 +127,12 @@ func (c *UserController) GetAll() {
 
 	l, err := models.GetAllUser(query, fields, sortby, order, offset, limit)
 	if err != nil {
-		c.Data["json"] = err.Error()
+		data[models.RESP_CODE] = models.RESP_ERR
+		data[models.RESP_MSG] = err.Error()
 	} else {
-		c.Data["json"] = l
+		data[models.RESP_DATA] = l
 	}
-	c.ServeJSON()
+	c.respToJSON(data)
 }
 
 // Put ...
@@ -138,16 +147,20 @@ func (c *UserController) Put() {
 	idStr := c.Ctx.Input.Param(":id")
 	id, _ := strconv.ParseInt(idStr, 10, 64)
 	v := models.User{Id: id}
+	data := c.GetResponseData()
+
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
 		if err := models.UpdateUserById(&v); err == nil {
-			c.Data["json"] = "OK"
+			data[models.RESP_MSG] = "OK"
 		} else {
-			c.Data["json"] = err.Error()
+			data[models.RESP_CODE] = models.RESP_ERR
+			data[models.RESP_MSG] = err.Error()
 		}
 	} else {
-		c.Data["json"] = err.Error()
+		data[models.RESP_CODE] = models.RESP_ERR
+		data[models.RESP_MSG] = err.Error()
 	}
-	c.ServeJSON()
+	c.respToJSON(data)
 }
 
 // Delete ...
@@ -160,10 +173,13 @@ func (c *UserController) Put() {
 func (c *UserController) Delete() {
 	idStr := c.Ctx.Input.Param(":id")
 	id, _ := strconv.ParseInt(idStr, 10, 64)
+	data := c.GetResponseData()
+
 	if err := models.DeleteUser(id); err == nil {
-		c.Data["json"] = "OK"
+		data[models.RESP_MSG] = "OK"
 	} else {
-		c.Data["json"] = err.Error()
+		data[models.RESP_CODE] = models.RESP_ERR
+		data[models.RESP_MSG] = err.Error()
 	}
-	c.ServeJSON()
+	c.respToJSON(data)
 }

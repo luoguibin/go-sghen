@@ -30,18 +30,26 @@ func (c *PeotryController) URLMapping() {
 // @Failure 403 body is empty
 // @router / [post]
 func (c *PeotryController) Post() {
-	var v models.Peotry
-	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
-		if _, err := models.AddPeotry(&v); err == nil {
-			c.Ctx.Output.SetStatus(201)
-			c.Data["json"] = v
+	data := c.GetResponseData()
+	params := &GetUserParams{}
+
+	if c.CheckUserParams(data, params) {
+		var v models.Peotry
+
+		if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
+			if _, err := models.AddPeotry(&v); err == nil {
+				data[models.RESP_DATA] = v
+			} else {
+				data[models.RESP_CODE] = models.RESP_ERR
+				data[models.RESP_MSG] = err.Error()
+			}
 		} else {
-			c.Data["json"] = err.Error()
+			data[models.RESP_CODE] = models.RESP_ERR
+			data[models.RESP_MSG] = err.Error()
 		}
-	} else {
-		c.Data["json"] = err.Error()
 	}
-	c.ServeJSON()
+	
+	c.respToJSON(data)
 }
 
 // GetOne ...
@@ -55,12 +63,15 @@ func (c *PeotryController) GetOne() {
 	idStr := c.Ctx.Input.Param(":id")
 	id, _ := strconv.ParseInt(idStr, 10, 64)
 	v, err := models.GetPeotryById(id)
+	data := c.GetResponseData()
+
 	if err != nil {
-		c.Data["json"] = err.Error()
+		data[models.RESP_CODE] = models.RESP_ERR
+		data[models.RESP_MSG] = err.Error()
 	} else {
-		c.Data["json"] = v
+		data[models.RESP_DATA] = v
 	}
-	c.ServeJSON()
+	c.respToJSON(data)
 }
 
 // GetAll ...
@@ -82,6 +93,7 @@ func (c *PeotryController) GetAll() {
 	var query = make(map[string]string)
 	var limit int64 = 10
 	var offset int64
+	data := c.GetResponseData()
 
 	// fields: col1,col2,entity.col3
 	if v := c.GetString("fields"); v != "" {
@@ -108,8 +120,9 @@ func (c *PeotryController) GetAll() {
 		for _, cond := range strings.Split(v, ",") {
 			kv := strings.SplitN(cond, ":", 2)
 			if len(kv) != 2 {
-				c.Data["json"] = errors.New("Error: invalid query key/value pair")
-				c.ServeJSON()
+				data[models.RESP_CODE] = models.RESP_ERR
+				data[models.RESP_MSG] = errors.New("Error: invalid query key/value pair")
+				c.respToJSON(data)
 				return
 			}
 			k, v := kv[0], kv[1]
@@ -118,12 +131,14 @@ func (c *PeotryController) GetAll() {
 	}
 
 	l, err := models.GetAllPeotry(query, fields, sortby, order, offset, limit)
+	
 	if err != nil {
-		c.Data["json"] = err.Error()
+		data[models.RESP_CODE] = models.RESP_ERR
+		data[models.RESP_MSG] = err.Error()
 	} else {
-		c.Data["json"] = l
+		data[models.RESP_DATA] = l
 	}
-	c.ServeJSON()
+	c.respToJSON(data)
 }
 
 // Put ...
@@ -138,16 +153,20 @@ func (c *PeotryController) Put() {
 	idStr := c.Ctx.Input.Param(":id")
 	id, _ := strconv.ParseInt(idStr, 10, 64)
 	v := models.Peotry{Id: id}
+	data := c.GetResponseData()
+	
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
 		if err := models.UpdatePeotryById(&v); err == nil {
-			c.Data["json"] = "OK"
+			data[models.RESP_MSG] = "OK"
 		} else {
-			c.Data["json"] = err.Error()
+			data[models.RESP_CODE] = models.RESP_ERR
+			data[models.RESP_MSG] = err.Error()
 		}
 	} else {
-		c.Data["json"] = err.Error()
+		data[models.RESP_CODE] = models.RESP_ERR
+		data[models.RESP_MSG] = err.Error()
 	}
-	c.ServeJSON()
+	c.respToJSON(data)
 }
 
 // Delete ...
@@ -160,10 +179,12 @@ func (c *PeotryController) Put() {
 func (c *PeotryController) Delete() {
 	idStr := c.Ctx.Input.Param(":id")
 	id, _ := strconv.ParseInt(idStr, 10, 64)
+	data := c.GetResponseData()
 	if err := models.DeletePeotry(id); err == nil {
-		c.Data["json"] = "OK"
+		data[models.RESP_MSG] = "删除成功"
 	} else {
-		c.Data["json"] = err.Error()
+		data[models.RESP_CODE] = models.RESP_ERR
+		data[models.RESP_MSG] = err.Error()
 	}
-	c.ServeJSON()
+	c.respToJSON(data)
 }

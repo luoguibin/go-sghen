@@ -16,6 +16,7 @@ type User struct {
 	UName      string    `orm:"column(u_name);size(100)" json:"name"`
 	UToken     string    `orm:"column(u_token);size(100)" json:"token"`
 	UTimeLogin time.Time `orm:"column(u_time_login);type(datetime)" json:"timeLogin"`
+	ULevel	   int 		 `orm:"column(u_level)" json:"level"`
 }
 
 func (t *User) TableName() string {
