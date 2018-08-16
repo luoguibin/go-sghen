@@ -10,6 +10,7 @@ import (
 
 func init() {
 	orm.DefaultTimeLoc = time.UTC
+	orm.Debug = true
 	orm.RegisterDataBase("default", "mysql", "root:root123@tcp(127.0.0.1:3306)/sghen?charset=utf8&loc=Local")
 }
 

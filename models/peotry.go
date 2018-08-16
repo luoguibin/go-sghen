@@ -108,6 +108,7 @@ func GetAllPeotry(query map[string]string, fields []string, sortby []string, ord
 	var l []Peotry
 	qs = qs.OrderBy(sortFields...)
 	//windows mysql 5.7.21 不需要RelatedSel() ？？？
+	//关联查询后的数据顺序不是按照简单查询的数据顺序
 	if _, err = qs.Limit(limit, offset).RelatedSel().All(&l, fields...); err == nil {
 		if len(fields) == 0 {
 			for _, v := range l {
