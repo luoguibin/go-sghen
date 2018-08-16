@@ -3,7 +3,6 @@ package controllers
 import (
 	"SghenApi/models"
 	"encoding/json"
-	"errors"
 	"strconv"
 	"strings"
 )
@@ -22,7 +21,7 @@ func (c *UserController) URLMapping() {
 	c.Mapping("GetAll", c.GetAll)
 	c.Mapping("Put", c.Put)
 	c.Mapping("Delete", c.Delete)
-	c.Mapping("Login", c.Login)
+	// c.Mapping("Login", c.Login)
 }
 
 // Post ...
@@ -58,17 +57,22 @@ func (c *UserController) Post() {
 // @Failure 403 :id is empty
 // @router /:id [get]
 func (c *UserController) GetOne() {
-	idStr := c.Ctx.Input.Param(":id")
-	id, _ := strconv.ParseInt(idStr, 10, 64)
-	v, err := models.GetUserById(id)
 	data := c.GetResponseData()
 
-	if err != nil {
-		data[models.RESP_CODE] = models.RESP_ERR
-		data[models.RESP_MSG] = err.Error()
+	idStr := c.Ctx.Input.Param(":id")
+	id, _ := strconv.ParseInt(idStr, 10, 64)
+	if (id > 0) {
+		v, err := models.GetUserById(id)
+		if err != nil {
+			data[models.RESP_CODE] = models.RESP_ERR
+			data[models.RESP_MSG] = err.Error()
+		} else {
+			data[models.RESP_DATA] = v
+		}	
 	} else {
-		data[models.RESP_DATA] = v
-	}	
+		data[models.RESP_CODE] = models.RESP_ERR
+		data[models.RESP_MSG] = "query id is invalid"
+	}
 	c.respToJSON(data)
 }
 
@@ -119,7 +123,7 @@ func (c *UserController) GetAll() {
 			kv := strings.SplitN(cond, ":", 2)
 			if len(kv) != 2 {
 				data[models.RESP_CODE] = models.RESP_ERR
-				data[models.RESP_MSG] = errors.New("Error: invalid query key/value pair")
+				data[models.RESP_MSG] = "Error: invalid query key/value pair"
 				c.respToJSON(data)
 				return
 			}

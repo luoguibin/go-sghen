@@ -40,7 +40,7 @@ func init() {
 			beego.NSInclude(
 				&controllers.UserController{},
 			),
-			beego.NSRouter("/login", &controllers.UserController{}, "Post:Login"),
+			beego.NSRouter("/login", &controllers.UserController{}, "POST:Login"),
 		),
 	)
 	beego.AddNamespace(ns)

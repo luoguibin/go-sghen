@@ -3,7 +3,6 @@ package controllers
 import (
 	"SghenApi/models"
 	"encoding/json"
-	"errors"
 	"strconv"
 	"strings"
 	"time"
@@ -137,7 +136,7 @@ func (c *PeotryController) GetAll() {
 			kv := strings.SplitN(cond, ":", 2)
 			if len(kv) != 2 {
 				data[models.RESP_CODE] = models.RESP_ERR
-				data[models.RESP_MSG] = errors.New("Error: invalid query key/value pair")
+				data[models.RESP_MSG] = "Error: invalid query key/value pair"
 				c.respToJSON(data)
 				return
 			}
