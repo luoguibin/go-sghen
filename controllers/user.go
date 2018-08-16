@@ -22,6 +22,7 @@ func (c *UserController) URLMapping() {
 	c.Mapping("GetAll", c.GetAll)
 	c.Mapping("Put", c.Put)
 	c.Mapping("Delete", c.Delete)
+	c.Mapping("Login", c.Login)
 }
 
 // Post ...
@@ -185,3 +186,26 @@ func (c *UserController) Delete() {
 	}
 	c.respToJSON(data)
 }
+
+
+func (c *UserController) Login() {
+	data := c.GetResponseData()
+	params := &GetLoginParams{}
+	if c.CheckPostParams(data, params) {
+		id, _ := strconv.ParseInt(params.Id, 10, 64)
+		v, err := models.GetUserById(id)
+		if err == nil {
+			if (v.UPassword == params.Pw) {
+				c.CreateUserToken(v, data)
+			} else {
+				data[models.RESP_CODE] = models.RESP_ERR
+				data[models.RESP_MSG] = "用户账号或密码错误"
+			}
+		} else {
+			data[models.RESP_CODE] = models.RESP_ERR
+			data[models.RESP_MSG] = err.Error()
+		}
+	}
+	c.respToJSON(data)
+}
+

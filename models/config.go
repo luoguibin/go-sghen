@@ -6,12 +6,14 @@ type Config struct {
 
 var (
 	MConfig Config
+	SecretKey = "SghenMorge"
 )
 
 var (
 	RESP_CODE      = "code"
 	RESP_MSG	   = "msg"
 	RESP_DATA	   = "data"
+	RESP_TOKEN	   = "token"
 
 	RESP_OK        = 1000
 	RESP_ERR       = 1001

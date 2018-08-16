@@ -2,8 +2,12 @@ package controllers
 
 import (
 	"fmt"
+	"time"
+	"strconv"
+	"encoding/json"
 	"SghenApi/models"
 
+	"github.com/dgrijalva/jwt-go"
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/validation"
 	"github.com/astaxie/beego/plugins/cors"
@@ -42,13 +46,13 @@ func (c *BaseController) BaseGetTest() {
 	c.respToJSON(data)
 }
 
-func (c *BaseController) CheckUserParams(data ResponseData, params interface{}) bool {
+func (c *BaseController) CheckFormParams(data ResponseData, params interface{}) bool {
 	//验证参数是否异常
 	if err := c.ParseForm(params); err != nil {
 		data[models.RESP_CODE] = models.RESP_ERR
 		return false
 	}
-	fmt.Println("CheckUserParams")
+	fmt.Println("CheckFormParams")
 	fmt.Println(params)
 
 	//验证参数
@@ -60,6 +64,69 @@ func (c *BaseController) CheckUserParams(data ResponseData, params interface{}) 
 	data[models.RESP_CODE] = models.RESP_ERR
 	data[models.RESP_MSG] = fmt.Sprint(valid.ErrorsMap)
 	return false
+}
+
+func (c *BaseController) CheckPostParams(data ResponseData, params interface{}) bool {
+	//验证参数是否异常
+	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &params); err != nil {
+		data[models.RESP_CODE] = models.RESP_ERR
+		return false
+	}
+	fmt.Println("CheckFormParams")
+	fmt.Println(params)
+
+	//验证参数
+	valid := validation.Validation{}
+	if ok, _ := valid.Valid(params); ok {
+		return true
+	}
+
+	data[models.RESP_CODE] = models.RESP_ERR
+	data[models.RESP_MSG] = fmt.Sprint(valid.ErrorsMap)
+	return false
+}
+
+
+
+/*****************************/
+func (c *BaseController)CreateUserToken (user *models.User, data ResponseData) {
+	token := jwt.New(jwt.SigningMethodHS256)
+    claims := make(jwt.MapClaims)
+    claims["exp"] = time.Now().Add(time.Hour * time.Duration(1)).Unix()
+	claims["iat"] = time.Now().Unix()
+	claims["uid"] = strconv.FormatInt(user.Id, 10)
+	fmt.Println(claims)
+
+    token.Claims = claims
+
+    tokenString, err := token.SignedString([]byte(models.SecretKey))
+    if err != nil {
+		data[models.RESP_CODE] = models.RESP_ERR
+		data[models.RESP_MSG] = "Error while signing the token"
+		return
+	}
+	
+	data[models.RESP_TOKEN] = tokenString
+}
+
+func (c *BaseController)ParseUserToken (tokenString string) (map[string]interface{}, error) {
+	fmt.Println("ParseUserToken()")
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		// Don't forget to validate the alg is what you expect:
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+		}
+	
+		return []byte(models.SecretKey), nil
+	})
+	
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		fmt.Println(claims)
+		return claims, nil
+	} else {
+		fmt.Println("Claims parse error", err)
+		return nil, err
+	}
 }
 
 

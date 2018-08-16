@@ -7,6 +7,23 @@ import (
 	"github.com/astaxie/beego/validation"
 )
 
+
+
+/*****************************/
+type GetLoginParams struct {
+	Id     string `form:"id" valid:"Required"`
+	Pw     string `form:"pw" valid:"Required"`
+}
+
+func (params *GetLoginParams) Valid(v *validation.Validation) {
+	fmt.Println("GetLoginParams Valid")
+    if len(strings.TrimSpace(params.Id)) == 0 {
+		v.SetError("id", "不能为空")
+    } else if len(strings.TrimSpace(params.Pw)) == 0 {
+		v.SetError("pw", "不能为空")
+    } 
+}
+
 /*****************************/
 type GetUserParams struct {
 	Token     string `form:"token" valid:"Required"`
