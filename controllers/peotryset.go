@@ -4,6 +4,7 @@ import (
 	"SghenApi/models"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"strconv"
 	"strings"
 )
@@ -30,20 +31,32 @@ func (c *PeotrysetController) URLMapping() {
 // @Failure 403 body is empty
 // @router / [post]
 func (c *PeotrysetController) Post() {
-	var v models.Peotryset
 	data := c.GetResponseData()
+	params := &GetPeotrysetParams{}
 
-	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
-		if _, err := models.AddPeotryset(&v); err == nil {
-			data[models.RESP_DATA] = v
-		} else {
+	if c.CheckPostParams(data, params) {
+		claims, errToken := c.ParseUserToken(params.Token)
+		if errToken == nil {
+			uId, _ := strconv.ParseInt(claims["uid"].(string), 10, 64)
+			newSet := models.Peotryset{UId: uId, SName: params.SetName}
+
+			fmt.Println(newSet)
+		}else {
 			data[models.RESP_CODE] = models.RESP_ERR
-			data[models.RESP_MSG] = err.Error()
+			data[models.RESP_MSG] = errToken.Error()
 		}
-	} else {
-		data[models.RESP_CODE] = models.RESP_ERR
-		data[models.RESP_MSG] = err.Error()
 	}
+
+	// var v models.Peotryset
+
+	// if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
+	// 	if _, err := models.AddPeotryset(&v); err == nil {
+	// 		data[models.RESP_DATA] = v
+	// 	} else {
+	// 		data[models.RESP_CODE] = models.RESP_ERR
+	// 		data[models.RESP_MSG] = err.Error()
+	// 	}
+	// } 
 	c.respToJSON(data)
 }
 
