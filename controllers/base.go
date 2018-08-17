@@ -70,10 +70,9 @@ func (c *BaseController) CheckPostParams(data ResponseData, params interface{}) 
 	//验证参数是否异常
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &params); err != nil {
 		data[models.RESP_CODE] = models.RESP_ERR
+		fmt.Println(err)
 		return false
 	}
-	fmt.Println("CheckFormParams")
-	fmt.Println(params)
 
 	//验证参数
 	valid := validation.Validation{}
@@ -110,7 +109,7 @@ func (c *BaseController)CreateUserToken (user *models.User, data ResponseData) {
 }
 
 func (c *BaseController)ParseUserToken (tokenString string) (map[string]interface{}, error) {
-	fmt.Println("ParseUserToken()")
+	fmt.Println("ParseUserToken()", tokenString)
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		// Don't forget to validate the alg is what you expect:
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
@@ -119,6 +118,11 @@ func (c *BaseController)ParseUserToken (tokenString string) (map[string]interfac
 	
 		return []byte(models.SecretKey), nil
 	})
+
+	if (err != nil) {
+		fmt.Println(err)
+		return nil, err
+	}
 	
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 		fmt.Println(claims)

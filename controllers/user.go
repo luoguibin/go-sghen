@@ -2,7 +2,7 @@ package controllers
 
 import (
 	"SghenApi/models"
-	"encoding/json"
+	"time"
 	"strconv"
 	"strings"
 )
@@ -32,19 +32,39 @@ func (c *UserController) URLMapping() {
 // @Failure 403 body is empty
 // @router / [post]
 func (c *UserController) Post() {
-	var v models.User
 	data := c.GetResponseData()
 
-	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
-		if _, err := models.AddUser(&v); err == nil {
-			data[models.RESP_DATA] = v
+	params := &GetUserCreateParams{}
+	if c.CheckPostParams(data, params) {
+		if (len(params.Id) == 11) {
+			id, _ := strconv.ParseInt(params.Id, 10, 64)
+			v, _ := models.GetUserById(id)
+
+			if (v == nil) {
+				newUser := models.User{
+					Id: id, 
+					UPassword: params.Pw, 
+					UName: params.Name,
+					UToken: "",
+					UTimeLogin: time.Now(),
+					ULevel: 1,
+				}
+
+				if _, err := models.AddUser(&newUser); err == nil {
+					// data[models.RESP_DATA] = newUser
+					data[models.RESP_MSG] = "创建成功"
+				} else {
+					data[models.RESP_CODE] = models.RESP_ERR
+					data[models.RESP_MSG] = err.Error()
+				}
+			} else {
+				data[models.RESP_CODE] = models.RESP_ERR
+				data[models.RESP_MSG] = "已存在该账户"
+			}
 		} else {
 			data[models.RESP_CODE] = models.RESP_ERR
-			data[models.RESP_MSG] = err.Error()
+			data[models.RESP_MSG] = "账号长度需为11位"
 		}
-	} else {
-		data[models.RESP_CODE] = models.RESP_ERR
-		data[models.RESP_MSG] = err.Error()
 	}
 	c.respToJSON(data)
 }
@@ -151,22 +171,43 @@ func (c *UserController) GetAll() {
 // @Failure 403 :id is not int
 // @router /:id [put]
 func (c *UserController) Put() {
-	idStr := c.Ctx.Input.Param(":id")
-	id, _ := strconv.ParseInt(idStr, 10, 64)
-	v := models.User{Id: id}
 	data := c.GetResponseData()
+	params := &GetUserUpdateParams{}
 
-	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
-		if err := models.UpdateUserById(&v); err == nil {
-			data[models.RESP_MSG] = "OK"
+	if c.CheckPostParams(data, params) {
+		claims, errToken := c.ParseUserToken(params.Token)
+
+		if errToken == nil {
+			id, _ := strconv.ParseInt(claims["uid"].(string), 10, 64)
+			v := models.User{Id: id}
+
+			var hasChange bool = false
+			if params.Name != "" {
+				v.UName = params.Name
+				hasChange = true
+			}  
+			if params.Pw != "" {
+				v.UPassword = params.Pw
+				hasChange = true
+			} 
+
+			if hasChange {
+				if err := models.UpdateUserById(&v); err == nil {
+					data[models.RESP_MSG] = "OK"
+				} else {
+					data[models.RESP_CODE] = models.RESP_ERR
+					data[models.RESP_MSG] = err.Error()
+				}
+			} else {
+				data[models.RESP_CODE] = models.RESP_ERR
+				data[models.RESP_MSG] = "无效用户数据更新"
+			}
 		} else {
 			data[models.RESP_CODE] = models.RESP_ERR
-			data[models.RESP_MSG] = err.Error()
+			data[models.RESP_MSG] = errToken.Error()
 		}
-	} else {
-		data[models.RESP_CODE] = models.RESP_ERR
-		data[models.RESP_MSG] = err.Error()
 	}
+
 	c.respToJSON(data)
 }
 
