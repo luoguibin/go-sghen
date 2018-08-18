@@ -35,18 +35,17 @@ func (c *PeotryController) Post() {
 	params := &GetUserParams{}
 
 	if c.CheckFormParams(data, params) {
-		claims, err := c.ParseUserToken(params.Token)
-
-		if err == nil {
-			fmt.Println(claims)
+		claims, errToken := c.ParseUserToken(params.Token)
+		if errToken == nil {
 			var v models.Peotry
 
 			if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
-				v.UId = &models.User{Id: 15625045984}
+				uIdStr := claims["uid"].(string)
+				uId, _ := strconv.ParseInt(uIdStr, 10, 64)
+				v.UId = &models.User{Id: uId}
 				v.PTime = time.Now()
-				idStr := v.PTime.Format("20060102") + "01"
-				v.Id, _ = strconv.ParseInt(idStr, 10, 64)
-				fmt.Println(v.PTime)
+				v.Id = v.PTime.UnixNano() / 1e3
+				fmt.Println(v)
 
 				if _, err := models.AddPeotry(&v); err == nil {
 					data[models.RESP_DATA] = v
@@ -60,7 +59,7 @@ func (c *PeotryController) Post() {
 			}
 		} else {
 			data[models.RESP_CODE] = models.RESP_ERR
-			data[models.RESP_MSG] = "token invalid"
+			data[models.RESP_MSG] = errToken.Error()
 		}
 	}
 	

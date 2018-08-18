@@ -3,7 +3,7 @@ package controllers
 import (
 	"SghenApi/models"
 	"encoding/json"
-	"fmt"
+	"time"
 	"strconv"
 	"strings"
 )
@@ -37,25 +37,24 @@ func (c *PeotrysetController) Post() {
 		claims, errToken := c.ParseUserToken(params.Token)
 		if errToken == nil {
 			uId, _ := strconv.ParseInt(claims["uid"].(string), 10, 64)
-			newSet := models.Peotryset{UId: uId, SName: params.SetName}
-
-			fmt.Println(newSet)
+			newSet := models.Peotryset{
+				Id: time.Now().UnixNano() / 1e3, 
+				UId: &models.User{Id: uId}, 
+				SName: params.SetName,
+			}
+		
+			if _, err := models.AddPeotryset(&newSet); err == nil {
+				data[models.RESP_DATA] = newSet
+			} else {
+				data[models.RESP_CODE] = models.RESP_ERR
+				data[models.RESP_MSG] = err.Error()
+			}
 		}else {
 			data[models.RESP_CODE] = models.RESP_ERR
 			data[models.RESP_MSG] = errToken.Error()
 		}
 	}
 
-	// var v models.Peotryset
-
-	// if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
-	// 	if _, err := models.AddPeotryset(&v); err == nil {
-	// 		data[models.RESP_DATA] = v
-	// 	} else {
-	// 		data[models.RESP_CODE] = models.RESP_ERR
-	// 		data[models.RESP_MSG] = err.Error()
-	// 	}
-	// } 
 	c.respToJSON(data)
 }
 

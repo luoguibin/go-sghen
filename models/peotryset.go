@@ -11,8 +11,8 @@ import (
 
 type Peotryset struct {
 	Id    int64  `orm:"column(s_id);pk" json:"id"`
-	// UId   *User  `orm:"column(u_id);rel(fk)" json:"userId"`
-	UId   int64  `orm:"column(u_id);" json:"userId"`
+	UId   *User  `orm:"column(u_id);rel(fk)" json:"user"`
+	// UId   int64  `orm:"column(u_id);" json:"userId"`
 	SName string `orm:"column(s_name);size(100)" json:"name"`
 }
 
@@ -100,7 +100,7 @@ func GetAllPeotryset(query map[string]string, fields []string, sortby []string, 
 
 	var l []Peotryset
 	qs = qs.OrderBy(sortFields...)
-	if _, err = qs.Limit(limit, offset).All(&l, fields...); err == nil {
+	if _, err = qs.Limit(limit, offset).RelatedSel().All(&l, fields...); err == nil {
 		if len(fields) == 0 {
 			for _, v := range l {
 				ml = append(ml, v)

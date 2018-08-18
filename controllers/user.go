@@ -241,7 +241,13 @@ func (c *UserController) Login() {
 		v, err := models.GetUserById(id)
 		if err == nil {
 			if (v.UPassword == params.Pw) {
+				timeLogin := v.UTimeLogin
+				v.UTimeLogin = time.Now()
+				models.UpdateUserById(v)
+
+				v.UTimeLogin = timeLogin
 				c.CreateUserToken(v, data)
+				data[models.RESP_DATA] = v
 			} else {
 				data[models.RESP_CODE] = models.RESP_ERR
 				data[models.RESP_MSG] = "用户账号或密码错误"
