@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
-
+	"encoding/base64"
+	"io/ioutil"
+	"SghenApi/utils"
 	"github.com/astaxie/beego/orm"
 )
 
@@ -148,4 +150,38 @@ func DeletePeotryimage(id int64) (err error) {
 		}
 	}
 	return
+}
+
+// baseStr: dataUrl format
+func SavePeotryimage(baseStr string, rename string) (format string, err error) {
+	if len(baseStr) == 0 {
+		return "", errors.New("空数据")
+	}
+
+	baseIndex := strings.Index(baseStr, "base64")
+	if baseIndex < 15 {
+		return "", errors.New("数据错误")
+	}
+
+	format = baseStr[11:baseIndex - 1]
+
+	data, err := base64.StdEncoding.DecodeString(baseStr[baseIndex + 7:])
+	if err != nil {
+		return "", err
+	}
+
+	isExist, _ := utils.PathExists(IMAGE_SAVE_PATH)
+	if !isExist {
+		isMade := utils.MkdirAll(IMAGE_SAVE_PATH)
+		if !isMade {
+			return "", errors.New("创建文件夹失败")
+		}
+	}
+
+	err2 := ioutil.WriteFile(IMAGE_SAVE_PATH + rename + "." + format, data, 0666) 
+	if err2 != nil {
+		return "", err2
+	} 
+	
+	return format, nil
 }

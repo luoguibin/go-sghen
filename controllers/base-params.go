@@ -86,3 +86,22 @@ func (params *GetPeotrysetParams) Valid(v *validation.Validation) {
 		v.SetError("setName", "不能为空")
     } 
 }
+
+
+/*****************************/
+type GetPeotryimageParams struct {
+	GetUserParams
+	PId			   string	`form:"pId" valid:"Required"`
+	ImageDatas     []string `form:"imageDatas" valid:"Required"`
+}
+
+func (params *GetPeotryimageParams) Valid(v *validation.Validation) {
+	fmt.Println("GetPeotryimageParams Valid")
+    if len(strings.TrimSpace(params.Token)) == 0 {
+        // 通过 SetError 设置 Name 的错误信息，HasErrors 将会返回 true
+		v.SetError("token", "不能为空")
+	} else if len(strings.TrimSpace(params.PId)) == 0 {
+        // 通过 SetError 设置 Name 的错误信息，HasErrors 将会返回 true
+		v.SetError("PId", "不能为空")
+    } 
+}

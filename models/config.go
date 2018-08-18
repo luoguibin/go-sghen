@@ -6,7 +6,9 @@ type Config struct {
 
 var (
 	MConfig Config
-	SecretKey = "SghenMorge"
+	JWT_SECRET_KEY = "SghenMorge"
+
+	IMAGE_SAVE_PATH = "./upload/peotry/images/"
 )
 
 var (

@@ -98,7 +98,7 @@ func (c *BaseController)CreateUserToken (user *models.User, data ResponseData) {
 
     token.Claims = claims
 
-    tokenString, err := token.SignedString([]byte(models.SecretKey))
+    tokenString, err := token.SignedString([]byte(models.JWT_SECRET_KEY))
     if err != nil {
 		data[models.RESP_CODE] = models.RESP_ERR
 		data[models.RESP_MSG] = "Error while signing the token"
@@ -116,7 +116,7 @@ func (c *BaseController)ParseUserToken (tokenString string) (map[string]interfac
 			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
 		}
 	
-		return []byte(models.SecretKey), nil
+		return []byte(models.JWT_SECRET_KEY), nil
 	})
 
 	if (err != nil) {

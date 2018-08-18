@@ -29,19 +29,51 @@ func (c *PeotryimageController) URLMapping() {
 // @Failure 403 body is empty
 // @router / [post]
 func (c *PeotryimageController) Post() {
-	var v models.Peotryimage
-	data := c.GetResponseData()
+	
 
-	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
-		if _, err := models.AddPeotryimage(&v); err == nil {
-			data[models.RESP_DATA] = v
+	data := c.GetResponseData()
+	params := &GetPeotryimageParams{}
+
+	if c.CheckPostParams(data, params) {
+		_, errToken := c.ParseUserToken(params.Token)
+		if errToken == nil {
+			// params.ImageDatas
+			imagesStr := "["
+			count := 0
+			for index, imageData := range params.ImageDatas {
+				rename := params.PId + "-" + strconv.Itoa(index + 1)
+				format, err := models.SavePeotryimage(imageData, rename)
+				if err == nil {
+					imagesStr += "\"" + rename + "." + format + "\","
+					count++
+				} else {
+					count = -1
+					break
+				}
+			}
+
+			if count >= 0 {
+				pId, _ := strconv.ParseInt(params.PId, 10, 64)
+				v := models.Peotryimage {
+					Id: pId,
+					IImages: imagesStr,
+					ICount: count,
+				}
+
+				if _, err := models.AddPeotryimage(&v); err == nil {
+					data[models.RESP_DATA] = v
+				} else {
+					data[models.RESP_CODE] = models.RESP_ERR
+					data[models.RESP_MSG] = err.Error()
+				}
+			} else {
+				data[models.RESP_CODE] = models.RESP_ERR
+				data[models.RESP_MSG] = "保存图片出错：" + imagesStr
+			}
 		} else {
 			data[models.RESP_CODE] = models.RESP_ERR
-			data[models.RESP_MSG] = err.Error()
-		}
-	} else {
-		data[models.RESP_CODE] = models.RESP_ERR
-		data[models.RESP_MSG] = err.Error()
+			data[models.RESP_MSG] = errToken.Error()
+		}	
 	}
 	c.respToJSON(data)
 }
