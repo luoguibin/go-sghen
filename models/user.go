@@ -12,11 +12,19 @@ import (
 
 type User struct {
 	Id         int64     `orm:"column(u_id);pk" json:"id"`
-	UPassword  string    `orm:"column(u_password);size(20)" json:"pw"`
+	UPassword  string    `orm:"column(u_password);size(20)" json:"-"`
 	UName      string    `orm:"column(u_name);size(100)" json:"name"`
 	UToken     string    `orm:"column(u_token);size(100)" json:"token"`
 	UTimeLogin time.Time `orm:"column(u_time_login);type(datetime)" json:"timeLogin"`
-	ULevel	   int 		 `orm:"column(u_level)" json:"level"`
+	ULevel	   int 		 `orm:"column(u_level)" json:"-"`
+}
+//  `json:"-"` 把struct编码成json字符串时，会忽略这个字段
+//	`json:"id,omitempty"` //如果这个字段是空值，则不编码到JSON里面，否则用id为名字编码
+//	`json:",omitempty"`   //如果这个字段是空值，则不编码到JSON里面，否则用属性名为名字编码
+
+type User2 struct {
+	Id         int64     `orm:"column(u_id);pk" json:"id"`
+	UName      string    `orm:"column(u_name);size(100)" json:"name"`
 }
 
 func (t *User) TableName() string {

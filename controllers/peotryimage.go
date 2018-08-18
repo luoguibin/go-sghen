@@ -40,11 +40,15 @@ func (c *PeotryimageController) Post() {
 			// params.ImageDatas
 			imagesStr := "["
 			count := 0
+			length := len(params.ImageDatas)
 			for index, imageData := range params.ImageDatas {
 				rename := params.PId + "-" + strconv.Itoa(index + 1)
 				format, err := models.SavePeotryimage(imageData, rename)
 				if err == nil {
-					imagesStr += "\"" + rename + "." + format + "\","
+					imagesStr += "\"" + rename + "." + format + "\""
+					if index != length - 1 {
+						imagesStr += ","
+					}
 					count++
 				} else {
 					count = -1
@@ -53,6 +57,7 @@ func (c *PeotryimageController) Post() {
 			}
 
 			if count >= 0 {
+				imagesStr += "]"
 				pId, _ := strconv.ParseInt(params.PId, 10, 64)
 				v := models.Peotryimage {
 					Id: pId,

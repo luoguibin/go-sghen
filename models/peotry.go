@@ -23,6 +23,17 @@ type Peotry struct {
 	PImages  string    `orm:"column(p_images);null" json:"images"`
 }
 
+type Peotry2 struct {
+	Id       int64     `json:"id"`
+	SId      *Peotryset2     `json:"set"`
+	UId      *User2     `json:"user"`
+	PTitle   string    `json:"title"`
+	PTime    time.Time `json:"time"`
+	PContent string    `json:"content"`
+	PEnd     string    `json:"end"`
+	PImages  string    `json:"images"`
+}
+
 func (t *Peotry) TableName() string {
 	return "peotry"
 }
@@ -109,17 +120,45 @@ func GetAllPeotry(query map[string]string, fields []string, sortby []string, ord
 	qs = qs.OrderBy(sortFields...)
 	//关联查询后的数据顺序不是按照简单查询的数据顺序
 	if _, err = qs.Limit(limit, offset).RelatedSel().All(&l, fields...); err == nil {
+		var ll []Peotry2
+		for _, v := range l {
+			vv := Peotry2 {
+				Id: v.Id,
+				SId: &Peotryset2{Id: v.SId.Id, SName: v.SId.SName},
+				UId: &User2{Id: v.UId.Id, UName: v.UId.UName},
+				PTitle: v.PTitle,
+				PTime: v.PTime,
+				PContent: v.PContent,
+				PEnd: v.PEnd,
+				PImages: v.PImages,
+			}
+
+			imageV, err := GetPeotryimageById(v.Id)
+			if err == nil {
+				vv.PImages = imageV.IImages
+			}
+			ll = append(ll, vv)
+		}
+
 		if len(fields) == 0 {
-			for _, v := range l {
+			for _, v := range ll {
 				ml = append(ml, v)
 			}
 		} else {
 			// trim unused fields
-			for _, v := range l {
+			for _, v := range ll {
 				m := make(map[string]interface{})
+
 				val := reflect.ValueOf(v)
+				typ := reflect.TypeOf(&v)	// 反射获取struct中的tag
 				for _, fname := range fields {
-					m[fname] = val.FieldByName(fname).Interface()
+					typElem := typ.Elem()
+					field, ok := typElem.FieldByName(fname)
+					if ok {
+						m[field.Tag.Get("json")] = val.FieldByName(fname).Interface()
+					} else {
+						m[fname] = val.FieldByName(fname).Interface()
+					}
 				}
 				ml = append(ml, m)
 			}

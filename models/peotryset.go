@@ -16,6 +16,11 @@ type Peotryset struct {
 	SName string `orm:"column(s_name);size(100)" json:"name"`
 }
 
+type Peotryset2 struct {
+	Id    int64  `json:"id"`
+	SName string `json:"name"`
+}
+
 func (t *Peotryset) TableName() string {
 	return "peotryset"
 }
