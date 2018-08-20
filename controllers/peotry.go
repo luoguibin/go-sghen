@@ -7,6 +7,9 @@ import (
 	"strings"
 	"time"
 	"fmt"
+
+	"github.com/astaxie/beego/logs"
+
 )
 
 // PeotryController operations for Peotry
@@ -103,6 +106,24 @@ func (c *PeotryController) GetOne() {
 // @Failure 403
 // @router / [get]
 func (c *PeotryController) GetAll() {
+	// log test
+	log := logs.NewLogger(10000) 
+	log.SetLogger(logs.AdapterFile,`{"filename":"./logs/temp.log","maxlines":1000000,"maxsize":256}`)
+	log.EnableFuncCallDepth(true)
+	log.SetLevel(logs.LevelDebug)     // 设置日志写入缓冲区的等级
+	
+	log.Emergency("Emergency")
+    log.Alert("Alert")
+    log.Critical("Critical")
+    log.Error("Error")
+    log.Warning("Warning")
+    log.Notice("Notice")
+    log.Informational("Informational")
+    log.Debug("Debug")
+
+	log.Flush() // 将日志从缓冲区读出，写入到文件
+    log.Close()
+
 	var fields []string
 	var sortby []string
 	var order []string

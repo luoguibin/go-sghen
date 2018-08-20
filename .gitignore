@@ -3,6 +3,7 @@
 # compiled output
 /tests
 /upload
+/logs
 SghenApi*
 lastupdate.tmp
 swagger*

@@ -10,9 +10,12 @@ import (
 )
 
 func init() {
+	orm.RegisterDataBase(
+		"default", 
+		"mysql", 
+		beego.AppConfig.String("mysqluser") + ":" + beego.AppConfig.String("mysqlpass") + "@tcp(" + beego.AppConfig.String("mysqlurls") + ")/" + beego.AppConfig.String("mysqldb")+"?charset=utf8&loc=Asia%2FShanghai")
 	orm.DefaultTimeLoc = time.UTC
 	orm.Debug = true
-	orm.RegisterDataBase("default", "mysql", "root:root123@tcp(127.0.0.1:3306)/sghen?charset=utf8&loc=Local")
 }
 
 func main() {
@@ -20,6 +23,5 @@ func main() {
 		beego.BConfig.WebConfig.DirectoryIndex = true
 		beego.BConfig.WebConfig.StaticDir["/swagger"] = "swagger"
 	}
-	beego.Run()
+	beego.Run()	
 }
-
