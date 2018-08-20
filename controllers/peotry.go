@@ -42,9 +42,11 @@ func (c *PeotryController) Post() {
 			if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
 				uIdStr := claims["uid"].(string)
 				uId, _ := strconv.ParseInt(uIdStr, 10, 64)
+				
 				v.UId = &models.User{Id: uId}
 				v.PTime = time.Now()
 				v.Id = v.PTime.UnixNano() / 1e3
+				v.IId = &models.Peotryimage{Id: 0}
 				fmt.Println(v)
 
 				if _, err := models.AddPeotry(&v); err == nil {
@@ -164,22 +166,46 @@ func (c *PeotryController) GetAll() {
 // @Failure 403 :id is not int
 // @router /:id [put]
 func (c *PeotryController) Put() {
-	idStr := c.Ctx.Input.Param(":id")
-	id, _ := strconv.ParseInt(idStr, 10, 64)
-	v := models.Peotry{Id: id}
 	data := c.GetResponseData()
-	
-	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
-		if err := models.UpdatePeotryById(&v); err == nil {
-			data[models.RESP_MSG] = "OK"
+	params := &GetPeotryUpdateParams{}
+
+	if c.CheckFormParams(data, params) {
+		claims, errToken := c.ParseUserToken(params.Token)
+
+		if errToken == nil {
+			pId, _ := strconv.ParseInt(params.PId, 10, 64)
+			rV, rErr := models.GetPeotryById(pId)
+			if rErr != nil {
+				data[models.RESP_CODE] = models.RESP_ERR
+				data[models.RESP_MSG] = rErr.Error()
+			} else {
+				uIdStr := claims["uid"].(string)
+				uId, _ := strconv.ParseInt(uIdStr, 10, 64)
+
+				if rV.UId.Id == uId {
+					var v models.Peotry
+					if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
+						if err := models.UpdatePeotryById(&v); err == nil {
+							data[models.RESP_MSG] = "更新成功"
+						} else {
+							data[models.RESP_CODE] = models.RESP_ERR
+							data[models.RESP_MSG] = err.Error()
+						}
+					} else {
+						data[models.RESP_CODE] = models.RESP_ERR
+						data[models.RESP_MSG] = err.Error()
+					}
+				} else {
+					data[models.RESP_CODE] = models.RESP_ERR
+					data[models.RESP_MSG] = "该诗不属于当前用户"
+				}
+			}
 		} else {
 			data[models.RESP_CODE] = models.RESP_ERR
-			data[models.RESP_MSG] = err.Error()
+			data[models.RESP_MSG] = errToken.Error()
 		}
-	} else {
-		data[models.RESP_CODE] = models.RESP_ERR
-		data[models.RESP_MSG] = err.Error()
 	}
+	
 	c.respToJSON(data)
 }
 
@@ -191,14 +217,39 @@ func (c *PeotryController) Put() {
 // @Failure 403 id is empty
 // @router /:id [delete]
 func (c *PeotryController) Delete() {
-	idStr := c.Ctx.Input.Param(":id")
-	id, _ := strconv.ParseInt(idStr, 10, 64)
 	data := c.GetResponseData()
-	if err := models.DeletePeotry(id); err == nil {
-		data[models.RESP_MSG] = "删除成功"
-	} else {
-		data[models.RESP_CODE] = models.RESP_ERR
-		data[models.RESP_MSG] = err.Error()
+	params := &GetPeotryUpdateParams{}
+
+	if c.CheckFormParams(data, params) {
+		claims, errToken := c.ParseUserToken(params.Token)
+
+		if errToken == nil {
+			pId, _ := strconv.ParseInt(params.PId, 10, 64)
+			rV, rErr := models.GetPeotryById(pId)
+			if rErr != nil {
+				data[models.RESP_CODE] = models.RESP_ERR
+				data[models.RESP_MSG] = rErr.Error()
+			} else {
+				uIdStr := claims["uid"].(string)
+				uId, _ := strconv.ParseInt(uIdStr, 10, 64)
+
+				if rV.UId.Id == uId {
+					if err := models.DeletePeotry(pId); err == nil {
+						data[models.RESP_MSG] = "删除成功"
+					} else {
+						data[models.RESP_CODE] = models.RESP_ERR
+						data[models.RESP_MSG] = err.Error()
+					}
+				} else {
+					data[models.RESP_CODE] = models.RESP_ERR
+					data[models.RESP_MSG] = "该诗不属于当前用户"
+				}
+			}
+		} else {
+			data[models.RESP_CODE] = models.RESP_ERR
+			data[models.RESP_MSG] = errToken.Error()
+		}
 	}
+	
 	c.respToJSON(data)
 }

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"strconv"
 	"strings"
+	"fmt"
 )
 
 // PeotryimageController operations for Peotryimage
@@ -29,51 +30,95 @@ func (c *PeotryimageController) URLMapping() {
 // @Failure 403 body is empty
 // @router / [post]
 func (c *PeotryimageController) Post() {
-	
+	// for update test
+	// data := c.GetResponseData()
+	// var v models.Peotryimage
+	// if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
+	// 	if _, err := models.AddPeotryimage(&v); err == nil {
+	// 		data[models.RESP_DATA] = v
+	// 	} else {
+	// 		data[models.RESP_CODE] = models.RESP_ERR
+	// 				data[models.RESP_MSG] = err.Error()
+	// 	}
+	// } else {
+	// 	data[models.RESP_CODE] = models.RESP_ERR
+	// 	data[models.RESP_MSG] = err.Error()
+	// }
+	// c.respToJSON(data)
 
 	data := c.GetResponseData()
 	params := &GetPeotryimageParams{}
 
 	if c.CheckPostParams(data, params) {
-		_, errToken := c.ParseUserToken(params.Token)
+		claims, errToken := c.ParseUserToken(params.Token)
+
 		if errToken == nil {
-			// params.ImageDatas
-			imagesStr := "["
-			count := 0
-			length := len(params.ImageDatas)
-			for index, imageData := range params.ImageDatas {
-				rename := params.PId + "-" + strconv.Itoa(index + 1)
-				format, err := models.SavePeotryimage(imageData, rename)
-				if err == nil {
-					imagesStr += "\"" + rename + "." + format + "\""
-					if index != length - 1 {
-						imagesStr += ","
+			pId, _ := strconv.ParseInt(params.PId, 10, 64)
+			rV, rErr := models.GetPeotryById(pId)
+
+			if rErr != nil {
+				data[models.RESP_CODE] = models.RESP_ERR
+				data[models.RESP_MSG] = rErr.Error()
+			} else {
+				uIdStr := claims["uid"].(string)
+				uId, _ := strconv.ParseInt(uIdStr, 10, 64)
+
+				if rV.UId.Id == uId {
+					// params.ImageDatas
+					imagesStr := "["
+					count := 0
+					length := len(params.ImageDatas)
+					if length > 0 {
+						for index, imageData := range params.ImageDatas {
+							rename := params.PId + "-" + strconv.Itoa(index + 1)
+							format, err := models.SavePeotryimage(imageData, rename)
+							if err == nil {
+								imagesStr += "\"" + rename + "." + format + "\""
+								if index != length - 1 {
+									imagesStr += ","
+								}
+								count++
+							} else {
+								count = -1
+								break
+							}
+						}
+
+						if count >= 0 {
+							imagesStr += "]"
+							pId, _ := strconv.ParseInt(params.PId, 10, 64)
+							v := models.Peotryimage {
+								Id: pId,
+								IImages: imagesStr,
+								ICount: count,
+							}
+
+							if _, err := models.AddPeotryimage(&v); err == nil {
+								data[models.RESP_DATA] = v
+								rV.IId.Id = pId
+								vErr := models.UpdatePeotryById(rV)
+								fmt.Println(vErr)
+								if vErr == nil {
+									data[models.RESP_MSG] = "创建成功"
+								} else {
+									data[models.RESP_CODE] = models.RESP_ERR
+									data[models.RESP_MSG] = vErr.Error()
+								}
+							} else {
+								data[models.RESP_CODE] = models.RESP_ERR
+								data[models.RESP_MSG] = err.Error()
+							}
+						} else {
+							data[models.RESP_CODE] = models.RESP_ERR
+							data[models.RESP_MSG] = "保存图片出错：" + imagesStr
+						}
+					} else {
+						data[models.RESP_MSG] = "无图片数据"
 					}
-					count++
-				} else {
-					count = -1
-					break
-				}
-			}
-
-			if count >= 0 {
-				imagesStr += "]"
-				pId, _ := strconv.ParseInt(params.PId, 10, 64)
-				v := models.Peotryimage {
-					Id: pId,
-					IImages: imagesStr,
-					ICount: count,
-				}
-
-				if _, err := models.AddPeotryimage(&v); err == nil {
-					data[models.RESP_DATA] = v
 				} else {
 					data[models.RESP_CODE] = models.RESP_ERR
-					data[models.RESP_MSG] = err.Error()
+					data[models.RESP_MSG] = "该诗不属于当前用户"
 				}
-			} else {
-				data[models.RESP_CODE] = models.RESP_ERR
-				data[models.RESP_MSG] = "保存图片出错：" + imagesStr
 			}
 		} else {
 			data[models.RESP_CODE] = models.RESP_ERR

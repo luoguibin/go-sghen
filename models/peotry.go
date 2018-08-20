@@ -20,7 +20,7 @@ type Peotry struct {
 	PTime    time.Time `orm:"column(p_time);type(datetime);null" json:"time"`
 	PContent string    `orm:"column(p_content);null" json:"content"`
 	PEnd     string    `orm:"column(p_end);null" json:"end"`
-	PImages  string    `orm:"column(p_images);null" json:"images"`
+	IId  *Peotryimage    `orm:"column(i_id);rel(fk);" json:"img"`
 }
 
 type Peotry2 struct {
@@ -31,7 +31,7 @@ type Peotry2 struct {
 	PTime    time.Time `json:"time"`
 	PContent string    `json:"content"`
 	PEnd     string    `json:"end"`
-	PImages  string    `json:"images"`
+	IId  *Peotryimage    `json:"img"`
 }
 
 func (t *Peotry) TableName() string {
@@ -130,13 +130,13 @@ func GetAllPeotry(query map[string]string, fields []string, sortby []string, ord
 				PTime: v.PTime,
 				PContent: v.PContent,
 				PEnd: v.PEnd,
-				PImages: v.PImages,
+				IId: v.IId,
 			}
 
-			imageV, err := GetPeotryimageById(v.Id)
-			if err == nil {
-				vv.PImages = imageV.IImages
-			}
+			// imageV, err := GetPeotryimageById(v.Id)
+			// if err == nil {
+			// 	vv.PImages = imageV.IImages
+			// }
 			ll = append(ll, vv)
 		}
 
