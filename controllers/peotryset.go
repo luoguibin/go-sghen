@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"SghenApi/models"
-	"encoding/json"
 	"time"
 	"strconv"
 	"strings"
@@ -155,22 +154,32 @@ func (c *PeotrysetController) GetAll() {
 // @Failure 403 :id is not int
 // @router /:id [put]
 func (c *PeotrysetController) Put() {
-	idStr := c.Ctx.Input.Param(":id")
-	id, _ := strconv.ParseInt(idStr, 10, 64)
-	v := models.Peotryset{Id: id}
 	data := c.GetResponseData()
+	params := &GetPeotrysetUpdateParams{}
 
-	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
-		if err := models.UpdatePeotrysetById(&v); err == nil {
-			data[models.RESP_MSG] = "OK"
-		} else {
+	if c.CheckPostParams(data, params) {
+		claims, errToken := c.ParseUserToken(params.Token)
+		if errToken == nil {
+			uId, _ := strconv.ParseInt(claims["uid"].(string), 10, 64)
+			sId, _ := strconv.ParseInt(params.SId, 10, 64)
+			v := models.Peotryset{
+				Id: sId, 
+				UId: &models.User{Id: uId}, 
+				SName: params.SetName,
+			}
+		
+			if err := models.UpdatePeotrysetById(&v); err == nil {
+				data[models.RESP_DATA] = v
+			} else {
+				data[models.RESP_CODE] = models.RESP_ERR
+				data[models.RESP_MSG] = err.Error()
+			}
+		}else {
 			data[models.RESP_CODE] = models.RESP_ERR
-			data[models.RESP_MSG] = err.Error()
+			data[models.RESP_MSG] = errToken.Error()
 		}
-	} else {
-		data[models.RESP_CODE] = models.RESP_ERR
-		data[models.RESP_MSG] = err.Error()
 	}
+
 	c.respToJSON(data)
 }
 

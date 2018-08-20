@@ -73,6 +73,7 @@ func (c *BaseController) CheckPostParams(data ResponseData, params interface{}) 
 		fmt.Println(err)
 		return false
 	}
+	fmt.Println(params)
 
 	//验证参数
 	valid := validation.Validation{}

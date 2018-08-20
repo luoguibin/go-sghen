@@ -64,7 +64,6 @@ type GetUserUpdateParams struct {
 func (params *GetUserUpdateParams) Valid(v *validation.Validation) {
 	fmt.Println("GetUserUpdateParams Valid")
     if len(strings.TrimSpace(params.Token)) == 0 {
-        // 通过 SetError 设置 Name 的错误信息，HasErrors 将会返回 true
 		v.SetError("token", "不能为空")
     }
 }
@@ -79,11 +78,28 @@ type GetPeotrysetParams struct {
 func (params *GetPeotrysetParams) Valid(v *validation.Validation) {
 	fmt.Println("GetPeotrysetParams Valid")
     if len(strings.TrimSpace(params.Token)) == 0 {
-        // 通过 SetError 设置 Name 的错误信息，HasErrors 将会返回 true
 		v.SetError("token", "不能为空")
     } else if len(strings.TrimSpace(params.SetName)) == 0 {
-        // 通过 SetError 设置 Name 的错误信息，HasErrors 将会返回 true
 		v.SetError("setName", "不能为空")
+    } 
+}
+
+
+/*****************************/
+type GetPeotrysetUpdateParams struct {
+	GetUserParams
+	SetName     string `form:"setName" valid:"Required"`
+	SId     string `form:"sId" valid:"Required"`
+}
+
+func (params *GetPeotrysetUpdateParams) Valid(v *validation.Validation) {
+	fmt.Println("GetPeotrysetUpdateParams Valid")
+    if len(strings.TrimSpace(params.Token)) == 0 {
+		v.SetError("token", "不能为空")
+    } else if len(strings.TrimSpace(params.SetName)) == 0 {
+		v.SetError("setName", "不能为空")
+    }  else if len(strings.TrimSpace(params.SId)) == 0 {
+		v.SetError("setId", "不能为空")
     } 
 }
 
@@ -97,10 +113,8 @@ type GetPeotryUpdateParams struct {
 func (params *GetPeotryUpdateParams) Valid(v *validation.Validation) {
 	fmt.Println("GetPeotryUpdateParams Valid")
     if len(strings.TrimSpace(params.Token)) == 0 {
-        // 通过 SetError 设置 Name 的错误信息，HasErrors 将会返回 true
 		v.SetError("token", "不能为空")
 	} else if len(strings.TrimSpace(params.PId)) == 0 {
-        // 通过 SetError 设置 Name 的错误信息，HasErrors 将会返回 true
 		v.SetError("PId", "不能为空")
     } 
 }
@@ -115,10 +129,8 @@ type GetPeotryimageParams struct {
 func (params *GetPeotryimageParams) Valid(v *validation.Validation) {
 	fmt.Println("GetPeotryimageParams Valid")
     if len(strings.TrimSpace(params.Token)) == 0 {
-        // 通过 SetError 设置 Name 的错误信息，HasErrors 将会返回 true
 		v.SetError("token", "不能为空")
 	} else if len(strings.TrimSpace(params.PId)) == 0 {
-        // 通过 SetError 设置 Name 的错误信息，HasErrors 将会返回 true
 		v.SetError("PId", "不能为空")
     } 
 }
