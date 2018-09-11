@@ -2,15 +2,13 @@ package controllers
 
 import (
 	"fmt"
-	"time"
-	"strconv"
 	"encoding/json"
 	"SghenApi/models"
 
-	"github.com/dgrijalva/jwt-go"
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/validation"
 	"github.com/astaxie/beego/plugins/cors"
+	"github.com/astaxie/beego/context"
 )
 
 
@@ -46,6 +44,22 @@ func (c *BaseController) BaseGetTest() {
 	c.respToJSON(data)
 }
 
+func GatewayAccessUser(ctx *context.Context) {
+	datas := make(map[string]interface{})
+	userId := ctx.Input.Query("userId")
+	token := ctx.Input.Query("token")
+
+	if len(userId) <= 0 || len(token) <= 0 {
+		datas[models.RESP_CODE] = models.RESP_ERR
+		ctx.ResponseWriter.Header().Set("Access-Control-Allow-Origin", "*")
+		ctx.Output.JSON(datas, false, false)
+		return
+	}
+
+	return
+}
+
+
 func (c *BaseController) CheckFormParams(data ResponseData, params interface{}) bool {
 	//验证参数是否异常
 	if err := c.ParseForm(params); err != nil {
@@ -70,10 +84,9 @@ func (c *BaseController) CheckPostParams(data ResponseData, params interface{}) 
 	//验证参数是否异常
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &params); err != nil {
 		data[models.RESP_CODE] = models.RESP_ERR
-		fmt.Println(err)
+		data[models.RESP_MSG] = err.Error()
 		return false
 	}
-	fmt.Println(params)
 
 	//验证参数
 	valid := validation.Validation{}
@@ -86,60 +99,9 @@ func (c *BaseController) CheckPostParams(data ResponseData, params interface{}) 
 	return false
 }
 
-
-
-/*****************************/
-func (c *BaseController)CreateUserToken (user *models.User, data ResponseData) {
-	token := jwt.New(jwt.SigningMethodHS256)
-    claims := make(jwt.MapClaims)
-    claims["exp"] = time.Now().Add(time.Hour * time.Duration(1)).Unix()
-	claims["iat"] = time.Now().Unix()
-	claims["uid"] = strconv.FormatInt(user.Id, 10)
-	fmt.Println(claims)
-
-    token.Claims = claims
-
-    tokenString, err := token.SignedString([]byte(models.JWT_SECRET_KEY))
-    if err != nil {
-		data[models.RESP_CODE] = models.RESP_ERR
-		data[models.RESP_MSG] = "Error while signing the token"
-		return
-	}
-	
-	data[models.RESP_TOKEN] = tokenString
-}
-
-func (c *BaseController)ParseUserToken (tokenString string) (map[string]interface{}, error) {
-	fmt.Println("ParseUserToken()", tokenString)
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		// Don't forget to validate the alg is what you expect:
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
-		}
-	
-		return []byte(models.JWT_SECRET_KEY), nil
-	})
-
-	if (err != nil) {
-		fmt.Println(err)
-		return nil, err
-	}
-	
-	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		fmt.Println(claims)
-		return claims, nil
-	} else {
-		fmt.Println("Claims parse error", err)
-		return nil, err
-	}
-}
-
-
-
 /*****************************/
 type ResponseData map[string]interface{}
 
 func (self *BaseController) GetResponseData() ResponseData {
 	return ResponseData{ models.RESP_CODE: models.RESP_OK }
 }
-

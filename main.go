@@ -2,26 +2,15 @@ package main
 
 import (
 	_ "SghenApi/routers"
-	"time"
+	"SghenApi/models"
 	"github.com/astaxie/beego"
-	"github.com/astaxie/beego/orm"
-	_ "github.com/go-sql-driver/mysql"
-	// _ "SghenApi/tests"
+	_ "github.com/jinzhu/gorm/dialects/mysql"
 )
 
-func init() {
-	orm.RegisterDataBase(
-		"default", 
-		"mysql", 
-		beego.AppConfig.String("mysqluser") + ":" + beego.AppConfig.String("mysqlpass") + "@tcp(" + beego.AppConfig.String("mysqlurls") + ")/" + beego.AppConfig.String("mysqldb")+"?charset=utf8&loc=Asia%2FShanghai")
-	orm.DefaultTimeLoc = time.UTC
-	orm.Debug = true
-}
-
 func main() {
-	if beego.BConfig.RunMode == "dev" {
-		beego.BConfig.WebConfig.DirectoryIndex = true
-		beego.BConfig.WebConfig.StaticDir["/swagger"] = "swagger"
-	}
+	models.InitGorm()
+	db := models.GetDb()
+	defer db.Close()
+
 	beego.Run()	
 }

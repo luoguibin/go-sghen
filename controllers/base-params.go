@@ -25,18 +25,18 @@ func (params *GetLoginParams) Valid(v *validation.Validation) {
 }
 
 /*****************************/
-type GetUserCreateParams struct {
-	GetLoginParams
-	Name     string `form:"name" valid:"Required"`
+type getCreateUserParams struct {
+	Id     	int64 	`form:"id" valid:"Required"`
+	Pw     	string 	`form:"pw" valid:"Required"`
+	Name   	string 	`form:"name"`
 }
 
-func (params *GetUserCreateParams) Valid(v *validation.Validation) {
-	fmt.Println("GetUserCreateParams Valid")
-    if len(strings.TrimSpace(params.Id)) == 0 {
+func (params *getCreateUserParams) Valid(v *validation.Validation) {
+	if params.Id <= 0 {
 		v.SetError("id", "不能为空")
-    } else if len(strings.TrimSpace(params.Pw)) == 0 {
+	} else if len(strings.TrimSpace(params.Pw)) == 0 {
 		v.SetError("pw", "不能为空")
-    } 
+	} 
 }
 
 

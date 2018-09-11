@@ -11,37 +11,25 @@ import (
 	"SghenApi/controllers"
 
 	"github.com/astaxie/beego"
+	"github.com/astaxie/beego/context"
 )
 
 func init() {
 	beego.Router("/", &controllers.BaseController{}, "GET:BaseGetTest")
 
-	ns := beego.NewNamespace("/v1",
+	beego.InsertFilter("/v1/user/update", beego.BeforeRouter, func(ctx *context.Context) {
+		controllers.GatewayAccessUser(ctx)
+	})
 
-		beego.NSNamespace("/peotry",
-			beego.NSInclude(
-				&controllers.PeotryController{},
-			),
-		),
-
-		beego.NSNamespace("/peotryimage",
-			beego.NSInclude(
-				&controllers.PeotryimageController{},
-			),
-		),
-
-		beego.NSNamespace("/peotryset",
-			beego.NSInclude(
-				&controllers.PeotrysetController{},
-			),
-		),
-
+	//详见　https://beego.me/docs/mvc/controller/router.md
+	nsv1 := beego.NewNamespace("/v1",
 		beego.NSNamespace("/user",
-			beego.NSInclude(
-				&controllers.UserController{},
-			),
-			beego.NSRouter("/login", &controllers.UserController{}, "POST:Login"),
+			beego.NSRouter("/create", &controllers.UserController{}, "post:CreateUser"),
+			beego.NSRouter("/query", &controllers.UserController{}, "post:QueryUser"),
+			beego.NSRouter("/update", &controllers.UserController{}, "post:UpdateUser"),
+			beego.NSRouter("/delete", &controllers.UserController{}, "delete:DeleteUser"),
 		),
 	)
-	beego.AddNamespace(ns)
+
+	beego.AddNamespace(nsv1)
 }

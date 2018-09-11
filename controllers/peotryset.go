@@ -1,205 +1,205 @@
 package controllers
 
-import (
-	"SghenApi/models"
-	"time"
-	"strconv"
-	"strings"
-)
+// import (
+// 	"SghenApi/models"
+// 	"time"
+// 	"strconv"
+// 	"strings"
+// )
 
-// PeotrysetController operations for Peotryset
-type PeotrysetController struct {
-	BaseController
-}
+// // PeotrysetController operations for Peotryset
+// type PeotrysetController struct {
+// 	BaseController
+// }
 
-// URLMapping ...
-func (c *PeotrysetController) URLMapping() {
-	c.Mapping("Post", c.Post)
-	c.Mapping("GetOne", c.GetOne)
-	c.Mapping("GetAll", c.GetAll)
-	c.Mapping("Put", c.Put)
-	c.Mapping("Delete", c.Delete)
-}
+// // URLMapping ...
+// func (c *PeotrysetController) URLMapping() {
+// 	c.Mapping("Post", c.Post)
+// 	c.Mapping("GetOne", c.GetOne)
+// 	c.Mapping("GetAll", c.GetAll)
+// 	c.Mapping("Put", c.Put)
+// 	c.Mapping("Delete", c.Delete)
+// }
 
-// Post ...
-// @Title Post
-// @Description create Peotryset
-// @Param	body		body 	models.Peotryset	true		"body for Peotryset content"
-// @Success 201 {int} models.Peotryset
-// @Failure 403 body is empty
-// @router / [post]
-func (c *PeotrysetController) Post() {
-	data := c.GetResponseData()
-	params := &GetPeotrysetParams{}
+// // Post ...
+// // @Title Post
+// // @Description create Peotryset
+// // @Param	body		body 	models.Peotryset	true		"body for Peotryset content"
+// // @Success 201 {int} models.Peotryset
+// // @Failure 403 body is empty
+// // @router / [post]
+// func (c *PeotrysetController) Post() {
+// 	data := c.GetResponseData()
+// 	params := &GetPeotrysetParams{}
 
-	if c.CheckPostParams(data, params) {
-		claims, errToken := c.ParseUserToken(params.Token)
-		if errToken == nil {
-			uId, _ := strconv.ParseInt(claims["uid"].(string), 10, 64)
-			newSet := models.Peotryset{
-				Id: time.Now().UnixNano() / 1e3, 
-				UId: &models.User{Id: uId}, 
-				SName: params.SetName,
-			}
+// 	if c.CheckPostParams(data, params) {
+// 		claims, errToken := c.ParseUserToken(params.Token)
+// 		if errToken == nil {
+// 			uId, _ := strconv.ParseInt(claims["uid"].(string), 10, 64)
+// 			newSet := models.Peotryset{
+// 				Id: time.Now().UnixNano() / 1e3, 
+// 				UId: &models.User{Id: uId}, 
+// 				SName: params.SetName,
+// 			}
 		
-			if _, err := models.AddPeotryset(&newSet); err == nil {
-				data[models.RESP_DATA] = newSet
-			} else {
-				data[models.RESP_CODE] = models.RESP_ERR
-				data[models.RESP_MSG] = err.Error()
-			}
-		}else {
-			data[models.RESP_CODE] = models.RESP_ERR
-			data[models.RESP_MSG] = errToken.Error()
-		}
-	}
+// 			if _, err := models.AddPeotryset(&newSet); err == nil {
+// 				data[models.RESP_DATA] = newSet
+// 			} else {
+// 				data[models.RESP_CODE] = models.RESP_ERR
+// 				data[models.RESP_MSG] = err.Error()
+// 			}
+// 		}else {
+// 			data[models.RESP_CODE] = models.RESP_ERR
+// 			data[models.RESP_MSG] = errToken.Error()
+// 		}
+// 	}
 
-	c.respToJSON(data)
-}
+// 	c.respToJSON(data)
+// }
 
-// GetOne ...
-// @Title Get One
-// @Description get Peotryset by id
-// @Param	id		path 	string	true		"The key for staticblock"
-// @Success 200 {object} models.Peotryset
-// @Failure 403 :id is empty
-// @router /:id [get]
-func (c *PeotrysetController) GetOne() {
-	idStr := c.Ctx.Input.Param(":id")
-	id, _ := strconv.ParseInt(idStr, 10, 64)
-	v, err := models.GetPeotrysetById(id)
-	data := c.GetResponseData()
+// // GetOne ...
+// // @Title Get One
+// // @Description get Peotryset by id
+// // @Param	id		path 	string	true		"The key for staticblock"
+// // @Success 200 {object} models.Peotryset
+// // @Failure 403 :id is empty
+// // @router /:id [get]
+// func (c *PeotrysetController) GetOne() {
+// 	idStr := c.Ctx.Input.Param(":id")
+// 	id, _ := strconv.ParseInt(idStr, 10, 64)
+// 	v, err := models.GetPeotrysetById(id)
+// 	data := c.GetResponseData()
 
-	if err != nil {
-		data[models.RESP_CODE] = models.RESP_ERR
-		data[models.RESP_MSG] = err.Error()
-	} else {
-		data[models.RESP_DATA] = v
-	}	
-	c.respToJSON(data)
-}
+// 	if err != nil {
+// 		data[models.RESP_CODE] = models.RESP_ERR
+// 		data[models.RESP_MSG] = err.Error()
+// 	} else {
+// 		data[models.RESP_DATA] = v
+// 	}	
+// 	c.respToJSON(data)
+// }
 
-// GetAll ...
-// @Title Get All
-// @Description get Peotryset
-// @Param	query	query	string	false	"Filter. e.g. col1:v1,col2:v2 ..."
-// @Param	fields	query	string	false	"Fields returned. e.g. col1,col2 ..."
-// @Param	sortby	query	string	false	"Sorted-by fields. e.g. col1,col2 ..."
-// @Param	order	query	string	false	"Order corresponding to each sortby field, if single value, apply to all sortby fields. e.g. desc,asc ..."
-// @Param	limit	query	string	false	"Limit the size of result set. Must be an integer"
-// @Param	offset	query	string	false	"Start position of result set. Must be an integer"
-// @Success 200 {object} models.Peotryset
-// @Failure 403
-// @router / [get]
-func (c *PeotrysetController) GetAll() {
-	var fields []string
-	var sortby []string
-	var order []string
-	var query = make(map[string]string)
-	var limit int64 = 10
-	var offset int64
-	data := c.GetResponseData()
+// // GetAll ...
+// // @Title Get All
+// // @Description get Peotryset
+// // @Param	query	query	string	false	"Filter. e.g. col1:v1,col2:v2 ..."
+// // @Param	fields	query	string	false	"Fields returned. e.g. col1,col2 ..."
+// // @Param	sortby	query	string	false	"Sorted-by fields. e.g. col1,col2 ..."
+// // @Param	order	query	string	false	"Order corresponding to each sortby field, if single value, apply to all sortby fields. e.g. desc,asc ..."
+// // @Param	limit	query	string	false	"Limit the size of result set. Must be an integer"
+// // @Param	offset	query	string	false	"Start position of result set. Must be an integer"
+// // @Success 200 {object} models.Peotryset
+// // @Failure 403
+// // @router / [get]
+// func (c *PeotrysetController) GetAll() {
+// 	var fields []string
+// 	var sortby []string
+// 	var order []string
+// 	var query = make(map[string]string)
+// 	var limit int64 = 10
+// 	var offset int64
+// 	data := c.GetResponseData()
 
-	// fields: col1,col2,entity.col3
-	if v := c.GetString("fields"); v != "" {
-		fields = strings.Split(v, ",")
-	}
-	// limit: 10 (default is 10)
-	if v, err := c.GetInt64("limit"); err == nil {
-		limit = v
-	}
-	// offset: 0 (default is 0)
-	if v, err := c.GetInt64("offset"); err == nil {
-		offset = v
-	}
-	// sortby: col1,col2
-	if v := c.GetString("sortby"); v != "" {
-		sortby = strings.Split(v, ",")
-	}
-	// order: desc,asc
-	if v := c.GetString("order"); v != "" {
-		order = strings.Split(v, ",")
-	}
-	// query: k:v,k:v
-	if v := c.GetString("query"); v != "" {
-		for _, cond := range strings.Split(v, ",") {
-			kv := strings.SplitN(cond, ":", 2)
-			if len(kv) != 2 {
-				data[models.RESP_CODE] = models.RESP_ERR
-				data[models.RESP_MSG] = "Error: invalid query key/value pair"
-				c.respToJSON(data)
-				return
-			}
-			k, v := kv[0], kv[1]
-			query[k] = v
-		}
-	}
+// 	// fields: col1,col2,entity.col3
+// 	if v := c.GetString("fields"); v != "" {
+// 		fields = strings.Split(v, ",")
+// 	}
+// 	// limit: 10 (default is 10)
+// 	if v, err := c.GetInt64("limit"); err == nil {
+// 		limit = v
+// 	}
+// 	// offset: 0 (default is 0)
+// 	if v, err := c.GetInt64("offset"); err == nil {
+// 		offset = v
+// 	}
+// 	// sortby: col1,col2
+// 	if v := c.GetString("sortby"); v != "" {
+// 		sortby = strings.Split(v, ",")
+// 	}
+// 	// order: desc,asc
+// 	if v := c.GetString("order"); v != "" {
+// 		order = strings.Split(v, ",")
+// 	}
+// 	// query: k:v,k:v
+// 	if v := c.GetString("query"); v != "" {
+// 		for _, cond := range strings.Split(v, ",") {
+// 			kv := strings.SplitN(cond, ":", 2)
+// 			if len(kv) != 2 {
+// 				data[models.RESP_CODE] = models.RESP_ERR
+// 				data[models.RESP_MSG] = "Error: invalid query key/value pair"
+// 				c.respToJSON(data)
+// 				return
+// 			}
+// 			k, v := kv[0], kv[1]
+// 			query[k] = v
+// 		}
+// 	}
 
-	l, err := models.GetAllPeotryset(query, fields, sortby, order, offset, limit)
-	if err != nil {
-		data[models.RESP_CODE] = models.RESP_ERR
-		data[models.RESP_MSG] = err.Error()
-	} else {
-		data[models.RESP_DATA] = l
-	}
-	c.respToJSON(data)
-}
+// 	l, err := models.GetAllPeotryset(query, fields, sortby, order, offset, limit)
+// 	if err != nil {
+// 		data[models.RESP_CODE] = models.RESP_ERR
+// 		data[models.RESP_MSG] = err.Error()
+// 	} else {
+// 		data[models.RESP_DATA] = l
+// 	}
+// 	c.respToJSON(data)
+// }
 
-// Put ...
-// @Title Put
-// @Description update the Peotryset
-// @Param	id		path 	string	true		"The id you want to update"
-// @Param	body		body 	models.Peotryset	true		"body for Peotryset content"
-// @Success 200 {object} models.Peotryset
-// @Failure 403 :id is not int
-// @router /:id [put]
-func (c *PeotrysetController) Put() {
-	data := c.GetResponseData()
-	params := &GetPeotrysetUpdateParams{}
+// // Put ...
+// // @Title Put
+// // @Description update the Peotryset
+// // @Param	id		path 	string	true		"The id you want to update"
+// // @Param	body		body 	models.Peotryset	true		"body for Peotryset content"
+// // @Success 200 {object} models.Peotryset
+// // @Failure 403 :id is not int
+// // @router /:id [put]
+// func (c *PeotrysetController) Put() {
+// 	data := c.GetResponseData()
+// 	params := &GetPeotrysetUpdateParams{}
 
-	if c.CheckPostParams(data, params) {
-		claims, errToken := c.ParseUserToken(params.Token)
-		if errToken == nil {
-			uId, _ := strconv.ParseInt(claims["uid"].(string), 10, 64)
-			sId, _ := strconv.ParseInt(params.SId, 10, 64)
-			v := models.Peotryset{
-				Id: sId, 
-				UId: &models.User{Id: uId}, 
-				SName: params.SetName,
-			}
+// 	if c.CheckPostParams(data, params) {
+// 		claims, errToken := c.ParseUserToken(params.Token)
+// 		if errToken == nil {
+// 			uId, _ := strconv.ParseInt(claims["uid"].(string), 10, 64)
+// 			sId, _ := strconv.ParseInt(params.SId, 10, 64)
+// 			v := models.Peotryset{
+// 				Id: sId, 
+// 				UId: &models.User{Id: uId}, 
+// 				SName: params.SetName,
+// 			}
 		
-			if err := models.UpdatePeotrysetById(&v); err == nil {
-				data[models.RESP_DATA] = v
-			} else {
-				data[models.RESP_CODE] = models.RESP_ERR
-				data[models.RESP_MSG] = err.Error()
-			}
-		}else {
-			data[models.RESP_CODE] = models.RESP_ERR
-			data[models.RESP_MSG] = errToken.Error()
-		}
-	}
+// 			if err := models.UpdatePeotrysetById(&v); err == nil {
+// 				data[models.RESP_DATA] = v
+// 			} else {
+// 				data[models.RESP_CODE] = models.RESP_ERR
+// 				data[models.RESP_MSG] = err.Error()
+// 			}
+// 		}else {
+// 			data[models.RESP_CODE] = models.RESP_ERR
+// 			data[models.RESP_MSG] = errToken.Error()
+// 		}
+// 	}
 
-	c.respToJSON(data)
-}
+// 	c.respToJSON(data)
+// }
 
-// Delete ...
-// @Title Delete
-// @Description delete the Peotryset
-// @Param	id		path 	string	true		"The id you want to delete"
-// @Success 200 {string} delete success!
-// @Failure 403 id is empty
-// @router /:id [delete]
-func (c *PeotrysetController) Delete() {
-	idStr := c.Ctx.Input.Param(":id")
-	id, _ := strconv.ParseInt(idStr, 10, 64)
-	data := c.GetResponseData()
+// // Delete ...
+// // @Title Delete
+// // @Description delete the Peotryset
+// // @Param	id		path 	string	true		"The id you want to delete"
+// // @Success 200 {string} delete success!
+// // @Failure 403 id is empty
+// // @router /:id [delete]
+// func (c *PeotrysetController) Delete() {
+// 	idStr := c.Ctx.Input.Param(":id")
+// 	id, _ := strconv.ParseInt(idStr, 10, 64)
+// 	data := c.GetResponseData()
 
-	if err := models.DeletePeotryset(id); err == nil {
-		data[models.RESP_MSG] = "OK"
-	} else {
-		data[models.RESP_CODE] = models.RESP_ERR
-		data[models.RESP_MSG] = err.Error()
-	}
-	c.respToJSON(data)
-}
+// 	if err := models.DeletePeotryset(id); err == nil {
+// 		data[models.RESP_MSG] = "OK"
+// 	} else {
+// 		data[models.RESP_CODE] = models.RESP_ERR
+// 		data[models.RESP_MSG] = err.Error()
+// 	}
+// 	c.respToJSON(data)
+// }

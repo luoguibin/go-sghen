@@ -1,20 +1,38 @@
 package models
 
 import (
+	"os"
 	"github.com/astaxie/beego/logs"
+	"github.com/astaxie/beego/config"
+	"github.com/jinzhu/gorm"
 )
 
 type Config struct {
-	CodeMsgMap map[int]string
-	MLogger *logs.BeeLogger
+	SGHENENV	string
 
+	JwtSecretKey string
+
+	ImageSavePath string
+
+
+	dBHost     	string
+	dBName     	string
+	dBUsername 	string
+	dBPassword 	string
+	dBMaxIdle  int
+	dBMaxConn  int
+
+	CodeMsgMap 	map[int]string
+
+	MLogger *logs.BeeLogger
 }
 
 var (
 	MConfig Config
-	JWT_SECRET_KEY = "SghenMorge"
 
-	IMAGE_SAVE_PATH = "./upload/peotry/images/"
+	dbOrmDefault   *gorm.DB
+
+
 )
 
 var (
@@ -28,8 +46,35 @@ var (
 )
 
 func init() {
+	initConfParams()
 	initCodeMsgMap()
 	initLog()
+}
+
+func initConfParams() {
+	SGHENENV := os.Getenv("SGHENENV")
+	if len(SGHENENV) <= 0 {
+		SGHENENV = "dev"
+	}
+	appConf, err := config.NewConfig("ini", "conf/app.conf")
+	if err != nil {
+		return
+	}
+
+	MConfig = Config{}
+	if appConf != nil {
+		MConfig.SGHENENV = SGHENENV
+		MConfig.JwtSecretKey = appConf.String(SGHENENV + "::jwtSecretKey")
+		MConfig.ImageSavePath = appConf.String(SGHENENV + "::imageSavePath")
+
+		MConfig.dBHost = appConf.String(SGHENENV + "::dbHost")
+		MConfig.dBName = appConf.String(SGHENENV + "::dbName")
+		MConfig.dBUsername = appConf.String(SGHENENV + "::dbUsername")
+		MConfig.dBPassword = appConf.String(SGHENENV + "::dbPassword")
+		MConfig.dBMaxIdle, _ = appConf.Int(SGHENENV + "::dbMaxIdle")
+		MConfig.dBMaxConn, _ = appConf.Int(SGHENENV + "::dbMaxConn")
+	}
+	
 }
 
 func initCodeMsgMap() {
@@ -40,20 +85,13 @@ func initCodeMsgMap() {
 
 func initLog() {
 	MLogger := logs.NewLogger(10000) 
-	MLogger.SetLogger(logs.AdapterFile,`{"filename":"./logs/temp.log","maxlines":1000000,"maxsize":256}`)
-	MLogger.EnableFuncCallDepth(true)
-	MLogger.SetLevel(logs.LevelDebug)     // 设置日志写入缓冲区的等级
-	
-	// log test
-	// log.Emergency("Emergency")
-    // log.Alert("Alert")
-    // log.Critical("Critical")
-    // log.Error("Error")
-    // log.Warning("Warning")
-    // log.Notice("Notice")
-    // log.Informational("Informational")
-    // log.Debug("Debug")
+	MLogger.SetLogger(logs.AdapterFile,`{"filename":"./logs/temp.log","maxlines":1000000,"maxsize":256,"perm": "0644"}`)
+	// MLogger.EnableFuncCallDepth(true)
+	MLogger.Async()
+	MLogger.SetLevel(logs.LevelDebug)	
+}
 
-	// log.Flush() // 将日志从缓冲区读出，写入到文件
-    // log.Close()
+
+func GetDb() *gorm.DB {
+	return dbOrmDefault
 }
