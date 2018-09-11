@@ -10,18 +10,16 @@ import (
 
 
 /*****************************/
-type GetLoginParams struct {
-	Id     string `form:"id" valid:"Required"`
-	Pw     string `form:"pw" valid:"Required"`
+type getUpdateUserParams struct {
+	Id			int64		`form:"id" valid:"Required"`
+	Pw     	string 	`form:"pw"`
+	Name		string	`form:"name"`
 }
 
-func (params *GetLoginParams) Valid(v *validation.Validation) {
-	fmt.Println("GetLoginParams Valid")
-    if len(strings.TrimSpace(params.Id)) == 0 {
-		v.SetError("id", "不能为空")
-    } else if len(strings.TrimSpace(params.Pw)) == 0 {
-		v.SetError("pw", "不能为空")
-    } 
+func (params *getUpdateUserParams) Valid(v *validation.Validation) {
+    if params.Id <= 0 {
+			v.SetError("user id", "不能为空")
+		}
 }
 
 /*****************************/

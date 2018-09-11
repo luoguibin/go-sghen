@@ -73,8 +73,23 @@ func QueryUser() {
 	
 }
 
-func UpdateUser() {
+func UpdateUser(id int64, password string, name string) (*User, error) {
+	user := &User{
+		ID:				id,
+		UPassword:		password,
+		UName:			name,
+	}
 
+	err := dbOrmDefault.Model(&User{}).Save(user).Error
+	if err != nil {
+		return nil, err
+	} else {
+		if (user.UPassword != password) {
+			return nil, errors.New("用户账号或密码错误") 
+		}
+	}
+
+	return user, nil
 }
 
 func DeleteUser() {

@@ -26,9 +26,9 @@ func init() {
 		beego.NSNamespace("/user",
 			beego.NSRouter("/create", &controllers.UserController{}, "post:CreateUser"),
 			beego.NSRouter("/login", &controllers.UserController{}, "post:LoginUser"),
+			beego.NSRouter("/update", &controllers.UserController{}, "post:UpdateUser"),
 			// TODO
 			beego.NSRouter("/query", &controllers.UserController{}, "post:QueryUser"),
-			beego.NSRouter("/update", &controllers.UserController{}, "post:UpdateUser"),
 			beego.NSRouter("/delete", &controllers.UserController{}, "delete:DeleteUser"),
 		),
 	)

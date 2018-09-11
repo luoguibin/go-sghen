@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"fmt"
+	"strconv"
 	"encoding/json"
 	"SghenApi/models"
 
@@ -46,15 +47,28 @@ func (c *BaseController) BaseGetTest() {
 
 func GatewayAccessUser(ctx *context.Context) {
 	datas := make(map[string]interface{})
-	userId := ctx.Input.Query("userId")
+	// userId := ctx.Input.Query("userId")
 	token := ctx.Input.Query("token")
 
-	if len(userId) <= 0 || len(token) <= 0 {
+	if len(token) <= 0 {
 		datas[models.RESP_CODE] = models.RESP_ERR
+		datas[models.RESP_MSG] = "token is empty"
 		ctx.ResponseWriter.Header().Set("Access-Control-Allow-Origin", "*")
 		ctx.Output.JSON(datas, false, false)
 		return
 	}
+
+	claims := CheckUserToken(token)
+	if  claims == nil{
+		datas[models.RESP_CODE] = models.RESP_ERR
+		datas[models.RESP_MSG] = "token is invalid"
+		ctx.ResponseWriter.Header().Set("Access-Control-Allow-Origin", "*")
+		ctx.Output.JSON(datas, false, false)
+		return
+	}
+	
+	uId, _ := strconv.ParseInt(claims["uid"].(string), 10, 64)
+	ctx.Input.SetData("uId", uId)
 
 	return
 }

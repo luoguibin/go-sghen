@@ -44,6 +44,34 @@ func (c *UserController)LoginUser() {
 	c.respToJSON(data)
 }
 
+func (c *UserController)QueryUser() {
+	data := c.GetResponseData()
+	models.QueryUser()
+	c.respToJSON(data)
+}
+
+func (c *UserController)UpdateUser() {
+	data := c.GetResponseData()
+	params := &getUpdateUserParams{}
+
+	if c.CheckPostParams(data, params) {
+		_, err := models.UpdateUser(params.Id, params.Pw, params.Name)
+		if err != nil {
+			data[models.RESP_CODE] = models.RESP_ERR
+			data[models.RESP_MSG] = err.Error()
+		}
+	}
+	
+	c.respToJSON(data)
+}
+
+func (c *UserController)DeleteUser() {
+	data := c.GetResponseData()
+	models.DeleteUser()
+	c.respToJSON(data)
+}
+
+
 func createUserToken(user *models.User, data ResponseData) {
 	token := jwt.New(jwt.SigningMethodHS256)
     claims := make(jwt.MapClaims)
@@ -64,8 +92,7 @@ func createUserToken(user *models.User, data ResponseData) {
 	data[models.RESP_TOKEN] = tokenString
 }
 
-func ParseUserToken(tokenString string) (map[string]interface{}, error) {
-	fmt.Println("ParseUserToken()", tokenString)
+func CheckUserToken(tokenString string) (map[string]interface{}) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		// Don't forget to validate the alg is what you expect:
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
@@ -76,33 +103,12 @@ func ParseUserToken(tokenString string) (map[string]interface{}, error) {
 	})
 
 	if (err != nil) {
-		fmt.Println(err)
-		return nil, err
+		return nil
 	}
 	
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		fmt.Println(claims)
-		return claims, nil
+		return claims
 	} else {
-		fmt.Println("Claims parse error", err)
-		return nil, err
+		return nil
 	}
-}
-
-func (c *UserController)QueryUser() {
-	data := c.GetResponseData()
-	models.QueryUser()
-	c.respToJSON(data)
-}
-
-func (c *UserController)UpdateUser() {
-	data := c.GetResponseData()
-	models.UpdateUser()
-	c.respToJSON(data)
-}
-
-func (c *UserController)DeleteUser() {
-	data := c.GetResponseData()
-	models.DeleteUser()
-	c.respToJSON(data)
 }
