@@ -67,7 +67,17 @@ func (c *UserController)UpdateUser() {
 
 func (c *UserController)DeleteUser() {
 	data := c.GetResponseData()
-	models.DeleteUser()
+	params := &getUpdateUserParams{}
+
+	if c.CheckPostParams(data, params) {
+		fmt.Println(params)
+		err := models.DeleteUser(params.Id)
+		if err != nil {
+			data[models.RESP_CODE] = models.RESP_ERR
+			data[models.RESP_MSG] = err.Error()
+		}
+	}
+	
 	c.respToJSON(data)
 }
 

@@ -80,6 +80,7 @@ func UpdateUser(id int64, password string, name string) (*User, error) {
 		UName:			name,
 	}
 
+	// 采用Save会全部默认更新，未赋值的将采用默认值
 	err := dbOrmDefault.Model(&User{}).Save(user).Error
 	if err != nil {
 		return nil, err
@@ -92,6 +93,11 @@ func UpdateUser(id int64, password string, name string) (*User, error) {
 	return user, nil
 }
 
-func DeleteUser() {
+func DeleteUser(id int64) error{
+	user := &User{
+		ID:				id,
+	}
 
+	err := dbOrmDefault.Model(&User{}).Delete(user).Error
+	return err
 }

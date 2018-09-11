@@ -11,7 +11,7 @@ import (
 
 /*****************************/
 type getUpdateUserParams struct {
-	Id			int64		`form:"id" valid:"Required"`
+	Id			int64		`form:"uid" valid:"Required"`
 	Pw     	string 	`form:"pw"`
 	Name		string	`form:"name"`
 }
