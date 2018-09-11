@@ -29,6 +29,21 @@ func (c *UserController)CreateUser() {
 	c.respToJSON(data)
 }
 
+func (c *UserController)LoginUser() {
+	data := c.GetResponseData()
+	params := &getCreateUserParams{}
+	if (c.CheckPostParams(data, params)) {
+		user, err := models.LoginUser(params.Id, params.Pw)
+		if err == nil {
+			createUserToken(user, data)
+		} else {
+			data[models.RESP_CODE] = models.RESP_ERR
+			data[models.RESP_MSG] = err.Error()
+		}
+	}
+	c.respToJSON(data)
+}
+
 func createUserToken(user *models.User, data ResponseData) {
 	token := jwt.New(jwt.SigningMethodHS256)
     claims := make(jwt.MapClaims)
