@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"SghenApi/models"
 	"SghenApi/helper"
 )
@@ -54,6 +55,59 @@ func (c *PeotryController) CreatePeotry() {
 			} else {
 				data[models.RESP_CODE] = models.RESP_ERR
 				data[models.RESP_MSG] = "禁止在他人诗集中创建个人诗歌"
+			}
+		} else {
+			data[models.RESP_CODE] = models.RESP_ERR
+			data[models.RESP_MSG] = err.Error()
+		}
+	}
+
+	c.respToJSON(data)
+}
+
+func (c *PeotryController) UpdatePeotry() {
+	data := c.GetResponseData()
+	params := &getUpdatePeotryParams{}
+	
+	if c.CheckFormParams(data, params) {
+		list, err, _, _, _, _ := models.QueryPeotry(params.PId, 0, 0, 0, "")
+		qPeotry := list[0]
+		if err == nil {
+			if qPeotry.UID == params.UId {
+				// 判断选集是否有更新
+				if qPeotry.SID != params.SId {
+					set, err := models.QueryPeotrySet(params.SId)
+					if err == nil {
+						if set.UID == params.UId {
+							qPeotry.SID = params.SId
+						} else {
+							data[models.RESP_CODE] = models.RESP_ERR
+							data[models.RESP_MSG] = "禁止在他人诗集中更新个人诗歌"
+							c.respToJSON(data)
+						return
+						}
+					} else {
+						data[models.RESP_CODE] = models.RESP_ERR
+						data[models.RESP_MSG] = err.Error()
+						c.respToJSON(data)
+						return
+					}
+				}
+				qPeotry.PTitle  = params.Title
+				qPeotry.PContent = params.Content
+				qPeotry.PEnd = params.End
+				fmt.Println(qPeotry)
+
+				err := models.UpdatePeotry(qPeotry)
+				if err == nil {
+					data[models.RESP_DATA] = qPeotry.ID
+				} else {
+					data[models.RESP_CODE] = models.RESP_ERR
+					data[models.RESP_MSG] = err.Error()
+				}
+			} else {
+				data[models.RESP_CODE] = models.RESP_ERR
+				data[models.RESP_MSG] = "禁止更新他人诗歌"
 			}
 		} else {
 			data[models.RESP_CODE] = models.RESP_ERR

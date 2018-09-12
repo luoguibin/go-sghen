@@ -74,6 +74,15 @@ func SavePeotry(userId int64, setId int, title string, pTime string, content str
 	return curTime, nil
 }
 
+func UpdatePeotry(peotry Peotry) error{
+	err := dbOrmDefault.Model(&Peotry{}).Save(&peotry).Error
+	if err != nil {
+		return err
+	} else {
+		return nil
+	}
+}
+
 func QueryPeotry(id int64, setId int, page int, limit int, content string) ([]Peotry, error, int, int ,int, int) {
 	list := make([]Peotry, 0)
 	totalPage := 0

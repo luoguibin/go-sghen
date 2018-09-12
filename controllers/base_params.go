@@ -68,6 +68,7 @@ type getQueryPeotryParams struct {
 func (params *getQueryPeotryParams) Valid(v *validation.Validation) {
 }
 
+// peotry create输入结构体
 type getCreatePeotryParams struct {
 	UId 		int64		`form:"uId" valid:"Required"`
 	SId			int 		`form:"sId" valid:"Required"`
@@ -78,6 +79,28 @@ type getCreatePeotryParams struct {
 
 func (params *getCreatePeotryParams) Valid(v *validation.Validation) {
     if params.UId <= 0 {
+		v.SetError("user id", "不能为空")
+	} else if params.SId < 0 {
+		v.SetError("set id", "不能为空")
+	} else if len(strings.TrimSpace(params.Content)) < 5 {
+		v.SetError("peotry content", "不能少于5个字符")
+	} 
+}
+
+// peotry update输入结构体
+type getUpdatePeotryParams struct {
+	PId			int64		`form:"pId" valid:"Required"`
+	UId 		int64		`form:"uId" valid:"Required"`
+	SId			int 		`form:"sId" valid:"Required"`
+	Title		string		`form:"title"`
+	Content		string		`form:"content" valid:"Required"`
+	End			string		`form:"end"`
+}
+
+func (params *getUpdatePeotryParams) Valid(v *validation.Validation) {
+	if params.PId <= 0 {
+		v.SetError("peotry id", "不能为空")
+	} else if params.UId <= 0 {
 		v.SetError("user id", "不能为空")
 	} else if params.SId < 0 {
 		v.SetError("set id", "不能为空")

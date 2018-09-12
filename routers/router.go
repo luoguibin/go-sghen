@@ -29,6 +29,9 @@ func init() {
 	beego.InsertFilter("/v1/peotry/create", beego.BeforeRouter, func(ctx *context.Context) {
 		controllers.GatewayAccessUser(ctx, false)
 	})
+	beego.InsertFilter("/v1/peotry/update", beego.BeforeRouter, func(ctx *context.Context) {
+		controllers.GatewayAccessUser(ctx, false)
+	})
 
 	//详见　https://beego.me/docs/mvc/controller/router.md
 	nsv1 := beego.NewNamespace("/v1",
@@ -42,6 +45,7 @@ func init() {
 		beego.NSNamespace("/peotry",
 			beego.NSRouter("/query", &controllers.PeotryController{}, "get:QueryPeotry"),
 			beego.NSRouter("/create", &controllers.PeotryController{}, "get:CreatePeotry"),
+			beego.NSRouter("/update", &controllers.PeotryController{}, "get:UpdatePeotry"),
 		),
 	)
 
