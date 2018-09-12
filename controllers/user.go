@@ -46,7 +46,21 @@ func (c *UserController)LoginUser() {
 
 func (c *UserController)QueryUser() {
 	data := c.GetResponseData()
-	models.QueryUser()
+	params := &getQueryUserParams{}
+	if c.CheckFormParams(data, params) {
+		if params.Level >= 5 {
+			user, err := models.QueryUser(params.QueryId)
+			if err == nil {
+				data[models.RESP_DATA] = user
+			} else {
+				data[models.RESP_CODE] = models.RESP_ERR
+				data[models.RESP_MSG] = err.Error()
+			}		
+		} else {
+			data[models.RESP_CODE] = models.RESP_ERR
+			data[models.RESP_MSG] = "用户等级低，限制查询"
+		}
+	}
 	c.respToJSON(data)
 }
 
@@ -88,6 +102,7 @@ func createUserToken(user *models.User, data ResponseData) {
     claims["exp"] = time.Now().Add(time.Hour * time.Duration(1)).Unix()
 	claims["iat"] = time.Now().Unix()
 	claims["uid"] = strconv.FormatInt(user.ID, 10)
+	claims["ulevel"] = user.ULevel
 	fmt.Println(claims)
 
     token.Claims = claims

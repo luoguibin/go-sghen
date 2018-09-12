@@ -23,6 +23,9 @@ func init() {
 	beego.InsertFilter("/v1/user/delete", beego.BeforeRouter, func(ctx *context.Context) {
 		controllers.GatewayAccessUser(ctx, false)
 	})
+	beego.InsertFilter("/v1/user/query", beego.BeforeRouter, func(ctx *context.Context) {
+		controllers.GatewayAccessUser(ctx, false)
+	})
 
 	//详见　https://beego.me/docs/mvc/controller/router.md
 	nsv1 := beego.NewNamespace("/v1",
@@ -31,8 +34,7 @@ func init() {
 			beego.NSRouter("/login", &controllers.UserController{}, "post:LoginUser"),
 			beego.NSRouter("/update", &controllers.UserController{}, "post:UpdateUser"),
 			beego.NSRouter("/delete", &controllers.UserController{}, "delete:DeleteUser"),
-			// TODO
-			beego.NSRouter("/query", &controllers.UserController{}, "post:QueryUser"),
+			beego.NSRouter("/query", &controllers.UserController{}, "get:QueryUser"),
 		),
 	)
 

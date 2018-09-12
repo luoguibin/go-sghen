@@ -69,8 +69,17 @@ func LoginUser(id int64, password string) (*User, error) {
 	return user, nil
 }
 
-func QueryUser() {
-	
+func QueryUser(id int64) (*User, error) {
+	user := &User{
+		ID:				id,
+	}
+
+	err := dbOrmDefault.Model(&User{}).Find(user).Error
+	if err == nil {
+		return user, nil
+	} else {
+		return nil, err
+	}
 }
 
 func UpdateUser(id int64, password string, name string) (*User, error) {

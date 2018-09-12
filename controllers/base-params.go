@@ -8,6 +8,21 @@ import (
 )
 
 
+/*****************************/
+type getCreateUserParams struct {
+	Id     	int64 	`form:"id" valid:"Required"`
+	Pw     	string 	`form:"pw" valid:"Required"`
+	Name   	string 	`form:"name"`
+}
+
+func (params *getCreateUserParams) Valid(v *validation.Validation) {
+	if params.Id <= 0 {
+		v.SetError("id", "不能为空")
+	} else if len(strings.TrimSpace(params.Pw)) == 0 {
+		v.SetError("pw", "不能为空")
+	} 
+}
+
 
 /*****************************/
 type getUpdateUserParams struct {
@@ -22,19 +37,23 @@ func (params *getUpdateUserParams) Valid(v *validation.Validation) {
 		}
 }
 
+
+
 /*****************************/
-type getCreateUserParams struct {
-	Id     	int64 	`form:"id" valid:"Required"`
-	Pw     	string 	`form:"pw" valid:"Required"`
-	Name   	string 	`form:"name"`
+type getQueryUserParams struct {
+	Id			int64		`form:"uId" valid:"Required"`
+	QueryId int64 	`form:"queryId" valid:"Required"`
+	Level		int			`form:"level" valid:"Required"`
 }
 
-func (params *getCreateUserParams) Valid(v *validation.Validation) {
-	if params.Id <= 0 {
-		v.SetError("id", "不能为空")
-	} else if len(strings.TrimSpace(params.Pw)) == 0 {
-		v.SetError("pw", "不能为空")
-	} 
+func (params *getQueryUserParams) Valid(v *validation.Validation) {
+    if params.Id <= 0 {
+			v.SetError("user id", "不能为空")
+		} else if params.QueryId <= 0 {
+			v.SetError("user queryId", "不能为空")
+		} else if params.Level <= 0 {
+			v.SetError("user level", "不能为空")
+		} 
 }
 
 
