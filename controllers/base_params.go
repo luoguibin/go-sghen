@@ -58,11 +58,12 @@ func (params *getQueryUserParams) Valid(v *validation.Validation) {
 
 // user query输入结构体
 type getQueryPeotryParams struct {
-	Id			int64		`form:"id" valid:"Required"`
+	Id			int64		`form:"id"`
+	SId			int			`form:"setId"`
+	Page		int			`form:"page"`
+	Limit		int			`form:"limit"`
+	Content		string		`form:"content"`
 }
 
 func (params *getQueryPeotryParams) Valid(v *validation.Validation) {
-    if params.Id <= 0 {
-		v.SetError("user id", "不能为空")
-	} 
 }

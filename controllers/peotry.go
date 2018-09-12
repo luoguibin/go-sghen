@@ -14,9 +14,17 @@ func (c *PeotryController) QueryPeotry() {
 	params := &getQueryPeotryParams{}
 
 	if c.CheckFormParams(data, params) {
-		peotry, err := models.QueryPeotry(params.Id)
+		list, err, count, totalPage, currentPage, pageIsEnd := models.QueryPeotry(params.Id, params.SId, params.Page, params.Limit, params.Content)
 		if err == nil {
-			data[models.RESP_DATA] = peotry
+			if params.Id > 0 {
+				data[models.RESP_DATA] = list[0]
+			} else {
+				data[models.RESP_DATA] = list
+				data["totalCount"] = count
+				data["totalPage"] = totalPage
+				data["currentPage"] = currentPage
+				data["pageIsEnd"] = pageIsEnd
+			}
 		} else {
 			data[models.RESP_CODE] = models.RESP_ERR
 			data[models.RESP_MSG] = err.Error()
@@ -24,6 +32,7 @@ func (c *PeotryController) QueryPeotry() {
 	}
 	c.respToJSON(data)
 }
+
 
 // // URLMapping ...
 // func (c *PeotryController) URLMapping() {

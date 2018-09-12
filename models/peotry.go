@@ -15,7 +15,7 @@ type Peotry struct {
 	UUser      	*User     		`gorm:"foreignkey:u_id;" json:"user"`
 
 	SID			int				`gorm:"column:s_id" json:"-"`
-	SSet     	*PeotrySet  		`gorm:"foreignkey:s_id" json:"set"`
+	SSet     	*PeotrySet  	`gorm:"foreignkey:s_id" json:"set"`
 
 	PTitle   	string    		`gorm:"column:p_title;type:varchar(20)" json:"title"`
 	PTime    	time.Time 		`gorm:"column:p_time" json:"time"`
@@ -72,20 +72,54 @@ func SavePeotry(userId int64, setId int, title string, pTime string, content str
 	}
 }
 
-func QueryPeotry(id int64) (*Peotry, error) {
-	peotry := Peotry{
-		ID:	id,
-	}
-	err := dbOrmDefault.Model(&Peotry{}).Preload("UUser").Preload("SSet").Preload("PImage").Find(&peotry).Error
-	if err == nil {
-		peotry.UUser.UToken = ""
-		peotry.SSet.UUser = nil
-		return &peotry, nil
-	} else {
-		return nil, err
-	}
-}
+func QueryPeotry(id int64, setId int, page int, limit int, content string) ([]Peotry, error, int, int ,int, int) {
+	list := make([]Peotry, 0)
+	totalPage := 0
+	count := 0
+	currentPage := page
+	pageIsEnd := 0
 
+	if limit == 0 {
+		limit = 10
+	}
+	fmt.Println(id, setId, limit, page, content)
+
+	db := dbOrmDefault.Model(&Peotry{})
+
+	if id > 0 {
+		peotry := Peotry{
+			ID:	id,
+		}
+		err := db.Preload("UUser").Preload("SSet").Preload("PImage").Find(&peotry).Error
+		if err == nil {
+			peotry.UUser.UToken = ""
+			peotry.SSet.UUser = nil
+			list = append(list, peotry)
+		} else {
+			return nil, err, 0, 0, 0, 0
+		}
+	} else {
+		if setId > 0 {
+			query := &Peotry{
+				SID:	setId,
+			}
+			db = db.Where(query)
+		}
+		if len(content) > 1 {
+			db = db.Where("p_content LIKE ?", "%" + content + "%")
+		}
+		db.Count(&count)
+		db = db.Preload("UUser").Preload("SSet").Preload("PImage")
+		err := db.Limit(limit).Offset(helper.PageOffset(limit, page)).Find(&list).Error
+	
+		if err == nil {
+			totalPage, pageIsEnd = helper.PageTotal(limit, page, int64(count))
+		} else {
+			return nil, err, 0, 0, 0, 0
+		}
+	}
+	return list, nil, count, totalPage, currentPage, pageIsEnd
+}
 
 // type Peotry2 struct {
 // 	Id       int64     `json:"id"`
