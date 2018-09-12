@@ -5,12 +5,12 @@ import (
 )
 
 type PeotryImage struct {
-	ID    		int64  	`orm:"column(id);pk" json:"id"`
+	ID    		int64  	`orm:"column(id);pk" json:"id,omitempty"`
 	IImages   	string  `orm:"column(i_images);" json:"images"`
 	ICount 		int 	`orm:"column(i_count);" json:"count"`
 }
 
-func savePeotryImage(id int64, images string, count int) {
+func SavePeotryImage(id int64, images string, count int) {
 	peotryImage := &PeotryImage {
 		ID:			id,
 		IImages:	images,

@@ -1,18 +1,29 @@
 package controllers
 
-// import (
-// 	"SghenApi/models"
-// 	"encoding/json"
-// 	"strconv"
-// 	"strings"
-// 	"time"
-// 	"fmt"
-// )
+import (
+	"SghenApi/models"
+)
 
-// // PeotryController operations for Peotry
-// type PeotryController struct {
-// 	BaseController
-// }
+// PeotryController operations for Peotry
+type PeotryController struct {
+	BaseController
+}
+
+func (c *PeotryController) QueryPeotry() {
+	data := c.GetResponseData();
+	params := &getQueryPeotryParams{}
+
+	if c.CheckFormParams(data, params) {
+		peotry, err := models.QueryPeotry(params.Id)
+		if err == nil {
+			data[models.RESP_DATA] = peotry
+		} else {
+			data[models.RESP_CODE] = models.RESP_ERR
+			data[models.RESP_MSG] = err.Error()
+		}
+	}
+	c.respToJSON(data)
+}
 
 // // URLMapping ...
 // func (c *PeotryController) URLMapping() {

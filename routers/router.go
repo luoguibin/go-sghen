@@ -36,6 +36,9 @@ func init() {
 			beego.NSRouter("/delete", &controllers.UserController{}, "delete:DeleteUser"),
 			beego.NSRouter("/query", &controllers.UserController{}, "get:QueryUser"),
 		),
+		beego.NSNamespace("/peotry",
+			beego.NSRouter("/query", &controllers.PeotryController{}, "get:QueryPeotry"),
+		),
 	)
 
 	beego.AddNamespace(nsv1)

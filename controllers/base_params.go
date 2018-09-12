@@ -35,11 +35,11 @@ type getUpdateUserParams struct {
 
 func (params *getUpdateUserParams) Valid(v *validation.Validation) {
     if params.Id <= 0 {
-			v.SetError("user id", "不能为空")
-		}
+		v.SetError("user id", "不能为空")
+	}
 }
 
-// user delete输入结构体
+// user query输入结构体
 type getQueryUserParams struct {
 	Id			int64		`form:"uId" valid:"Required"`
 	QueryId int64 	`form:"queryId" valid:"Required"`
@@ -48,10 +48,21 @@ type getQueryUserParams struct {
 
 func (params *getQueryUserParams) Valid(v *validation.Validation) {
     if params.Id <= 0 {
-			v.SetError("user id", "不能为空")
-		} else if params.QueryId <= 0 {
-			v.SetError("user queryId", "不能为空")
-		} else if params.Level < 0 {
-			v.SetError("user level", "不能为空")
-		} 
+		v.SetError("user id", "不能为空")
+	} else if params.QueryId <= 0 {
+		v.SetError("user queryId", "不能为空")
+	} else if params.Level < 0 {
+		v.SetError("user level", "不能为空")
+	} 
+}
+
+// user query输入结构体
+type getQueryPeotryParams struct {
+	Id			int64		`form:"id" valid:"Required"`
+}
+
+func (params *getQueryPeotryParams) Valid(v *validation.Validation) {
+    if params.Id <= 0 {
+		v.SetError("user id", "不能为空")
+	} 
 }

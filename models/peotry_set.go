@@ -9,8 +9,8 @@ import (
 type PeotrySet struct {
 	ID    	int  	`gorm:"column:id;primary_key" json:"id"`
 
-	UUser 	User  	`gorm:"foreignkey:UID" json:"user"`
 	UID   	int64  	`gorm:"column:u_id" json:"-"`
+	UUser 	*User  	`gorm:"foreignkey:u_id" json:"user,omitempty"`
 
 	SName 	string 	`gorm:"column(s_name);size(100)" json:"name"`
 }

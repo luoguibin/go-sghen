@@ -12,19 +12,18 @@ type Peotry struct {
 	ID       	int64     		`gorm:"column:id;primary_key;" json:"id"`
 
 	UID			int64			`gorm:"column:u_id" json:"-"`
-	UUser      	User     		`gorm:"foreignkey:ID;" json:"user"`
+	UUser      	*User     		`gorm:"foreignkey:u_id;" json:"user"`
 
 	SID			int				`gorm:"column:s_id" json:"-"`
-	// SSet     	PeotrySet  		`gorm:"foreignkey:ID;" json:"set"`
+	SSet     	*PeotrySet  		`gorm:"foreignkey:s_id" json:"set"`
 
 	PTitle   	string    		`gorm:"column:p_title;type:varchar(20)" json:"title"`
 	PTime    	time.Time 		`gorm:"column:p_time" json:"time"`
 	PContent 	string    		`gorm:"column:p_content;type:mediumtext" json:"content"`
 	PEnd     	string    		`gorm:"column:p_end" json:"end"`
-	// PImage		PeotryImage		`gorm:"foreignkey:ID;" json:"image"`
-}
 
-// foreignkey:ID;association_foreignkey:id
+	PImage		*PeotryImage	`gorm:"foreignkey:id" json:"image,omitempty"`
+}
 
 func initSystemPeotry() {
 	peotriesJson, err := ioutil.ReadFile("data/sys-peotry.json")
@@ -43,12 +42,12 @@ func initSystemPeotry() {
 		pContent := value.Get("p_content").String()
 		pEnd := value.Get("p_end").String()
 		pImages := value.Get("p_images").String()
-		savePeotry(uId, int(sId), pTitle, pTime, pContent, pEnd, pImages)
+		SavePeotry(uId, int(sId), pTitle, pTime, pContent, pEnd, pImages)
 		return true
 	})
 }
 
-func savePeotry(userId int64, setId int, title string, pTime string, content string, end string, images string) {
+func SavePeotry(userId int64, setId int, title string, pTime string, content string, end string, images string) {
 	curTime := time.Now().UnixNano() / 1e3
 	peotry := Peotry{
 		ID:				curTime,
@@ -64,12 +63,11 @@ func savePeotry(userId int64, setId int, title string, pTime string, content str
 	if err != nil {
 		fmt.Println(err)
 	} else {
-		// imgs := strings.Split(images, ", ")
 		res := gjson.Parse(images)
 		imgs := res.Array()
 		l := len(imgs)
 		if l > 0 {
-			savePeotryImage(curTime, images, l)
+			SavePeotryImage(curTime, images, l)
 		}
 	}
 }
@@ -78,13 +76,10 @@ func QueryPeotry(id int64) (*Peotry, error) {
 	peotry := Peotry{
 		ID:	id,
 	}
-	err := dbOrmDefault.Model(&Peotry{}).Find(&peotry).Error
+	err := dbOrmDefault.Model(&Peotry{}).Preload("UUser").Preload("SSet").Preload("PImage").Find(&peotry).Error
 	if err == nil {
-		user, er := QueryUser(peotry.UID)
-		if er == nil {
-			peotry.UUser.ID = user.ID
-			peotry.UUser.UName = user.UName
-		}
+		peotry.UUser.UToken = ""
+		peotry.SSet.UUser = nil
 		return &peotry, nil
 	} else {
 		return nil, err

@@ -6,10 +6,10 @@ import (
 )
 
 type User struct {
-	ID         		int64     	`gorm:"primary_key" json:"id"`
+	ID         		int64     	`gorm:"primary_key" json:"id,omitempty"`
 	UPassword  		string    	`gorm:"column:u_password;type:varchar(20)" json:"-"`
-	UName      		string    	`gorm:"column:u_name;type:varchar(100)" json:"name"`
-	UToken     		string    	`gorm:"-" json:"token"`
+	UName      		string    	`gorm:"column:u_name;type:varchar(100)" json:"name,omitempty"`
+	UToken     		string    	`gorm:"-" json:"token,omitempty"`
 	UTimeCreate 	time.Time 	`gorm:"column:u_time_create" json:"timeCreate"`
 	ULevel	   		int 		`gorm:"column:u_level" json:"-"`
 }
