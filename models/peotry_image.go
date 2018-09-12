@@ -1,21 +1,27 @@
 package models
 
-// import (
-// 	"errors"
-// 	"fmt"
-// 	"reflect"
-// 	"strings"
-// 	"encoding/base64"
-// 	"io/ioutil"
-// 	"SghenApi/utils"
-// 	"github.com/astaxie/beego/orm"
-// )
+import (
+	"fmt"
+)
 
-// type Peotryimage struct {
-// 	Id    		int64  	`orm:"column(p_id);pk" json:"id"`
-// 	IImages   	string  `orm:"column(i_images);" json:"images"`
-// 	ICount 		int 	`orm:"column(i_count);" json:"count"`
-// }
+type PeotryImage struct {
+	ID    		int64  	`orm:"column(id);pk" json:"id"`
+	IImages   	string  `orm:"column(i_images);" json:"images"`
+	ICount 		int 	`orm:"column(i_count);" json:"count"`
+}
+
+func savePeotryImage(id int64, images string, count int) {
+	peotryImage := &PeotryImage {
+		ID:			id,
+		IImages:	images,
+		ICount:		count,
+	}
+
+	err := dbOrmDefault.Model(&PeotryImage{}).Save(peotryImage).Error
+	if err != nil {
+		fmt.Println(err)
+	}
+}
 
 // func (t *Peotryimage) TableName() string {
 // 	return "peotryimage"

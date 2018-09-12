@@ -18,10 +18,16 @@ func InitGorm() {
 
 	dbOrmDefault = db
 
-	db.AutoMigrate(&User{})
+	db.AutoMigrate(&User{}, &PeotrySet{}, &PeotryImage{}, &Peotry{})
 
 	count := 0
 	if db.Model(&User{}).Count(&count); count == 0 {
 		initSystemUser()
+	}
+	if db.Model(&PeotrySet{}).Count(&count); count == 0 {
+		initSystemPeotrySet()
+	}
+	if db.Model(&Peotry{}).Count(&count); count == 0 {
+		initSystemPeotry()
 	}
 }

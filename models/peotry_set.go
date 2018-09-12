@@ -1,20 +1,50 @@
 package models
 
-// import (
-// 	"errors"
-// 	"fmt"
-// 	"reflect"
-// 	"strings"
+import (
+	"fmt"
+	"io/ioutil"
+	"github.com/tidwall/gjson"
+)
 
-// 	"github.com/astaxie/beego/orm"
-// )
+type PeotrySet struct {
+	ID    	int  	`gorm:"column:id;primary_key" json:"id"`
 
-// type Peotryset struct {
-// 	Id    int64  `orm:"column(s_id);pk" json:"id"`
-// 	UId   *User  `orm:"column(u_id);rel(fk)" json:"user"`
-// 	// UId   int64  `orm:"column(u_id);" json:"userId"`
-// 	SName string `orm:"column(s_name);size(100)" json:"name"`
-// }
+	UUser 	User  	`gorm:"foreignkey:UID" json:"user"`
+	UID   	int64  	`gorm:"column:u_id" json:"-"`
+
+	SName 	string 	`gorm:"column(s_name);size(100)" json:"name"`
+}
+
+func initSystemPeotrySet() {
+	setsJson, err := ioutil.ReadFile("data/sys-peotry-set.json")
+	if err != nil {
+		fmt.Println("read sys-peotry-set.json err")
+		fmt.Println(err)
+		return
+	}
+
+	re := gjson.ParseBytes(setsJson)
+	re.ForEach(func (key, value gjson.Result) bool {
+		sId := value.Get("s_id").Int()
+		uId	:= value.Get("u_id").Int()
+		sName := value.Get("s_name").String()
+		savePeotrySet(int(sId), uId, sName)
+		return true
+	})
+}
+
+func savePeotrySet(id int, uId int64, name string) {
+	peotrySet := PeotrySet {
+		ID:		id,
+		UID:	uId,
+		SName:	name,
+	}
+
+	err := dbOrmDefault.Model(&PeotrySet{}).Save(peotrySet).Error
+	if err != nil {
+		fmt.Println(err)
+	}
+}
 
 // type Peotryset2 struct {
 // 	Id    int64  `json:"id"`
