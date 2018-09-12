@@ -47,6 +47,7 @@ func (c *UserController)LoginUser() {
 func (c *UserController)QueryUser() {
 	data := c.GetResponseData()
 	params := &getQueryUserParams{}
+
 	if c.CheckFormParams(data, params) {
 		if params.Level >= 5 {
 			user, err := models.QueryUser(params.QueryId)
@@ -69,6 +70,7 @@ func (c *UserController)UpdateUser() {
 	params := &getUpdateUserParams{}
 
 	if c.CheckPostParams(data, params) {
+		fmt.Println(params)
 		_, err := models.UpdateUser(params.Id, params.Pw, params.Name)
 		if err != nil {
 			data[models.RESP_CODE] = models.RESP_ERR
@@ -102,8 +104,7 @@ func createUserToken(user *models.User, data ResponseData) {
     claims["exp"] = time.Now().Add(time.Hour * time.Duration(1)).Unix()
 	claims["iat"] = time.Now().Unix()
 	claims["uid"] = strconv.FormatInt(user.ID, 10)
-	claims["ulevel"] = user.ULevel
-	fmt.Println(claims)
+	claims["ulevel"] = strconv.Itoa(user.ULevel)
 
     token.Claims = claims
 

@@ -51,7 +51,7 @@ func (params *getQueryUserParams) Valid(v *validation.Validation) {
 			v.SetError("user id", "不能为空")
 		} else if params.QueryId <= 0 {
 			v.SetError("user queryId", "不能为空")
-		} else if params.Level <= 0 {
+		} else if params.Level < 0 {
 			v.SetError("user level", "不能为空")
 		} 
 }

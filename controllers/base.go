@@ -70,10 +70,10 @@ func GatewayAccessUser(ctx *context.Context, setInPost bool) {
 	if setInPost {
 		uId, _ := strconv.ParseInt(claims["uid"].(string), 10, 64)
 		ctx.Input.SetData("uId", uId)
-		ctx.Input.SetData("level", claims["uid"].(int))
+		ctx.Input.SetData("level", claims["ulevel"])
 	} else {
 		ctx.Input.Context.Request.Form.Add("uId", claims["uid"].(string))
-		ctx.Input.Context.Request.Form.Add("level", claims["uid"].(string))
+		ctx.Input.Context.Request.Form.Add("level", claims["ulevel"].(string))
 	}
 	
 	return
@@ -86,8 +86,6 @@ func (c *BaseController) CheckFormParams(data ResponseData, params interface{}) 
 		data[models.RESP_CODE] = models.RESP_ERR
 		return false
 	}
-	fmt.Println("CheckFormParams")
-	fmt.Println(params)
 
 	//验证参数
 	valid := validation.Validation{}
