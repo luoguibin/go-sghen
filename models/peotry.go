@@ -47,7 +47,7 @@ func initSystemPeotry() {
 	})
 }
 
-func SavePeotry(userId int64, setId int, title string, pTime string, content string, end string, images string) {
+func SavePeotry(userId int64, setId int, title string, pTime string, content string, end string, images string) (int64, error){
 	curTime := time.Now().UnixNano() / 1e3
 	peotry := Peotry{
 		ID:				curTime,
@@ -62,6 +62,7 @@ func SavePeotry(userId int64, setId int, title string, pTime string, content str
 	err := dbOrmDefault.Model(&Peotry{}).Save(peotry).Error
 	if err != nil {
 		fmt.Println(err)
+		return 0, err
 	} else {
 		res := gjson.Parse(images)
 		imgs := res.Array()
@@ -70,6 +71,7 @@ func SavePeotry(userId int64, setId int, title string, pTime string, content str
 			SavePeotryImage(curTime, images, l)
 		}
 	}
+	return curTime, nil
 }
 
 func QueryPeotry(id int64, setId int, page int, limit int, content string) ([]Peotry, error, int, int ,int, int) {

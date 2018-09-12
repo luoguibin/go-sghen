@@ -46,6 +46,18 @@ func savePeotrySet(id int, uId int64, name string) {
 	}
 }
 
+func QueryPeotrySet(id int) (*PeotrySet, error){
+	set := &PeotrySet{
+		ID: 	id,
+	}
+
+	err := dbOrmDefault.Model(&PeotrySet{}).Find(set).Error
+	if err != nil {
+		return nil, err
+	}
+	return set, nil
+}
+
 // type Peotryset2 struct {
 // 	Id    int64  `json:"id"`
 // 	SName string `json:"name"`

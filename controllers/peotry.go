@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"SghenApi/models"
+	"SghenApi/helper"
 )
 
 // PeotryController operations for Peotry
@@ -33,6 +34,35 @@ func (c *PeotryController) QueryPeotry() {
 	c.respToJSON(data)
 }
 
+
+func (c *PeotryController) CreatePeotry() {
+	data := c.GetResponseData()
+	params := &getCreatePeotryParams{}
+
+	if c.CheckFormParams(data, params) {
+		set, err := models.QueryPeotrySet(params.SId)
+		if err == nil {
+			if set.UID == params.UId {
+				timeStr := helper.GetNowDateTime()
+				pId, err := models.SavePeotry(params.UId, params.SId, params.Title, timeStr, params.Content, params.End, "[]")
+				if err == nil {
+					data[models.RESP_DATA] = pId
+				} else {
+					data[models.RESP_CODE] = models.RESP_ERR
+					data[models.RESP_MSG] = err.Error()
+				}
+			} else {
+				data[models.RESP_CODE] = models.RESP_ERR
+				data[models.RESP_MSG] = "禁止在他人诗集中创建个人诗歌"
+			}
+		} else {
+			data[models.RESP_CODE] = models.RESP_ERR
+			data[models.RESP_MSG] = err.Error()
+		}
+	}
+
+	c.respToJSON(data)
+}
 
 // // URLMapping ...
 // func (c *PeotryController) URLMapping() {

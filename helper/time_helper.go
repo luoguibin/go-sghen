@@ -9,3 +9,8 @@ func StrToTimeStamp(timeStr string) time.Time {
 	t, _ := time.ParseInLocation("2006-01-02 15:04:05", timeStr, loc)
 	return t
 }
+
+//get now datatime(Y-m-d H:i:s)
+func GetNowDateTime() string {
+	return time.Now().Format("2006-01-02 15:04:05")
+}

@@ -42,7 +42,7 @@ func (params *getUpdateUserParams) Valid(v *validation.Validation) {
 // user query输入结构体
 type getQueryUserParams struct {
 	Id			int64		`form:"uId" valid:"Required"`
-	QueryId int64 	`form:"queryId" valid:"Required"`
+	QueryId 	int64 		`form:"queryId" valid:"Required"`
 	Level		int			`form:"level" valid:"Required"`
 }
 
@@ -66,4 +66,22 @@ type getQueryPeotryParams struct {
 }
 
 func (params *getQueryPeotryParams) Valid(v *validation.Validation) {
+}
+
+type getCreatePeotryParams struct {
+	UId 		int64		`form:"uId" valid:"Required"`
+	SId			int 		`form:"sId" valid:"Required"`
+	Title		string		`form:"title"`
+	Content		string		`form:"content" valid:"Required"`
+	End			string		`form:"end"`
+}
+
+func (params *getCreatePeotryParams) Valid(v *validation.Validation) {
+    if params.UId <= 0 {
+		v.SetError("user id", "不能为空")
+	} else if params.SId < 0 {
+		v.SetError("set id", "不能为空")
+	} else if len(strings.TrimSpace(params.Content)) < 5 {
+		v.SetError("peotry content", "不能少于5个字符")
+	} 
 }
