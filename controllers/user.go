@@ -13,6 +13,7 @@ type UserController struct {
 	BaseController
 }
 
+// 创建user
 func (c *UserController)CreateUser() {
 	data := c.GetResponseData()
 	params := &getCreateUserParams{}
@@ -29,6 +30,7 @@ func (c *UserController)CreateUser() {
 	c.respToJSON(data)
 }
 
+// user登录
 func (c *UserController)LoginUser() {
 	data := c.GetResponseData()
 	params := &getCreateUserParams{}
@@ -44,6 +46,7 @@ func (c *UserController)LoginUser() {
 	c.respToJSON(data)
 }
 
+// 查询user，限制level等级为５以下的user
 func (c *UserController)QueryUser() {
 	data := c.GetResponseData()
 	params := &getQueryUserParams{}
@@ -65,6 +68,7 @@ func (c *UserController)QueryUser() {
 	c.respToJSON(data)
 }
 
+// 更新user
 func (c *UserController)UpdateUser() {
 	data := c.GetResponseData()
 	params := &getUpdateUserParams{}
@@ -81,6 +85,7 @@ func (c *UserController)UpdateUser() {
 	c.respToJSON(data)
 }
 
+// 删除user
 func (c *UserController)DeleteUser() {
 	data := c.GetResponseData()
 	params := &getUpdateUserParams{}
@@ -97,7 +102,7 @@ func (c *UserController)DeleteUser() {
 	c.respToJSON(data)
 }
 
-
+// 创建用户token，基于json web token
 func createUserToken(user *models.User, data ResponseData) {
 	token := jwt.New(jwt.SigningMethodHS256)
     claims := make(jwt.MapClaims)
@@ -118,6 +123,7 @@ func createUserToken(user *models.User, data ResponseData) {
 	data[models.RESP_TOKEN] = tokenString
 }
 
+// 检测解析token
 func CheckUserToken(tokenString string) (map[string]interface{}) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		// Don't forget to validate the alg is what you expect:
