@@ -76,21 +76,22 @@ func QueryUser() {
 func UpdateUser(id int64, password string, name string) (*User, error) {
 	user := &User{
 		ID:				id,
-		UPassword:		password,
-		UName:			name,
 	}
 
-	// 采用Save会全部默认更新，未赋值的将采用默认值
-	err := dbOrmDefault.Model(&User{}).Save(user).Error
-	if err != nil {
-		return nil, err
-	} else {
-		if (user.UPassword != password) {
-			return nil, errors.New("用户账号或密码错误") 
+	err := dbOrmDefault.Model(&User{}).Find(user).Error
+	if err == nil {
+		user.UPassword = password
+		user.UName = name
+
+		err = dbOrmDefault.Model(&User{}).Save(user).Error
+		if err != nil {
+			return nil, err
+		} else {
+			return user, nil
 		}
+	} else {
+		return nil, err
 	}
-
-	return user, nil
 }
 
 func DeleteUser(id int64) error{
