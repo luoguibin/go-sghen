@@ -18,10 +18,10 @@ func init() {
 	beego.Router("/", &controllers.BaseController{}, "GET:BaseGetTest")
 
 	beego.InsertFilter("/v1/user/update", beego.BeforeRouter, func(ctx *context.Context) {
-		controllers.GatewayAccessUser(ctx)
+		controllers.GatewayAccessUser(ctx, true)
 	})
 	beego.InsertFilter("/v1/user/delete", beego.BeforeRouter, func(ctx *context.Context) {
-		controllers.GatewayAccessUser(ctx)
+		controllers.GatewayAccessUser(ctx, false)
 	})
 
 	//详见　https://beego.me/docs/mvc/controller/router.md

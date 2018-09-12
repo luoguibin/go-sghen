@@ -45,7 +45,7 @@ func (c *BaseController) BaseGetTest() {
 	c.respToJSON(data)
 }
 
-func GatewayAccessUser(ctx *context.Context) {
+func GatewayAccessUser(ctx *context.Context, setInPost bool) {
 	datas := make(map[string]interface{})
 	// userId := ctx.Input.Query("userId")
 	token := ctx.Input.Query("token")
@@ -67,9 +67,13 @@ func GatewayAccessUser(ctx *context.Context) {
 		return
 	}
 	
-	uId, _ := strconv.ParseInt(claims["uid"].(string), 10, 64)
-	ctx.Input.SetData("uId", uId)
-
+	if setInPost {
+		uId, _ := strconv.ParseInt(claims["uid"].(string), 10, 64)
+		ctx.Input.SetData("uId", uId)
+	} else {
+		ctx.Input.Context.Request.Form.Add("uId", claims["uid"].(string))
+	}
+	
 	return
 }
 
