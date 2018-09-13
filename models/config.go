@@ -12,7 +12,7 @@ type Config struct {
 
 	JwtSecretKey string
 
-	ImageSavePath string
+	PathTypeMap	map[string]string
 
 
 	dBHost     	string
@@ -48,6 +48,7 @@ var (
 func init() {
 	initConfParams()
 	initCodeMsgMap()
+	initPathTypeMap()
 	initLog()
 }
 
@@ -65,7 +66,6 @@ func initConfParams() {
 	if appConf != nil {
 		MConfig.SGHENENV = SGHENENV
 		MConfig.JwtSecretKey = appConf.String(SGHENENV + "::jwtSecretKey")
-		MConfig.ImageSavePath = appConf.String(SGHENENV + "::imageSavePath")
 
 		MConfig.dBHost = appConf.String(SGHENENV + "::dbHost")
 		MConfig.dBName = appConf.String(SGHENENV + "::dbName")
@@ -81,6 +81,12 @@ func initCodeMsgMap() {
 	MConfig.CodeMsgMap = make(map[int]string)
 	MConfig.CodeMsgMap[RESP_OK] = "请求成功"
 	MConfig.CodeMsgMap[RESP_ERR] = "失败,参数错误"
+}
+
+func initPathTypeMap() {
+	MConfig.PathTypeMap = make(map[string]string, 0)
+	MConfig.PathTypeMap["peotry"] = "./file/peotry/img/"
+	MConfig.PathTypeMap["normal"] = "./file/normal/"
 }
 
 func initLog() {
