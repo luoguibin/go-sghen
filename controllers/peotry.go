@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	"SghenApi/models"
 	"SghenApi/helper"
 )
@@ -84,7 +83,7 @@ func (c *PeotryController) UpdatePeotry() {
 							data[models.RESP_CODE] = models.RESP_ERR
 							data[models.RESP_MSG] = "禁止在他人诗集中更新个人诗歌"
 							c.respToJSON(data)
-						return
+							return
 						}
 					} else {
 						data[models.RESP_CODE] = models.RESP_ERR
@@ -96,7 +95,10 @@ func (c *PeotryController) UpdatePeotry() {
 				qPeotry.PTitle  = params.Title
 				qPeotry.PContent = params.Content
 				qPeotry.PEnd = params.End
-				fmt.Println(qPeotry)
+				// 更新时需要将这些附带的结构体置空
+				qPeotry.UUser = nil
+				qPeotry.SSet = nil
+				qPeotry.PImage = nil
 
 				err := models.UpdatePeotry(qPeotry)
 				if err == nil {

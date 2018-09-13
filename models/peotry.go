@@ -75,7 +75,7 @@ func SavePeotry(userId int64, setId int, title string, pTime string, content str
 }
 
 func UpdatePeotry(peotry Peotry) error{
-	err := dbOrmDefault.Model(&Peotry{}).Save(&peotry).Error
+	err := dbOrmDefault.Model(&Peotry{}).Update(&peotry).Error
 	if err != nil {
 		return err
 	} else {
@@ -104,7 +104,7 @@ func QueryPeotry(id int64, setId int, page int, limit int, content string) ([]Pe
 		err := db.Preload("UUser").Preload("SSet").Preload("PImage").Find(&peotry).Error
 		if err == nil {
 			peotry.UUser.UToken = ""
-			peotry.SSet.UUser = nil
+			// peotry.SSet.UUser = nil
 			list = append(list, peotry)
 		} else {
 			return nil, err, 0, 0, 0, 0
