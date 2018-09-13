@@ -7,6 +7,7 @@
 SghenApi*
 lastupdate.tmp
 swagger*
+/file
 
 # dependencies
 /node_modules

@@ -1,16 +1,12 @@
 package models
 
-import (
-	"fmt"
-)
-
 type PeotryImage struct {
 	ID    		int64  	`orm:"column(id);pk" json:"id,omitempty"`
 	IImages   	string  `orm:"column(i_images);" json:"images"`
 	ICount 		int 	`orm:"column(i_count);" json:"count"`
 }
 
-func SavePeotryImage(id int64, images string, count int) {
+func SavePeotryImage(id int64, images string, count int) error {
 	peotryImage := &PeotryImage {
 		ID:			id,
 		IImages:	images,
@@ -18,9 +14,7 @@ func SavePeotryImage(id int64, images string, count int) {
 	}
 
 	err := dbOrmDefault.Model(&PeotryImage{}).Save(peotryImage).Error
-	if err != nil {
-		fmt.Println(err)
-	}
+	return err
 }
 
 // func (t *Peotryimage) TableName() string {

@@ -13,6 +13,8 @@ type Config struct {
 	JwtSecretKey string
 
 	PathTypeMap	map[string]string
+	MaxUploadSize	int
+	MaxUploadCount  int
 
 
 	dBHost     	string
@@ -66,6 +68,8 @@ func initConfParams() {
 	if appConf != nil {
 		MConfig.SGHENENV = SGHENENV
 		MConfig.JwtSecretKey = appConf.String(SGHENENV + "::jwtSecretKey")
+		MConfig.MaxUploadSize, _ = appConf.Int(SGHENENV + "::maxUploadSize")
+		MConfig.MaxUploadCount, _ = appConf.Int(SGHENENV + "::maxUploadCount")
 
 		MConfig.dBHost = appConf.String(SGHENENV + "::dbHost")
 		MConfig.dBName = appConf.String(SGHENENV + "::dbName")

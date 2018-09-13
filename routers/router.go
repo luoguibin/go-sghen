@@ -44,6 +44,9 @@ func init() {
 	beego.InsertFilter("/v1/peotry-set/delete", beego.BeforeRouter, func(ctx *context.Context) {
 		controllers.GatewayAccessUser(ctx, false)
 	})
+	beego.InsertFilter("/v1/upload", beego.BeforeRouter, func(ctx *context.Context) {
+		controllers.GatewayAccessUser(ctx, true)
+	})
 
 	//详见　https://beego.me/docs/mvc/controller/router.md
 	nsv1 := beego.NewNamespace("/v1",
@@ -65,6 +68,7 @@ func init() {
 			beego.NSRouter("/create", &controllers.PeotrySetController{}, "get:CreatePeotrySet"),
 			beego.NSRouter("/delete", &controllers.PeotrySetController{}, "delete:DeletePeotrySet"),
 		),
+		beego.NSRouter("/upload", &controllers.FileUploaderController{}, "post:FileUpload"),
 	)
 
 	beego.AddNamespace(nsv1)
