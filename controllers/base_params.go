@@ -109,6 +109,20 @@ func (params *getUpdatePeotryParams) Valid(v *validation.Validation) {
 	} 
 }
 
+// peotry delete输入结构体
+type getDeletePeotryParams struct {
+	UID		int64		`form:"uId" valid:"Required"`
+	PID		int64		`form:"pId" valid:"Required"`
+}
+
+func (params *getDeletePeotryParams) Valid(v *validation.Validation) {
+	if params.UID <= 0 {
+		v.SetError("user id", "不能为空")
+	} else if params.PID <= 0 {
+		v.SetError("peotry id", "不能为空")
+	}
+}
+
 // peotryset query输入结构体
 type getQueryPoetrySetParams struct {
 	UID		int64 	`form:"uId" valid:"Required"`

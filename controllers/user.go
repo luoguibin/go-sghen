@@ -91,7 +91,6 @@ func (c *UserController)DeleteUser() {
 	params := &getUpdateUserParams{}
 
 	if c.CheckFormParams(data, params) {
-		fmt.Println(params)
 		err := models.DeleteUser(params.Id)
 		if err != nil {
 			data[models.RESP_CODE] = models.RESP_ERR

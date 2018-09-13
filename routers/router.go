@@ -32,6 +32,9 @@ func init() {
 	beego.InsertFilter("/v1/peotry/update", beego.BeforeRouter, func(ctx *context.Context) {
 		controllers.GatewayAccessUser(ctx, false)
 	})
+	beego.InsertFilter("/v1/peotry/delete", beego.BeforeRouter, func(ctx *context.Context) {
+		controllers.GatewayAccessUser(ctx, false)
+	})
 	beego.InsertFilter("/v1/peotry-set/query", beego.BeforeRouter, func(ctx *context.Context) {
 		controllers.GatewayAccessUser(ctx, false)
 	})
@@ -49,6 +52,7 @@ func init() {
 			beego.NSRouter("/query", &controllers.PeotryController{}, "get:QueryPeotry"),
 			beego.NSRouter("/create", &controllers.PeotryController{}, "get:CreatePeotry"),
 			beego.NSRouter("/update", &controllers.PeotryController{}, "get:UpdatePeotry"),
+			beego.NSRouter("/delete", &controllers.PeotryController{}, "delete:DeletePeotry"),
 		),
 		beego.NSNamespace("/peotry-set",
 			beego.NSRouter("/query", &controllers.PeotrySetController{}, "get:QueryPeotrySet"),

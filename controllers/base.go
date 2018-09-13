@@ -92,7 +92,6 @@ func (c *BaseController) CheckFormParams(data ResponseData, params interface{}) 
 	if ok, _ := valid.Valid(params); ok {
 		return true
 	}
-
 	data[models.RESP_CODE] = models.RESP_ERR
 	data[models.RESP_MSG] = fmt.Sprint(valid.ErrorsMap)
 	return false
