@@ -40,7 +40,7 @@ func (c *PeotryController) CreatePeotry() {
 	params := &getCreatePeotryParams{}
 
 	if c.CheckFormParams(data, params) {
-		set, err := models.QueryPeotrySet(params.SId)
+		set, err := models.QueryPeotrySetByID(params.SId)
 		if err == nil {
 			if set.UID == params.UId {
 				timeStr := helper.GetNowDateTime()
@@ -75,7 +75,7 @@ func (c *PeotryController) UpdatePeotry() {
 			if qPeotry.UID == params.UId {
 				// 判断选集是否有更新
 				if qPeotry.SID != params.SId {
-					set, err := models.QueryPeotrySet(params.SId)
+					set, err := models.QueryPeotrySetByID(params.SId)
 					if err == nil {
 						if set.UID == params.UId {
 							qPeotry.SID = params.SId

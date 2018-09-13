@@ -46,7 +46,7 @@ func savePeotrySet(id int, uId int64, name string) {
 	}
 }
 
-func QueryPeotrySet(id int) (*PeotrySet, error){
+func QueryPeotrySetByID(id int) (*PeotrySet, error){
 	set := &PeotrySet{
 		ID: 	id,
 	}
@@ -56,6 +56,19 @@ func QueryPeotrySet(id int) (*PeotrySet, error){
 		return nil, err
 	}
 	return set, nil
+}
+
+func QueryPeotrySetByUID(uId int64) ([]PeotrySet, error) {
+	list := make([]PeotrySet, 0)
+	set := &PeotrySet{
+		UID:	uId,
+	}
+	err := dbOrmDefault.Model(&PeotrySet{}).Where(set).Find(&list).Error
+	if err == nil {
+		return list, err
+	} else {
+		return nil, err
+	}
 }
 
 // type Peotryset2 struct {

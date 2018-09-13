@@ -29,8 +29,8 @@ func (params *getCreateUserParams) Valid(v *validation.Validation) {
 // user update和delete共用输入结构体
 type getUpdateUserParams struct {
 	Id			int64		`form:"uId" valid:"Required"`
-	Pw     	string 	`form:"pw"`
-	Name		string	`form:"name"`
+	Pw     		string 		`form:"pw"`
+	Name		string		`form:"name"`
 }
 
 func (params *getUpdateUserParams) Valid(v *validation.Validation) {
@@ -107,4 +107,15 @@ func (params *getUpdatePeotryParams) Valid(v *validation.Validation) {
 	} else if len(strings.TrimSpace(params.Content)) < 5 {
 		v.SetError("peotry content", "不能少于5个字符")
 	} 
+}
+
+// peotryset query输入结构体
+type getQueryPoetrySetParams struct {
+	UID		int64 	`form:"uId" valid:"Required"`
+}
+
+func (params *getQueryPoetrySetParams) Valid(v *validation.Validation) {
+	if params.UID == 0 {
+		v.SetError("set id", "不能为空")
+	}
 }
