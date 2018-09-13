@@ -133,3 +133,31 @@ func (params *getQueryPoetrySetParams) Valid(v *validation.Validation) {
 		v.SetError("set id", "不能为空")
 	}
 }
+
+// peotryset create
+type getCreatePoetrySetParams struct {
+	UID		int64 	`form:"uId" valid:"Required"`
+	Name	string	`form:"name" valid:"Required"`
+}
+
+func (params *getCreatePoetrySetParams) Valid(v *validation.Validation) {
+	if params.UID <= 0 {
+		v.SetError("user id", "不能为空")
+	} else if len(strings.TrimSpace(params.Name)) == 0 {
+		v.SetError("set name", "不能为空")
+	}
+}
+
+// peotryset delete
+type getDeletePoetrySetParams struct {
+	UID		int64 	`form:"uId" valid:"Required"`
+	SID		int		`form:"sId" valid:"Required"`
+}
+
+func (params *getDeletePoetrySetParams) Valid(v *validation.Validation) {
+	if params.UID <= 0 {
+		v.SetError("user id", "不能为空")
+	} else if params.SID <= 0 {
+		v.SetError("set id", "不能为空")
+	}
+}
