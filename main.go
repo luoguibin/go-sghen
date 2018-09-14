@@ -8,6 +8,8 @@ import (
 )
 
 func main() {
+	beego.SetStaticPath("file","./file")
+
 	models.InitGorm()
 	db := models.GetDb()
 	defer db.Close()
