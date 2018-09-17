@@ -2,9 +2,10 @@ package controllers
 
 import (
 	"SghenApi/models"
+	"fmt"
 	"time"
 	"strconv"
-	"fmt"
+	"errors"
 	"github.com/dgrijalva/jwt-go"
 )
 
@@ -23,7 +24,7 @@ func (c *UserController)CreateUser() {
 			createUserToken(user, data)
 		} else {
 			data[models.STR_CODE] = models.CODE_ERR
-			data[models.STR_MSG] = err.Error()
+			data[models.STR_MSG] = "用户注册失败"
 		}
 	}
 	
@@ -35,12 +36,17 @@ func (c *UserController)LoginUser() {
 	data := c.GetResponseData()
 	params := &getCreateUserParams{}
 	if (c.CheckPostParams(data, params)) {
-		user, err := models.LoginUser(params.ID, params.Pw)
+		user, err := models.QueryUser(params.ID)
 		if err == nil {
-			createUserToken(user, data)
+			if (user.UPassword == params.Pw) {
+				createUserToken(user, data)
+			} else {
+				data[models.STR_CODE] = models.CODE_ERR
+				data[models.STR_MSG] = "用户账号或密码错误"
+			}
 		} else {
 			data[models.STR_CODE] = models.CODE_ERR
-			data[models.STR_MSG] = err.Error()
+			data[models.STR_MSG] = "用户账号或密码错误"
 		}
 	}
 	c.respToJSON(data)
@@ -58,7 +64,7 @@ func (c *UserController)QueryUser() {
 				data[models.STR_DATA] = user
 			} else {
 				data[models.STR_CODE] = models.CODE_ERR
-				data[models.STR_MSG] = err.Error()
+				data[models.STR_MSG] = "未查询到对应用户"
 			}		
 		} else {
 			data[models.STR_CODE] = models.CODE_ERR
@@ -78,7 +84,7 @@ func (c *UserController)UpdateUser() {
 		_, err := models.UpdateUser(params.ID, params.Pw, params.Name)
 		if err != nil {
 			data[models.STR_CODE] = models.CODE_ERR
-			data[models.STR_MSG] = err.Error()
+			data[models.STR_MSG] = "更新用户信息失败"
 		}
 	}
 	
@@ -94,7 +100,7 @@ func (c *UserController)DeleteUser() {
 		err := models.DeleteUser(params.ID)
 		if err != nil {
 			data[models.STR_CODE] = models.CODE_ERR
-			data[models.STR_MSG] = err.Error()
+			data[models.STR_MSG] = "删除用户失败"
 		}
 	}
 	
@@ -105,10 +111,10 @@ func (c *UserController)DeleteUser() {
 func createUserToken(user *models.User, data ResponseData) {
 	token := jwt.New(jwt.SigningMethodHS256)
     claims := make(jwt.MapClaims)
-    claims["exp"] = time.Now().Add(time.Hour * time.Duration(1)).Unix()
+    claims["exp"] = time.Now().Add(time.Duration(3 / 60)).Unix()
 	claims["iat"] = time.Now().Unix()
-	claims["uid"] = strconv.FormatInt(user.ID, 10)
-	claims["ulevel"] = strconv.Itoa(user.ULevel)
+	claims["uId"] = strconv.FormatInt(user.ID, 10)
+	claims["uLevel"] = strconv.Itoa(user.ULevel)
 
     token.Claims = claims
 
@@ -123,7 +129,7 @@ func createUserToken(user *models.User, data ResponseData) {
 }
 
 // 检测解析token
-func CheckUserToken(tokenString string) (map[string]interface{}) {
+func CheckUserToken(tokenString string) (map[string]interface{}, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		// Don't forget to validate the alg is what you expect:
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
@@ -134,12 +140,12 @@ func CheckUserToken(tokenString string) (map[string]interface{}) {
 	})
 
 	if (err != nil) {
-		return nil
+		return nil, err
 	}
 	
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		return claims
+		return claims, nil
 	} else {
-		return nil
+		return nil, errors.New("token get mapcliams err")
 	}
 }

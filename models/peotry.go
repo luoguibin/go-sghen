@@ -42,12 +42,12 @@ func initSystemPeotry() {
 		pContent := value.Get("p_content").String()
 		pEnd := value.Get("p_end").String()
 		pImages := value.Get("p_images").String()
-		SavePeotry(uId, int(sId), pTitle, pTime, pContent, pEnd, pImages)
+		CreatePeotry(uId, int(sId), pTitle, pTime, pContent, pEnd, pImages)
 		return true
 	})
 }
 
-func SavePeotry(userId int64, setId int, title string, pTime string, content string, end string, images string) (int64, error){
+func CreatePeotry(userId int64, setId int, title string, pTime string, content string, end string, images string) (int64, error){
 	curTime := time.Now().UnixNano() / 1e3
 	peotry := Peotry{
 		ID:				curTime,
@@ -83,53 +83,40 @@ func UpdatePeotry(peotry *Peotry) error{
 	}
 }
 
-func QueryPeotry(id int64, setId int, page int, limit int, content string) ([]Peotry, error, int, int ,int, int) {
+func QueryPeotry(setId int, page int, limit int, content string) ([]Peotry, error, int, int ,int, int) {
 	list := make([]Peotry, 0)
 	totalPage := 0
 	count := 0
-	currentPage := page
+	curPage := page
 	pageIsEnd := 0
 
 	if limit == 0 {
 		limit = 10
 	}
-	fmt.Println(id, setId, limit, page, content)
 
 	db := dbOrmDefault.Model(&Peotry{})
-
-	if id > 0 {
-		peotry := Peotry{
-			ID:	id,
+	if setId > 0 {
+		query := &Peotry{
+			SID:	setId,
 		}
-		err := db.Preload("UUser").Preload("SSet").Preload("PImage").Find(&peotry).Error
-		if err == nil {
-			peotry.UUser.UToken = ""
-			// peotry.SSet.UUser = nil
-			list = append(list, peotry)
-		} else {
-			return nil, err, 0, 0, 0, 0
-		}
-	} else {
-		if setId > 0 {
-			query := &Peotry{
-				SID:	setId,
-			}
-			db = db.Where(query)
-		}
-		if len(content) > 1 {
-			db = db.Where("p_content LIKE ?", "%" + content + "%")
-		}
-		db.Count(&count)
-		db = db.Preload("UUser").Preload("SSet").Preload("PImage")
-		err := db.Limit(limit).Offset(helper.PageOffset(limit, page)).Find(&list).Error
-	
-		if err == nil {
-			totalPage, pageIsEnd = helper.PageTotal(limit, page, int64(count))
-		} else {
-			return nil, err, 0, 0, 0, 0
-		}
+		db = db.Where(query)
 	}
-	return list, nil, count, totalPage, currentPage, pageIsEnd
+
+	if len(content) > 1 {
+		db = db.Where("p_content LIKE ?", "%" + content + "%")
+	}
+
+	db.Count(&count)
+	db = db.Preload("UUser").Preload("SSet").Preload("PImage")
+	err := db.Limit(limit).Offset(helper.PageOffset(limit, page)).Find(&list).Error
+
+	if err == nil {
+		totalPage, pageIsEnd = helper.PageTotal(limit, page, int64(count))
+	} else {
+		return nil, err, 0, 0, 0, 0
+	}
+	
+	return list, nil, count, totalPage, curPage, pageIsEnd
 }
 
 func QueryPeotryByID(id int64) (*Peotry, error) {	

@@ -3,6 +3,7 @@ package controllers
 import (
 	"fmt"
 	"strconv"
+	"strings"
 	"encoding/json"
 	"SghenApi/models"
 
@@ -52,28 +53,33 @@ func GatewayAccessUser(ctx *context.Context, setInPost bool) {
 
 	if len(token) <= 0 {
 		datas[models.STR_CODE] = models.CODE_ERR
-		datas[models.STR_MSG] = "token is empty"
+		datas[models.STR_MSG] = "token不能为空"
 		ctx.ResponseWriter.Header().Set("Access-Control-Allow-Origin", "*")
 		ctx.Output.JSON(datas, false, false)
 		return
 	}
 
-	claims := CheckUserToken(token)
-	if  claims == nil{
-		datas[models.STR_CODE] = models.CODE_ERR
-		datas[models.STR_MSG] = "token is invalid"
+	claims, err := CheckUserToken(token)
+	if  err != nil {
+		datas[models.STR_CODE] = models.CODE_ERR_TOKEN
+		errStr := err.Error()
+		if strings.Contains(errStr, "expired") {
+			datas[models.STR_MSG] = "token失效，请重新登录"
+		} else {
+			datas[models.STR_MSG] = "token参数错误"
+		}
 		ctx.ResponseWriter.Header().Set("Access-Control-Allow-Origin", "*")
 		ctx.Output.JSON(datas, false, false)
 		return
 	}
 	
 	if setInPost {
-		uId, _ := strconv.ParseInt(claims["uid"].(string), 10, 64)
+		uId, _ := strconv.ParseInt(claims["uId"].(string), 10, 64)
 		ctx.Input.SetData("uId", uId)
-		ctx.Input.SetData("level", claims["ulevel"])
+		ctx.Input.SetData("level", claims["uLevel"])
 	} else {
-		ctx.Input.Context.Request.Form.Add("uId", claims["uid"].(string))
-		ctx.Input.Context.Request.Form.Add("level", claims["ulevel"].(string))
+		ctx.Input.Context.Request.Form.Add("uId", claims["uId"].(string))
+		ctx.Input.Context.Request.Form.Add("level", claims["uLevel"].(string))
 	}
 	
 	return

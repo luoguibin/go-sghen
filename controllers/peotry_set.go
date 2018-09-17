@@ -19,7 +19,7 @@ func (c *PeotrySetController) QueryPeotrySet() {
 			data[models.STR_DATA] = list
 		} else {
 			data[models.STR_CODE] = models.CODE_ERR
-			data[models.STR_MSG] = err.Error()
+			data[models.STR_MSG] = "获取用户诗歌选集失败"
 		}
 	}
 
@@ -36,7 +36,7 @@ func (c *PeotrySetController) CreatePeotrySet() {
 			data[models.STR_DATA] = true
 		} else {
 			data[models.STR_CODE] = models.CODE_ERR
-			data[models.STR_MSG] = err.Error()
+			data[models.STR_MSG] = "创建选集失败"
 		}
 	}
 
@@ -56,7 +56,7 @@ func (c *PeotrySetController) DeletePeotrySet() {
 					data[models.STR_DATA] = true
 				} else {
 					data[models.STR_CODE] = models.CODE_ERR
-					data[models.STR_MSG] = err.Error()
+					data[models.STR_MSG] = "删除选集失败"
 				}
 			} else {
 				data[models.STR_CODE] = models.CODE_ERR
@@ -64,7 +64,7 @@ func (c *PeotrySetController) DeletePeotrySet() {
 			}
 		} else {
 			data[models.STR_CODE] = models.CODE_ERR
-			data[models.STR_MSG] = err.Error()
+			data[models.STR_MSG] = "未获取到选集id"
 		}
 	}
 

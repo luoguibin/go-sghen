@@ -29,7 +29,7 @@ func (c *FileUploaderController) FileUpload() {
 		// fmt.Println("file upload getFiles() err")
 		// fmt.Println(err)
 		data[models.STR_CODE] = models.CODE_ERR
-		data[models.STR_MSG] = err.Error()
+		data[models.STR_MSG] = "获取上传文件列表失败"
 		c.respToJSON(data)
 		return
 	}	
@@ -114,13 +114,13 @@ func (c *FileUploaderController) FileUpload() {
 				}
 			} else {
 				data[models.STR_CODE] = models.CODE_ERR
-				data[models.STR_MSG] = err.Error()
+				data[models.STR_MSG] = "文件创建或打开失败"
 				c.respToJSON(data)
 				return
 			}
 		} else {
 			data[models.STR_CODE] = models.CODE_ERR
-			data[models.STR_MSG] = err.Error()
+			data[models.STR_MSG] = "上传文件打开失败"
 			c.respToJSON(data)
 			return
 		}
@@ -146,9 +146,8 @@ func (c *FileUploaderController) FileUpload() {
 }
 
 func checkSavePeotryImage(pId int64, uId int64, imgList []string) error{
-	list, err, _, _, _, _ := models.QueryPeotry(pId, 0, 0, 0, "")
+	peotry, err := models.QueryPeotryByID(pId)
 	if err == nil {
-		peotry := list[0]
 		if peotry.UID == uId {
 			l := len(imgList)
 			imgsByte, err := json.Marshal(imgList)
@@ -157,10 +156,14 @@ func checkSavePeotryImage(pId int64, uId int64, imgList []string) error{
 			}
 
 			err = models.SavePeotryImage(pId, string(imgsByte[:]), l)
-			return err
+			if err != nil {
+				return errors.New("更新诗歌的图片失败")
+			} else {
+				return err
+			}
 		} else {
-			return errors.New("不能更新非本人的诗歌的图片")
+			return errors.New("禁止更新非本人创建的诗歌的图片")
 		}
 	}
-	return err
+	return errors.New("未获取到对应id的诗歌")
 }

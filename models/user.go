@@ -2,7 +2,6 @@ package models
 
 import (
 	"time"
-	"errors"
 )
 
 type User struct {
@@ -47,23 +46,6 @@ func CreateUser(id int64, password string, name string) (*User, error){
 	err := dbOrmDefault.Model(&User{}).Create(user).Error
 	if err != nil {
 		return nil, err
-	}
-
-	return user, nil
-}
-
-func LoginUser(id int64, password string) (*User, error) {
-	user := &User{
-		ID:				id,
-	}
-
-	err := dbOrmDefault.Model(&User{}).Find(user).Error
-	if err != nil {
-		return nil, err
-	} else {
-		if (user.UPassword != password) {
-			return nil, errors.New("用户账号或密码错误") 
-		}
 	}
 
 	return user, nil
