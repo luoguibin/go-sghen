@@ -1,9 +1,9 @@
 package models
 
 type PeotryImage struct {
-	ID    		int64  	`orm:"column(id);pk" json:"id,omitempty"`
-	IImages   	string  `orm:"column(i_images);type:mediumtext" json:"images"`
-	ICount 		int 	`orm:"column(i_count);" json:"count"`
+	ID    		int64  	`gorm:"column(id);pk" json:"id,omitempty"`
+	IImages   	string  `gorm:"column(i_images);type:mediumtext" json:"images"`
+	ICount 		int 	`gorm:"column(i_count);" json:"count"`
 }
 
 func SavePeotryImage(id int64, images string, count int) error {
