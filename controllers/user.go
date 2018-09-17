@@ -6,6 +6,7 @@ import (
 	"time"
 	"strconv"
 	"errors"
+	"strings"
 	"github.com/dgrijalva/jwt-go"
 )
 
@@ -24,7 +25,12 @@ func (c *UserController)CreateUser() {
 			createUserToken(user, data)
 		} else {
 			data[models.STR_CODE] = models.CODE_ERR
-			data[models.STR_MSG] = "用户注册失败"
+			errStr := err.Error()
+			if strings.Contains(errStr, "PRIMARY") {
+				data[models.STR_MSG] = "已存在该用户"
+			} else {
+				data[models.STR_MSG] = "用户注册失败"
+			}
 		}
 	}
 	
@@ -111,7 +117,7 @@ func (c *UserController)DeleteUser() {
 func createUserToken(user *models.User, data ResponseData) {
 	token := jwt.New(jwt.SigningMethodHS256)
     claims := make(jwt.MapClaims)
-    claims["exp"] = time.Now().Add(time.Duration(3 / 60)).Unix()
+    claims["exp"] = time.Now().Add(time.Hour * time.Duration(24)).Unix()
 	claims["iat"] = time.Now().Unix()
 	claims["uId"] = strconv.FormatInt(user.ID, 10)
 	claims["uLevel"] = strconv.Itoa(user.ULevel)
