@@ -127,11 +127,12 @@ func createUserToken(user *models.User, data ResponseData) {
     tokenString, err := token.SignedString([]byte(models.MConfig.JwtSecretKey))
     if err != nil {
 		data[models.STR_CODE] = models.CODE_ERR
-		data[models.STR_MSG] = "Error while signing the token"
+		data[models.STR_MSG] = "用户id签名失败"
 		return
 	}
 	
-	data[models.STR_TOKEN] = tokenString
+	user.UToken = tokenString
+	data[models.STR_DATA] = user
 }
 
 // 检测解析token

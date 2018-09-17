@@ -13,8 +13,8 @@ import (
 
 // user create和login共用输入结构体
 type getCreateUserParams struct {
-	ID     	int64 	`form:"uId" valid:"Required"`
-	Pw     	string 	`form:"pw" valid:"Required"`
+	ID     	int64 	`form:"uId" json:"uId" valid:"Required"`
+	Pw     	string 	`form:"pw" json:"pw" valid:"Required"`
 	Name   	string 	`form:"name"`
 }
 
@@ -56,9 +56,9 @@ func (params *getQueryUserParams) Valid(v *validation.Validation) {
 	} 
 }
 
-// user query输入结构体
+// peotry query输入结构体
 type getQueryPeotryParams struct {
-	ID			int64		`form:"uId"`
+	ID			int64		`form:"pId"`
 	SID			int			`form:"setId"`
 	Page		int			`form:"page"`
 	Limit		int			`form:"limit"`

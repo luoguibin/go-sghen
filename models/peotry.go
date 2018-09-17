@@ -124,7 +124,7 @@ func QueryPeotryByID(id int64) (*Peotry, error) {
 		ID: 	id,
 	}
 
-	err := dbOrmDefault.Model(&Peotry{}).Find(peotry).Error
+	err := dbOrmDefault.Model(&Peotry{}).Preload("UUser").Preload("SSet").Preload("PImage").Find(peotry).Error
 	if  err == nil {
 		return peotry, nil
 	} else {
