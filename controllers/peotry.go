@@ -15,20 +15,20 @@ func (c *PeotryController) QueryPeotry() {
 	params := &getQueryPeotryParams{}
 
 	if c.CheckFormParams(data, params) {
-		list, err, count, totalPage, currentPage, pageIsEnd := models.QueryPeotry(params.Id, params.SId, params.Page, params.Limit, params.Content)
+		list, err, count, totalPage, currentPage, pageIsEnd := models.QueryPeotry(params.ID, params.SID, params.Page, params.Limit, params.Content)
 		if err == nil {
-			if params.Id > 0 {
-				data[models.RESP_DATA] = list[0]
+			if params.ID > 0 {
+				data[models.STR_DATA] = list[0]
 			} else {
-				data[models.RESP_DATA] = list
+				data[models.STR_DATA] = list
 				data["totalCount"] = count
 				data["totalPage"] = totalPage
 				data["currentPage"] = currentPage
 				data["pageIsEnd"] = pageIsEnd
 			}
 		} else {
-			data[models.RESP_CODE] = models.RESP_ERR
-			data[models.RESP_MSG] = err.Error()
+			data[models.STR_CODE] = models.CODE_ERR
+			data[models.STR_MSG] = err.Error()
 		}
 	}
 	c.respToJSON(data)
@@ -40,24 +40,24 @@ func (c *PeotryController) CreatePeotry() {
 	params := &getCreatePeotryParams{}
 
 	if c.CheckFormParams(data, params) {
-		set, err := models.QueryPeotrySetByID(params.SId)
+		set, err := models.QueryPeotrySetByID(params.SID)
 		if err == nil {
-			if set.UID == params.UId {
+			if set.UID == params.UID {
 				timeStr := helper.GetNowDateTime()
-				pId, err := models.SavePeotry(params.UId, params.SId, params.Title, timeStr, params.Content, params.End, "[]")
+				pId, err := models.SavePeotry(params.UID, params.SID, params.Title, timeStr, params.Content, params.End, "[]")
 				if err == nil {
-					data[models.RESP_DATA] = pId
+					data[models.STR_DATA] = pId
 				} else {
-					data[models.RESP_CODE] = models.RESP_ERR
-					data[models.RESP_MSG] = err.Error()
+					data[models.STR_CODE] = models.CODE_ERR
+					data[models.STR_MSG] = err.Error()
 				}
 			} else {
-				data[models.RESP_CODE] = models.RESP_ERR
-				data[models.RESP_MSG] = "禁止在他人诗集中创建个人诗歌"
+				data[models.STR_CODE] = models.CODE_ERR
+				data[models.STR_MSG] = "禁止在他人诗集中创建个人诗歌"
 			}
 		} else {
-			data[models.RESP_CODE] = models.RESP_ERR
-			data[models.RESP_MSG] = err.Error()
+			data[models.STR_CODE] = models.CODE_ERR
+			data[models.STR_MSG] = err.Error()
 		}
 	}
 
@@ -69,25 +69,24 @@ func (c *PeotryController) UpdatePeotry() {
 	params := &getUpdatePeotryParams{}
 	
 	if c.CheckFormParams(data, params) {
-		list, err, _, _, _, _ := models.QueryPeotry(params.PId, 0, 0, 0, "")
-		qPeotry := list[0]
+		qPeotry, err := models.QueryPeotryByID(params.PID)
 		if err == nil {
-			if qPeotry.UID == params.UId {
+			if qPeotry.UID == params.UID {
 				// 判断选集是否有更新
-				if qPeotry.SID != params.SId {
-					set, err := models.QueryPeotrySetByID(params.SId)
+				if qPeotry.SID != params.SID {
+					set, err := models.QueryPeotrySetByID(params.SID)
 					if err == nil {
-						if set.UID == params.UId {
-							qPeotry.SID = params.SId
+						if set.UID == params.UID {
+							qPeotry.SID = params.SID
 						} else {
-							data[models.RESP_CODE] = models.RESP_ERR
-							data[models.RESP_MSG] = "禁止在他人诗集中更新个人诗歌"
+							data[models.STR_CODE] = models.CODE_ERR
+							data[models.STR_MSG] = "禁止在他人诗集中更新个人诗歌"
 							c.respToJSON(data)
 							return
 						}
 					} else {
-						data[models.RESP_CODE] = models.RESP_ERR
-						data[models.RESP_MSG] = err.Error()
+						data[models.STR_CODE] = models.CODE_ERR
+						data[models.STR_MSG] = err.Error()
 						c.respToJSON(data)
 						return
 					}
@@ -102,18 +101,18 @@ func (c *PeotryController) UpdatePeotry() {
 
 				err := models.UpdatePeotry(qPeotry)
 				if err == nil {
-					data[models.RESP_DATA] = qPeotry.ID
+					data[models.STR_DATA] = qPeotry.ID
 				} else {
-					data[models.RESP_CODE] = models.RESP_ERR
-					data[models.RESP_MSG] = err.Error()
+					data[models.STR_CODE] = models.CODE_ERR
+					data[models.STR_MSG] = err.Error()
 				}
 			} else {
-				data[models.RESP_CODE] = models.RESP_ERR
-				data[models.RESP_MSG] = "禁止更新他人诗歌"
+				data[models.STR_CODE] = models.CODE_ERR
+				data[models.STR_MSG] = "禁止更新他人诗歌"
 			}
 		} else {
-			data[models.RESP_CODE] = models.RESP_ERR
-			data[models.RESP_MSG] = err.Error()
+			data[models.STR_CODE] = models.CODE_ERR
+			data[models.STR_MSG] = err.Error()
 		}
 	}
 
@@ -125,24 +124,23 @@ func (c *PeotryController) DeletePeotry() {
 	params := &getDeletePeotryParams{}
 
 	if c.CheckFormParams(data, params) { 
-		list, err, _, _, _, _ := models.QueryPeotry(params.PID, 0, 0, 0, "")
+		peotry, err := models.QueryPeotryByID(params.PID)
 		if err == nil {
-			peotry := list[0]
 			if peotry.UID == params.UID {
 				err := models.DeletePeotry(params.PID)
 				if err == nil {
-					data[models.RESP_DATA] = true
+					data[models.STR_DATA] = true
 				} else {
-					data[models.RESP_CODE] = models.RESP_ERR
-					data[models.RESP_MSG] = err.Error()
+					data[models.STR_CODE] = models.CODE_ERR
+					data[models.STR_MSG] = err.Error()
 				}
 			} else {
-				data[models.RESP_CODE] = models.RESP_ERR
-				data[models.RESP_MSG] = "禁止删除他人诗歌"
+				data[models.STR_CODE] = models.CODE_ERR
+				data[models.STR_MSG] = "禁止删除他人诗歌"
 			}
 		} else {
-			data[models.RESP_CODE] = models.RESP_ERR
-			data[models.RESP_MSG] = err.Error()
+			data[models.STR_CODE] = models.CODE_ERR
+			data[models.STR_MSG] = err.Error()
 		}
 	}
 

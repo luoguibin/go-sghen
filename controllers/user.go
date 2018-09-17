@@ -18,12 +18,12 @@ func (c *UserController)CreateUser() {
 	data := c.GetResponseData()
 	params := &getCreateUserParams{}
 	if (c.CheckPostParams(data, params)) {
-		user, err := models.CreateUser(params.Id, params.Pw, params.Name)
+		user, err := models.CreateUser(params.ID, params.Pw, params.Name)
 		if err == nil {
 			createUserToken(user, data)
 		} else {
-			data[models.RESP_CODE] = models.RESP_ERR
-			data[models.RESP_MSG] = err.Error()
+			data[models.STR_CODE] = models.CODE_ERR
+			data[models.STR_MSG] = err.Error()
 		}
 	}
 	
@@ -35,12 +35,12 @@ func (c *UserController)LoginUser() {
 	data := c.GetResponseData()
 	params := &getCreateUserParams{}
 	if (c.CheckPostParams(data, params)) {
-		user, err := models.LoginUser(params.Id, params.Pw)
+		user, err := models.LoginUser(params.ID, params.Pw)
 		if err == nil {
 			createUserToken(user, data)
 		} else {
-			data[models.RESP_CODE] = models.RESP_ERR
-			data[models.RESP_MSG] = err.Error()
+			data[models.STR_CODE] = models.CODE_ERR
+			data[models.STR_MSG] = err.Error()
 		}
 	}
 	c.respToJSON(data)
@@ -53,16 +53,16 @@ func (c *UserController)QueryUser() {
 
 	if c.CheckFormParams(data, params) {
 		if params.Level >= 5 {
-			user, err := models.QueryUser(params.QueryId)
+			user, err := models.QueryUser(params.QueryUID)
 			if err == nil {
-				data[models.RESP_DATA] = user
+				data[models.STR_DATA] = user
 			} else {
-				data[models.RESP_CODE] = models.RESP_ERR
-				data[models.RESP_MSG] = err.Error()
+				data[models.STR_CODE] = models.CODE_ERR
+				data[models.STR_MSG] = err.Error()
 			}		
 		} else {
-			data[models.RESP_CODE] = models.RESP_ERR
-			data[models.RESP_MSG] = "用户等级低，限制查询"
+			data[models.STR_CODE] = models.CODE_ERR
+			data[models.STR_MSG] = "用户等级低，限制查询"
 		}
 	}
 	c.respToJSON(data)
@@ -75,10 +75,10 @@ func (c *UserController)UpdateUser() {
 
 	if c.CheckPostParams(data, params) {
 		fmt.Println(params)
-		_, err := models.UpdateUser(params.Id, params.Pw, params.Name)
+		_, err := models.UpdateUser(params.ID, params.Pw, params.Name)
 		if err != nil {
-			data[models.RESP_CODE] = models.RESP_ERR
-			data[models.RESP_MSG] = err.Error()
+			data[models.STR_CODE] = models.CODE_ERR
+			data[models.STR_MSG] = err.Error()
 		}
 	}
 	
@@ -91,10 +91,10 @@ func (c *UserController)DeleteUser() {
 	params := &getUpdateUserParams{}
 
 	if c.CheckFormParams(data, params) {
-		err := models.DeleteUser(params.Id)
+		err := models.DeleteUser(params.ID)
 		if err != nil {
-			data[models.RESP_CODE] = models.RESP_ERR
-			data[models.RESP_MSG] = err.Error()
+			data[models.STR_CODE] = models.CODE_ERR
+			data[models.STR_MSG] = err.Error()
 		}
 	}
 	
@@ -114,12 +114,12 @@ func createUserToken(user *models.User, data ResponseData) {
 
     tokenString, err := token.SignedString([]byte(models.MConfig.JwtSecretKey))
     if err != nil {
-		data[models.RESP_CODE] = models.RESP_ERR
-		data[models.RESP_MSG] = "Error while signing the token"
+		data[models.STR_CODE] = models.CODE_ERR
+		data[models.STR_MSG] = "Error while signing the token"
 		return
 	}
 	
-	data[models.RESP_TOKEN] = tokenString
+	data[models.STR_TOKEN] = tokenString
 }
 
 // 检测解析token

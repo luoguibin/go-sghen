@@ -38,13 +38,13 @@ var (
 )
 
 var (
-	RESP_CODE      = "code"
-	RESP_MSG	   = "msg"
-	RESP_DATA	   = "data"
-	RESP_TOKEN	   = "token"
+	STR_CODE    = 	"code"
+	STR_MSG	    = 	"msg"
+	STR_DATA	= 	"data"
+	STR_TOKEN	= 	"token"
 
-	RESP_OK        = 1000
-	RESP_ERR       = 1001
+	CODE_OK  	= 	1000
+	CODE_ERR    = 	1001
 )
 
 func init() {
@@ -83,8 +83,8 @@ func initConfParams() {
 
 func initCodeMsgMap() {
 	MConfig.CodeMsgMap = make(map[int]string)
-	MConfig.CodeMsgMap[RESP_OK] = "请求成功"
-	MConfig.CodeMsgMap[RESP_ERR] = "失败,参数错误"
+	MConfig.CodeMsgMap[CODE_OK] = "请求成功"
+	MConfig.CodeMsgMap[CODE_ERR] = "失败,参数错误"
 }
 
 func initPathTypeMap() {

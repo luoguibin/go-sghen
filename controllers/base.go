@@ -31,9 +31,9 @@ func init() {
 }
 
 func (c *BaseController) respToJSON(data ResponseData) {
-    respMsg, ok := data[models.RESP_MSG]
+    respMsg, ok := data[models.STR_MSG]
 	if !ok || (ok && len(respMsg.(string)) <= 0) {
-		data[models.RESP_MSG] = models.MConfig.CodeMsgMap[data[models.RESP_CODE].(int)]
+		data[models.STR_MSG] = models.MConfig.CodeMsgMap[data[models.STR_CODE].(int)]
 	}
 	// c.Ctx.Output.SetStatus(201)
 	c.Data["json"] = data
@@ -51,8 +51,8 @@ func GatewayAccessUser(ctx *context.Context, setInPost bool) {
 	token := ctx.Input.Query("token")
 
 	if len(token) <= 0 {
-		datas[models.RESP_CODE] = models.RESP_ERR
-		datas[models.RESP_MSG] = "token is empty"
+		datas[models.STR_CODE] = models.CODE_ERR
+		datas[models.STR_MSG] = "token is empty"
 		ctx.ResponseWriter.Header().Set("Access-Control-Allow-Origin", "*")
 		ctx.Output.JSON(datas, false, false)
 		return
@@ -60,8 +60,8 @@ func GatewayAccessUser(ctx *context.Context, setInPost bool) {
 
 	claims := CheckUserToken(token)
 	if  claims == nil{
-		datas[models.RESP_CODE] = models.RESP_ERR
-		datas[models.RESP_MSG] = "token is invalid"
+		datas[models.STR_CODE] = models.CODE_ERR
+		datas[models.STR_MSG] = "token is invalid"
 		ctx.ResponseWriter.Header().Set("Access-Control-Allow-Origin", "*")
 		ctx.Output.JSON(datas, false, false)
 		return
@@ -83,7 +83,7 @@ func GatewayAccessUser(ctx *context.Context, setInPost bool) {
 func (c *BaseController) CheckFormParams(data ResponseData, params interface{}) bool {
 	//验证参数是否异常
 	if err := c.ParseForm(params); err != nil {
-		data[models.RESP_CODE] = models.RESP_ERR
+		data[models.STR_CODE] = models.CODE_ERR
 		return false
 	}
 
@@ -92,16 +92,16 @@ func (c *BaseController) CheckFormParams(data ResponseData, params interface{}) 
 	if ok, _ := valid.Valid(params); ok {
 		return true
 	}
-	data[models.RESP_CODE] = models.RESP_ERR
-	data[models.RESP_MSG] = fmt.Sprint(valid.ErrorsMap)
+	data[models.STR_CODE] = models.CODE_ERR
+	data[models.STR_MSG] = fmt.Sprint(valid.ErrorsMap)
 	return false
 }
 
 func (c *BaseController) CheckPostParams(data ResponseData, params interface{}) bool {
 	//验证参数是否异常
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &params); err != nil {
-		data[models.RESP_CODE] = models.RESP_ERR
-		data[models.RESP_MSG] = err.Error()
+		data[models.STR_CODE] = models.CODE_ERR
+		data[models.STR_MSG] = err.Error()
 		return false
 	}
 
@@ -111,8 +111,8 @@ func (c *BaseController) CheckPostParams(data ResponseData, params interface{}) 
 		return true
 	}
 
-	data[models.RESP_CODE] = models.RESP_ERR
-	data[models.RESP_MSG] = fmt.Sprint(valid.ErrorsMap)
+	data[models.STR_CODE] = models.CODE_ERR
+	data[models.STR_MSG] = fmt.Sprint(valid.ErrorsMap)
 	return false
 }
 
@@ -120,5 +120,5 @@ func (c *BaseController) CheckPostParams(data ResponseData, params interface{}) 
 type ResponseData map[string]interface{}
 
 func (self *BaseController) GetResponseData() ResponseData {
-	return ResponseData{ models.RESP_CODE: models.RESP_OK }
+	return ResponseData{ models.STR_CODE: models.CODE_OK }
 }

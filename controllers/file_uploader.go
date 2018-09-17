@@ -28,8 +28,8 @@ func (c *FileUploaderController) FileUpload() {
 	if err != nil {
 		// fmt.Println("file upload getFiles() err")
 		// fmt.Println(err)
-		data[models.RESP_CODE] = models.RESP_ERR
-		data[models.RESP_MSG] = err.Error()
+		data[models.STR_CODE] = models.CODE_ERR
+		data[models.STR_MSG] = err.Error()
 		c.respToJSON(data)
 		return
 	}	
@@ -47,16 +47,16 @@ func (c *FileUploaderController) FileUpload() {
 	if !isExist {
 		isMade := helper.MkdirAll(path)
 		if !isMade {
-			data[models.RESP_CODE] = models.RESP_ERR
-			data[models.RESP_MSG] = "创建文件夹失败"
+			data[models.STR_CODE] = models.CODE_ERR
+			data[models.STR_MSG] = "创建文件夹失败"
 			c.respToJSON(data)
 			return
 		}
 	}
 
 	if len(fileHeaders) > models.MConfig.MaxUploadCount {
-		data[models.RESP_CODE] = models.RESP_ERR
-		data[models.RESP_MSG] = "上传文件个数不能超过"+ strconv.Itoa(models.MConfig.MaxUploadCount)+"个"
+		data[models.STR_CODE] = models.CODE_ERR
+		data[models.STR_MSG] = "上传文件个数不能超过"+ strconv.Itoa(models.MConfig.MaxUploadCount)+"个"
 		c.respToJSON(data)
 		return
 	}
@@ -64,15 +64,15 @@ func (c *FileUploaderController) FileUpload() {
 	// 限制大文件上传
 	for index, v := range fileHeaders {
 		if len(v.Filename) <= 0 {
-			data[models.RESP_CODE] = models.RESP_ERR
-			data[models.RESP_MSG] = "上传文件不能为空"
+			data[models.STR_CODE] = models.CODE_ERR
+			data[models.STR_MSG] = "上传文件不能为空"
 			c.respToJSON(data)
 			return
 		}
 		sizeMB := int(v.Size / 1024 / 1024)
 		if sizeMB > models.MConfig.MaxUploadSize {
-			data[models.RESP_CODE] = models.RESP_ERR
-			data[models.RESP_MSG] = "第" + strconv.Itoa(index + 1) + "个文件:" + v.Filename + "文件大小超过" + strconv.Itoa(models.MConfig.MaxUploadSize) + "MB"
+			data[models.STR_CODE] = models.CODE_ERR
+			data[models.STR_MSG] = "第" + strconv.Itoa(index + 1) + "个文件:" + v.Filename + "文件大小超过" + strconv.Itoa(models.MConfig.MaxUploadSize) + "MB"
 			c.respToJSON(data)
 			return
 		}
@@ -107,20 +107,20 @@ func (c *FileUploaderController) FileUpload() {
 
 				err = os.Rename(outputFilePath, path + fileRename)
 				if err != nil {
-					data[models.RESP_CODE] = models.RESP_ERR
-					data[models.RESP_MSG] = "第" + strconv.Itoa(index + 1) + "文件重命名失败，请稍后再试"
+					data[models.STR_CODE] = models.CODE_ERR
+					data[models.STR_MSG] = "第" + strconv.Itoa(index + 1) + "文件重命名失败，请稍后再试"
 					c.respToJSON(data)
 					return
 				}
 			} else {
-				data[models.RESP_CODE] = models.RESP_ERR
-				data[models.RESP_MSG] = err.Error()
+				data[models.STR_CODE] = models.CODE_ERR
+				data[models.STR_MSG] = err.Error()
 				c.respToJSON(data)
 				return
 			}
 		} else {
-			data[models.RESP_CODE] = models.RESP_ERR
-			data[models.RESP_MSG] = err.Error()
+			data[models.STR_CODE] = models.CODE_ERR
+			data[models.STR_MSG] = err.Error()
 			c.respToJSON(data)
 			return
 		}
@@ -131,15 +131,15 @@ func (c *FileUploaderController) FileUpload() {
 		if err == nil && uId > 0 {
 			err := checkSavePeotryImage(pId, uId, list)
 			if err != nil {
-				data[models.RESP_CODE] = models.RESP_ERR
-				data[models.RESP_MSG] = err.Error()
+				data[models.STR_CODE] = models.CODE_ERR
+				data[models.STR_MSG] = err.Error()
 				c.respToJSON(data)
 				return
 			}
 		}
-		data[models.RESP_DATA] = list
+		data[models.STR_DATA] = list
 	} else {
-		data[models.RESP_DATA] = true
+		data[models.STR_DATA] = true
 	}
 	
 	c.respToJSON(data)

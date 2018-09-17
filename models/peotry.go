@@ -74,8 +74,8 @@ func SavePeotry(userId int64, setId int, title string, pTime string, content str
 	return curTime, nil
 }
 
-func UpdatePeotry(peotry Peotry) error{
-	err := dbOrmDefault.Model(&Peotry{}).Update(&peotry).Error
+func UpdatePeotry(peotry *Peotry) error{
+	err := dbOrmDefault.Model(&Peotry{}).Update(peotry).Error
 	if err != nil {
 		return err
 	} else {
@@ -130,6 +130,19 @@ func QueryPeotry(id int64, setId int, page int, limit int, content string) ([]Pe
 		}
 	}
 	return list, nil, count, totalPage, currentPage, pageIsEnd
+}
+
+func QueryPeotryByID(id int64) (*Peotry, error) {	
+	peotry := &Peotry {
+		ID: 	id,
+	}
+
+	err := dbOrmDefault.Model(&Peotry{}).Find(peotry).Error
+	if  err == nil {
+		return peotry, nil
+	} else {
+		return nil, err
+	}
 }
 
 func DeletePeotry(id int64) error{

@@ -16,10 +16,10 @@ func (c *PeotrySetController) QueryPeotrySet() {
 	if c.CheckFormParams(data, params) {
 		list, err := models.QueryPeotrySetByUID(params.UID)
 		if err == nil {
-			data[models.RESP_DATA] = list
+			data[models.STR_DATA] = list
 		} else {
-			data[models.RESP_CODE] = models.RESP_ERR
-			data[models.RESP_MSG] = err.Error()
+			data[models.STR_CODE] = models.CODE_ERR
+			data[models.STR_MSG] = err.Error()
 		}
 	}
 
@@ -33,10 +33,10 @@ func (c *PeotrySetController) CreatePeotrySet() {
 	if c.CheckFormParams(data, params) {
 		err := models.CreatePeotrySet(params.UID, params.Name)
 		if err == nil {
-			data[models.RESP_DATA] = true
+			data[models.STR_DATA] = true
 		} else {
-			data[models.RESP_CODE] = models.RESP_ERR
-			data[models.RESP_MSG] = err.Error()
+			data[models.STR_CODE] = models.CODE_ERR
+			data[models.STR_MSG] = err.Error()
 		}
 	}
 
@@ -53,18 +53,18 @@ func (c *PeotrySetController) DeletePeotrySet() {
 			if set.UID == params.UID {
 				err := models.DeletePeotrySet(params.SID)
 				if err == nil {
-					data[models.RESP_DATA] = true
+					data[models.STR_DATA] = true
 				} else {
-					data[models.RESP_CODE] = models.RESP_ERR
-					data[models.RESP_MSG] = err.Error()
+					data[models.STR_CODE] = models.CODE_ERR
+					data[models.STR_MSG] = err.Error()
 				}
 			} else {
-				data[models.RESP_CODE] = models.RESP_ERR
-				data[models.RESP_MSG] = "禁止删除非本人创建的诗集"
+				data[models.STR_CODE] = models.CODE_ERR
+				data[models.STR_MSG] = "禁止删除非本人创建的诗集"
 			}
 		} else {
-			data[models.RESP_CODE] = models.RESP_ERR
-			data[models.RESP_MSG] = err.Error()
+			data[models.STR_CODE] = models.CODE_ERR
+			data[models.STR_MSG] = err.Error()
 		}
 	}
 

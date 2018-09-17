@@ -35,14 +35,14 @@ package controllers
 // 	// var v models.Peotryimage
 // 	// if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
 // 	// 	if _, err := models.AddPeotryimage(&v); err == nil {
-// 	// 		data[models.RESP_DATA] = v
+// 	// 		data[models.STR_DATA] = v
 // 	// 	} else {
-// 	// 		data[models.RESP_CODE] = models.RESP_ERR
-// 	// 				data[models.RESP_MSG] = err.Error()
+// 	// 		data[models.STR_CODE] = models.CODE_ERR
+// 	// 				data[models.STR_MSG] = err.Error()
 // 	// 	}
 // 	// } else {
-// 	// 	data[models.RESP_CODE] = models.RESP_ERR
-// 	// 	data[models.RESP_MSG] = err.Error()
+// 	// 	data[models.STR_CODE] = models.CODE_ERR
+// 	// 	data[models.STR_MSG] = err.Error()
 // 	// }
 // 	// c.respToJSON(data)
 
@@ -57,8 +57,8 @@ package controllers
 // 			rV, rErr := models.GetPeotryById(pId)
 
 // 			if rErr != nil {
-// 				data[models.RESP_CODE] = models.RESP_ERR
-// 				data[models.RESP_MSG] = rErr.Error()
+// 				data[models.STR_CODE] = models.CODE_ERR
+// 				data[models.STR_MSG] = rErr.Error()
 // 			} else {
 // 				uIdStr := claims["uid"].(string)
 // 				uId, _ := strconv.ParseInt(uIdStr, 10, 64)
@@ -94,35 +94,35 @@ package controllers
 // 							}
 
 // 							if _, err := models.AddPeotryimage(&v); err == nil {
-// 								data[models.RESP_DATA] = v
+// 								data[models.STR_DATA] = v
 // 								rV.IId.Id = pId
 // 								vErr := models.UpdatePeotryById(rV)
 // 								fmt.Println(vErr)
 // 								if vErr == nil {
-// 									data[models.RESP_MSG] = "创建成功"
+// 									data[models.STR_MSG] = "创建成功"
 // 								} else {
-// 									data[models.RESP_CODE] = models.RESP_ERR
-// 									data[models.RESP_MSG] = vErr.Error()
+// 									data[models.STR_CODE] = models.CODE_ERR
+// 									data[models.STR_MSG] = vErr.Error()
 // 								}
 // 							} else {
-// 								data[models.RESP_CODE] = models.RESP_ERR
-// 								data[models.RESP_MSG] = err.Error()
+// 								data[models.STR_CODE] = models.CODE_ERR
+// 								data[models.STR_MSG] = err.Error()
 // 							}
 // 						} else {
-// 							data[models.RESP_CODE] = models.RESP_ERR
-// 							data[models.RESP_MSG] = "保存图片出错：" + imagesStr
+// 							data[models.STR_CODE] = models.CODE_ERR
+// 							data[models.STR_MSG] = "保存图片出错：" + imagesStr
 // 						}
 // 					} else {
-// 						data[models.RESP_MSG] = "无图片数据"
+// 						data[models.STR_MSG] = "无图片数据"
 // 					}
 // 				} else {
-// 					data[models.RESP_CODE] = models.RESP_ERR
-// 					data[models.RESP_MSG] = "该诗不属于当前用户"
+// 					data[models.STR_CODE] = models.CODE_ERR
+// 					data[models.STR_MSG] = "该诗不属于当前用户"
 // 				}
 // 			}
 // 		} else {
-// 			data[models.RESP_CODE] = models.RESP_ERR
-// 			data[models.RESP_MSG] = errToken.Error()
+// 			data[models.STR_CODE] = models.CODE_ERR
+// 			data[models.STR_MSG] = errToken.Error()
 // 		}	
 // 	}
 // 	c.respToJSON(data)
@@ -142,10 +142,10 @@ package controllers
 // 	data := c.GetResponseData()
 			
 // 	if err != nil {
-// 		data[models.RESP_CODE] = models.RESP_ERR
-// 		data[models.RESP_MSG] = err.Error()
+// 		data[models.STR_CODE] = models.CODE_ERR
+// 		data[models.STR_MSG] = err.Error()
 // 	} else {
-// 		data[models.RESP_DATA] = v
+// 		data[models.STR_DATA] = v
 // 	}	
 // 	c.respToJSON(data)
 // }
@@ -196,8 +196,8 @@ package controllers
 // 		for _, cond := range strings.Split(v, ",") {
 // 			kv := strings.SplitN(cond, ":", 2)
 // 			if len(kv) != 2 {
-// 				data[models.RESP_CODE] = models.RESP_ERR
-// 				data[models.RESP_MSG] = "Error: invalid query key/value pair"
+// 				data[models.STR_CODE] = models.CODE_ERR
+// 				data[models.STR_MSG] = "Error: invalid query key/value pair"
 // 				c.respToJSON(data)
 // 				return
 // 			}
@@ -208,10 +208,10 @@ package controllers
 
 // 	l, err := models.GetAllPeotryimage(query, fields, sortby, order, offset, limit)
 // 	if err != nil {
-// 		data[models.RESP_CODE] = models.RESP_ERR
-// 		data[models.RESP_MSG] = err.Error()
+// 		data[models.STR_CODE] = models.CODE_ERR
+// 		data[models.STR_MSG] = err.Error()
 // 	} else {
-// 		data[models.RESP_DATA] = l
+// 		data[models.STR_DATA] = l
 // 	}
 // 	c.respToJSON(data)
 // }
@@ -232,14 +232,14 @@ package controllers
 
 // 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
 // 		if err := models.UpdatePeotryimageById(&v); err == nil {
-// 			data[models.RESP_MSG] = "OK"
+// 			data[models.STR_MSG] = "OK"
 // 		} else {
-// 			data[models.RESP_CODE] = models.RESP_ERR
-// 			data[models.RESP_MSG] = err.Error()
+// 			data[models.STR_CODE] = models.CODE_ERR
+// 			data[models.STR_MSG] = err.Error()
 // 		}
 // 	} else {
-// 		data[models.RESP_CODE] = models.RESP_ERR
-// 		data[models.RESP_MSG] = err.Error()
+// 		data[models.STR_CODE] = models.CODE_ERR
+// 		data[models.STR_MSG] = err.Error()
 // 	}
 // 	c.respToJSON(data)
 // }
@@ -257,10 +257,10 @@ package controllers
 // 	data := c.GetResponseData()
 	
 // 	if err := models.DeletePeotryimage(id); err == nil {
-// 		data[models.RESP_MSG] = "OK"
+// 		data[models.STR_MSG] = "OK"
 // 	} else {
-// 		data[models.RESP_CODE] = models.RESP_ERR
-// 		data[models.RESP_MSG] = err.Error()
+// 		data[models.STR_CODE] = models.CODE_ERR
+// 		data[models.STR_MSG] = err.Error()
 // 	}
 // 	c.respToJSON(data)
 // }
