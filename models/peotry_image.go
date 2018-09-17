@@ -2,7 +2,7 @@ package models
 
 type PeotryImage struct {
 	ID    		int64  	`orm:"column(id);pk" json:"id,omitempty"`
-	IImages   	string  `orm:"column(i_images);" json:"images"`
+	IImages   	string  `orm:"column(i_images);type:mediumtext" json:"images"`
 	ICount 		int 	`orm:"column(i_count);" json:"count"`
 }
 
