@@ -9,6 +9,7 @@ import (
 	"strings"
 	"errors"
 	"encoding/json"
+	"strconv"
 	"io/ioutil"
 	"encoding/base64"
 )
@@ -59,19 +60,20 @@ func (c *PeotryController) CreatePeotry() {
 			if set.UID == params.UID {
 				imgDatas := make([]string, 0)
 				fileNames := make([]string, 0)
+				errDatas := make([]string, 0)
 
 				err := json.Unmarshal(c.Ctx.Input.RequestBody, &imgDatas)
 				if err == nil {
-					for _, imgData := range imgDatas {
+					for index, imgData := range imgDatas {
 						fileName, err := savePeotryimage(imgData)
 						if err == nil {
 							fileNames = append(fileNames, fileName)
 						} else {
-							break
+							msg := "第" + strconv.Itoa(index + 1) + "张图片保存失败：" + err.Error()
+							errDatas = append(errDatas, msg)
 						}
 					}
 				}
-				//eg: data:image/png;base64,iVB
 
 				fileNameByte, _ := json.Marshal(fileNames)
 				
@@ -79,7 +81,13 @@ func (c *PeotryController) CreatePeotry() {
 				timeStr := helper.GetNowDateTime()
 				pId, err := models.CreatePeotry(params.UID, params.SID, params.Title, timeStr, params.Content, params.End, string(fileNameByte[:]))
 				if err == nil {
-					data[models.STR_DATA] = pId
+					if len(errDatas) == 0 {
+						data[models.STR_DATA] = pId
+					} else {
+						data[models.STR_CODE] = models.CODE_ERR
+						data[models.STR_MSG] = "保存诗歌图片失败"
+						data[models.STR_DATA] = errDatas
+					}
 				} else {
 					data[models.STR_CODE] = models.CODE_ERR
 					data[models.STR_MSG] = "创建诗歌失败"
@@ -207,7 +215,8 @@ func savePeotryimage(baseStr string) (string, error) {
 	}
 
 	h := md5.New()
-	fileRename := hex.EncodeToString(h.Sum([]byte(baseStr)))
+	h.Write([]byte(baseStr))
+	fileRename := hex.EncodeToString(h.Sum(nil))
 	fileName := fileRename + "." + format
 	err2 := ioutil.WriteFile(path + fileName, data, 0666) 
 	if err2 != nil {
