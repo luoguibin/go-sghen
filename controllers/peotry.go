@@ -63,8 +63,13 @@ func (c *PeotryController) CreatePeotry() {
 				errDatas := make([]string, 0)
 
 				err := json.Unmarshal(c.Ctx.Input.RequestBody, &imgDatas)
+				
 				if err == nil {
 					for index, imgData := range imgDatas {
+						if index > 9 {
+							data[models.STR_MSG] = "诗歌图片超过10张，只保存前10张"
+							break;
+						}
 						fileName, err := savePeotryimage(imgData)
 						if err == nil {
 							fileNames = append(fileNames, fileName)
@@ -73,13 +78,15 @@ func (c *PeotryController) CreatePeotry() {
 							errDatas = append(errDatas, msg)
 						}
 					}
+				} else {
+					data[models.STR_MSG] = "请求成功，未添加图片"
 				}
 
 				fileNameByte, _ := json.Marshal(fileNames)
 				
-
 				timeStr := helper.GetNowDateTime()
 				pId, err := models.CreatePeotry(params.UID, params.SID, params.Title, timeStr, params.Content, params.End, string(fileNameByte[:]))
+				
 				if err == nil {
 					if len(errDatas) == 0 {
 						data[models.STR_DATA] = pId
