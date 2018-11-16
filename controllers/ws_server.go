@@ -2,11 +2,13 @@ package controllers
 
 import(
 	"SghenApi/models"
+	"strconv"
 	"time"
-	"log"
 	"fmt"
+	"math/rand"
 	"net/http"
 	"github.com/gorilla/websocket"
+	"github.com/astaxie/beego/logs"
 )
 
 type WSServerController struct {
@@ -14,7 +16,8 @@ type WSServerController struct {
 }
 
 func init() {
-    go handleMessages()
+	fmt.Println("WSServerController::init()");
+    go dataCenter()
 }
 
 var (
@@ -25,39 +28,119 @@ var (
 			return true
 		},
 	}
-	clients   	= make(map[*websocket.Conn]bool)
-	broadcast	= make(chan models.WSMessage)
+
+	clients   	= make(map[*models.WsUser]bool)
+
+	wsLogger *logs.BeeLogger
 )
 
-
-func (c *WSServerController) Get() { 
+/**
+ * WebSocket连接入口
+ */
+func (c *WSServerController) Get() {
 	ws, err := upgrader.Upgrade(c.Ctx.ResponseWriter, c.Ctx.Request, nil) 
 	if err != nil { 
-		log.Fatal(err) 
+		wsLogger.Error("get ws error: " + err.Error())
 	} 
-	// defer ws.Close() 
-	clients[ws] = true 
-	//不断的广播发送到页面上 
-	for { 
-		//目前存在问题 定时效果不好 需要在业务代码替换时改为beego toolbox中的定时器 
-		time.Sleep(time.Second * 3) 
-		msg := models.WSMessage{Message: "这是向页面发送的数据 " + time.Now().Format("2006-01-02 15:04:05")} 
-		broadcast <- msg
-	} 
+	wsLogger.Debug("get ws: " + ws.RemoteAddr().String())
+
+	uId,_ := strconv.ParseInt(c.Ctx.Input.Query("uId"), 10, 64)
+	uGame := models.Game0 {
+		ID: 		uId,
+		GName: 		ws.RemoteAddr().String(),
+		GBlood: 	300000,
+		GBloodAll: 	353535,
+		GLevel:		103,
+		GPower:		5000,
+	}
+	wsUser := models.WsUser {
+		ID:		uId,
+		Conn:	ws,
+		WsData: uGame,	
+	}
+
+	clients[&wsUser] = true
+	go func(wsuser models.WsUser) {
+		for { 
+			var action models.GameAction0
+			err := wsuser.Conn.ReadJSON(&action)
+			if err == nil {
+				for client := range clients {
+					if client.ID == action.Target {
+						// fmt.Println(action)
+
+						switch action.Action {
+							case "fist":
+								ran := rand.Intn(200)
+								if rand.Intn(10) < 5 {
+									ran = wsuser.WsData.GPower + ran
+								} else {
+									ran = wsuser.WsData.GPower - ran
+								}
+								client.WsData.GBlood -= ran
+
+								if client.WsData.GBlood < 0 {
+									client.WsData.GBlood = 0
+								}
+								break;
+							case "skill":
+								ran := rand.Intn(200)
+								ran = int(float32(wsuser.WsData.GPower) * 1.3) + ran
+								client.WsData.GBlood -= ran
+
+								if client.WsData.GBlood < 0 {
+									client.WsData.GBlood = 0
+								}
+								break;
+							case "skill_big":
+								ran := rand.Intn(10000)
+								ran = int(float32(wsuser.WsData.GPower) * 3.3) + ran
+								client.WsData.GBlood -= ran
+
+								if client.WsData.GBlood < 0 {
+									client.WsData.GBlood = 0
+								}
+								break;
+							case "msg":
+								action.Target = wsuser.ID
+								client.Conn.WriteJSON(action)
+								break
+						}
+						break;
+					}
+				}
+			} 
+			
+			time.Sleep(time.Second * 2)
+		} 
+	}(wsUser)
 }
 
-//广播发送至页面 
-func handleMessages() { 
-	for { 
-		msg := <-broadcast 
-		fmt.Println("clients len ", len(clients)) 
+
+func dataCenter() {
+	wsLogger = models.NewLog()
+	
+	for {
+		// ①读取ws数据
+		
+
+		// ②计算
+		wsDatas := make([]interface{}, 0)
 		for client := range clients { 
-			err := client.WriteJSON(msg) 
+			wsDatas = append(wsDatas, client.WsData)
+		} 
+
+		// ③发送ws数据
+		for client := range clients { 
+			err := client.Conn.WriteJSON(wsDatas) 
 			if err != nil { 
-				log.Printf("client.WriteJSON error: %v", err) 
-				client.Close() 
+				wsLogger.Debug(err.Error())
+				client.Conn.Close() 
 				delete(clients, client) 
 			} 
 		} 
-	} 
+
+		time.Sleep(time.Second * 1)
+		// fmt.Println("clients count=", len(clients))
+	}
 }

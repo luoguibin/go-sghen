@@ -55,7 +55,7 @@ func GatewayAccessUser(ctx *context.Context, setInPost bool) {
 		datas[models.STR_CODE] = models.CODE_ERR
 		datas[models.STR_MSG] = "token不能为空"
 		ctx.ResponseWriter.Header().Set("Access-Control-Allow-Origin", "*")
-		ctx.Output.JSON(datas, false, false)
+		ctx.Output.JSON(datas, false, true)
 		return
 	}
 
