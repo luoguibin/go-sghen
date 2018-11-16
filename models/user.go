@@ -30,6 +30,27 @@ func initSystemUser() {
 			ULevel: 		9,
 			UTimeCreate:	time.Now(),
 		})
+	tx.Create(User{
+		ID: 			88888888, 
+		UPassword: 		"123456",
+		UName: 			"Sghen",
+		ULevel: 		9,
+		UTimeCreate:	time.Now(),
+	})
+	tx.Create(User{
+		ID: 			22222222, 
+		UPassword: 		"123456",
+		UName: 			"Sghen",
+		ULevel: 		9,
+		UTimeCreate:	time.Now(),
+	})
+	tx.Create(User{
+		ID: 			66666666, 
+		UPassword: 		"123456",
+		UName: 			"Sghen",
+		ULevel: 		9,
+		UTimeCreate:	time.Now(),
+	})
 	tx.Commit()
 }
 

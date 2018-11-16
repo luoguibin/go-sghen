@@ -95,23 +95,12 @@ func initPathTypeMap() {
 }
 
 func initLog() {
-	MLogger := logs.NewLogger(10000) 
-	MLogger.SetLogger(logs.AdapterFile,`{"filename":"./logs/temp.log","maxlines":1000000,"maxsize":256,"perm": "0644"}`)
-	MLogger.EnableFuncCallDepth(true)
-	MLogger.Async()
-	MLogger.SetLevel(logs.LevelDebug)
+	MConfig.MLogger = logs.NewLogger(10000) 
+	MConfig.MLogger.SetLogger(logs.AdapterFile,`{"filename":"./logs/temp.log","maxlines":1000000,"maxsize":256,"perm": "0644"}`)
+	MConfig.MLogger.EnableFuncCallDepth(true)
+	MConfig.MLogger.Async()
+	MConfig.MLogger.SetLevel(logs.LevelDebug)
 }
-
-func NewLog() *logs.BeeLogger{
-	logger := logs.NewLogger(10000) 
-	logger.SetLogger(logs.AdapterFile,`{"filename":"./logs/temp0.log","maxlines":1000000,"maxsize":256,"perm": "0644"}`)
-	logger.EnableFuncCallDepth(true)
-	logger.Async()
-	logger.SetLevel(logs.LevelDebug)
-
-	return logger
-}
-
 
 func GetDb() *gorm.DB {
 	return dbOrmDefault

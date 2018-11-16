@@ -8,7 +8,6 @@ import(
 	"math/rand"
 	"net/http"
 	"github.com/gorilla/websocket"
-	"github.com/astaxie/beego/logs"
 )
 
 type WSServerController struct {
@@ -30,8 +29,6 @@ var (
 	}
 
 	clients   	= make(map[*models.WsUser]bool)
-
-	wsLogger *logs.BeeLogger
 )
 
 /**
@@ -40,9 +37,9 @@ var (
 func (c *WSServerController) Get() {
 	ws, err := upgrader.Upgrade(c.Ctx.ResponseWriter, c.Ctx.Request, nil) 
 	if err != nil { 
-		wsLogger.Error("get ws error: " + err.Error())
+		models.MConfig.MLogger.Error("get ws error: " + err.Error())
 	} 
-	wsLogger.Debug("get ws: " + ws.RemoteAddr().String())
+	models.MConfig.MLogger.Debug("get ws: " + ws.RemoteAddr().String())
 
 	uId,_ := strconv.ParseInt(c.Ctx.Input.Query("uId"), 10, 64)
 	uGame := models.Game0 {
@@ -117,9 +114,7 @@ func (c *WSServerController) Get() {
 }
 
 
-func dataCenter() {
-	wsLogger = models.NewLog()
-	
+func dataCenter() {	
 	for {
 		// ①读取ws数据
 		
@@ -134,7 +129,7 @@ func dataCenter() {
 		for client := range clients { 
 			err := client.Conn.WriteJSON(wsDatas) 
 			if err != nil { 
-				wsLogger.Debug(err.Error())
+				models.MConfig.MLogger.Debug(err.Error())
 				client.Conn.Close() 
 				delete(clients, client) 
 			} 
