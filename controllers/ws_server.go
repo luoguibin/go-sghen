@@ -5,6 +5,7 @@ import(
 	"strconv"
 	"time"
 	"fmt"
+	"sync"
 	"math/rand"
 	"net/http"
 	"github.com/gorilla/websocket"
@@ -28,11 +29,12 @@ var (
 		},
 	}
 
-	clients   	= make(map[*models.WsUser]bool)
+	clients  sync.Map
 )
 
 /**
  * WebSocket连接入口
+ * 在BeforeRouter检测jwt中的合法后才给予长连接
  */
 func (c *WSServerController) Get() {
 	ws, err := upgrader.Upgrade(c.Ctx.ResponseWriter, c.Ctx.Request, nil) 
@@ -56,61 +58,63 @@ func (c *WSServerController) Get() {
 		WsData: uGame,	
 	}
 
-	clients[&wsUser] = true
-	go func(wsuser models.WsUser) {
+	clients.Store(uId, &wsUser)
+	// go func(wsUser models.WsUser) {
 		for { 
 			var action models.GameAction0
-			err := wsuser.Conn.ReadJSON(&action)
-			if err == nil {
-				for client := range clients {
-					if client.ID == action.Target {
-						// fmt.Println(action)
-
-						switch action.Action {
-							case "fist":
-								ran := rand.Intn(200)
-								if rand.Intn(10) < 5 {
-									ran = wsuser.WsData.GPower + ran
-								} else {
-									ran = wsuser.WsData.GPower - ran
-								}
-								client.WsData.GBlood -= ran
-
-								if client.WsData.GBlood < 0 {
-									client.WsData.GBlood = 0
-								}
-								break;
-							case "skill":
-								ran := rand.Intn(200)
-								ran = int(float32(wsuser.WsData.GPower) * 1.3) + ran
-								client.WsData.GBlood -= ran
-
-								if client.WsData.GBlood < 0 {
-									client.WsData.GBlood = 0
-								}
-								break;
-							case "skill_big":
-								ran := rand.Intn(10000)
-								ran = int(float32(wsuser.WsData.GPower) * 3.3) + ran
-								client.WsData.GBlood -= ran
-
-								if client.WsData.GBlood < 0 {
-									client.WsData.GBlood = 0
-								}
-								break;
-							case "msg":
-								action.Target = wsuser.ID
-								client.Conn.WriteJSON(action)
-								break
-						}
-						break;
-					}
-				}
-			} 
+			err := wsUser.Conn.ReadJSON(&action)
+			if err != nil {
+				models.MConfig.MLogger.Error("ws read msg error: " + err.Error())
+				break;
+			}
+			client_, ok := clients.Load(action.Target)
+			if !ok {
+				models.MConfig.MLogger.Error("clients.Load error")
+				break;
+			}
 			
-			time.Sleep(time.Second * 2)
+			client, ok := (client_).(models.WsUser)
+			if !ok {
+				models.MConfig.MLogger.Error("clients cast error")
+				break;
+			}
+
+			switch action.Action {
+				case "fist":
+					ran := rand.Intn(200)
+					if rand.Intn(10) < 5 {
+						ran = wsUser.WsData.GPower + ran
+					} else {
+						ran = wsUser.WsData.GPower - ran
+					}
+					client.WsData.GBlood -= ran
+
+					if client.WsData.GBlood < 0 {
+						client.WsData.GBlood = 0
+					}
+				case "skill":
+					ran := rand.Intn(200)
+					ran = int(float32(wsUser.WsData.GPower) * 1.3) + ran
+					client.WsData.GBlood -= ran
+
+					if client.WsData.GBlood < 0 {
+						client.WsData.GBlood = 0
+					}
+				case "skill_big":
+					ran := rand.Intn(10000)
+					ran = int(float32(wsUser.WsData.GPower) * 3.3) + ran
+					client.WsData.GBlood -= ran
+
+					if client.WsData.GBlood < 0 {
+						client.WsData.GBlood = 0
+					}
+				case "msg":
+					action.Target = wsUser.ID
+					client.Conn.WriteJSON(action)
+				default:
+			}
 		} 
-	}(wsUser)
+	// }(wsUser)
 }
 
 
@@ -121,21 +125,35 @@ func dataCenter() {
 
 		// ②计算
 		wsDatas := make([]interface{}, 0)
-		for client := range clients { 
+		clients.Range(func(key, client_ interface{}) bool {
+			client, ok := (client_).(models.WsUser)
+			if !ok {
+				models.MConfig.MLogger.Error("dataCenter() clients cast error")
+				return true
+			}
 			wsDatas = append(wsDatas, client.WsData)
-		} 
+			return true
+		})
 
 		// ③发送ws数据
-		for client := range clients { 
+		count := 0
+		clients.Range(func(key, client_ interface{}) bool {
+			client, ok := (client_).(models.WsUser)
+			count++
+			if !ok {
+				models.MConfig.MLogger.Error("dataCenter() clients cast error")
+				return true
+			}
 			err := client.Conn.WriteJSON(wsDatas) 
 			if err != nil { 
 				models.MConfig.MLogger.Debug(err.Error())
 				client.Conn.Close() 
-				delete(clients, client) 
+				clients.Delete(key)
 			} 
-		} 
+			return true
+		})
 
 		time.Sleep(time.Second * 1)
-		// fmt.Println("clients count=", len(clients))
+		fmt.Println("clients count=", count)
 	}
 }
