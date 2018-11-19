@@ -96,7 +96,7 @@ func initPathTypeMap() {
 
 func initLog() {
 	MConfig.MLogger = logs.NewLogger(10000) 
-	MConfig.MLogger.SetLogger(logs.AdapterFile,`{"filename":"./logs/temp.log","maxlines":1000000,"maxsize":256,"perm": "0644"}`)
+	MConfig.MLogger.SetLogger(logs.AdapterFile,`{"filename":"./logs/temp.log","maxlines":1000000,"maxsize":256000,"perm": "0644"}`)
 	MConfig.MLogger.EnableFuncCallDepth(true)
 	MConfig.MLogger.Async()
 	MConfig.MLogger.SetLevel(logs.LevelDebug)

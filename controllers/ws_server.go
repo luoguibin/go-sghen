@@ -58,7 +58,7 @@ func (c *WSServerController) Get() {
 		WsData: uGame,	
 	}
 
-	clients.Store(uId, &wsUser)
+	clients.Store(uId, wsUser)
 	// go func(wsUser models.WsUser) {
 		for { 
 			var action models.GameAction0
@@ -73,7 +73,7 @@ func (c *WSServerController) Get() {
 				break;
 			}
 			
-			client, ok := (client_).(models.WsUser)
+			client, ok := (client_).(*models.WsUser)
 			if !ok {
 				models.MConfig.MLogger.Error("clients cast error")
 				break;
@@ -126,7 +126,7 @@ func dataCenter() {
 		// ②计算
 		wsDatas := make([]interface{}, 0)
 		clients.Range(func(key, client_ interface{}) bool {
-			client, ok := (client_).(models.WsUser)
+			client, ok := (client_).(*models.WsUser)
 			if !ok {
 				models.MConfig.MLogger.Error("dataCenter() clients cast error")
 				return true
@@ -138,7 +138,7 @@ func dataCenter() {
 		// ③发送ws数据
 		count := 0
 		clients.Range(func(key, client_ interface{}) bool {
-			client, ok := (client_).(models.WsUser)
+			client, ok := (client_).(*models.WsUser)
 			count++
 			if !ok {
 				models.MConfig.MLogger.Error("dataCenter() clients cast error")
@@ -154,6 +154,6 @@ func dataCenter() {
 		})
 
 		time.Sleep(time.Second * 1)
-		fmt.Println("clients count=", count)
+		// fmt.Println("clients count=", count)
 	}
 }
