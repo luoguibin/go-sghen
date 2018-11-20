@@ -18,7 +18,7 @@ func InitGorm() {
 
 	dbOrmDefault = db
 
-	db.AutoMigrate(&User{}, &PeotrySet{}, &PeotryImage{}, &Peotry{})
+	db.AutoMigrate(&User{}, &PeotrySet{}, &PeotryImage{}, &Peotry{}, &GameData{})
 
 	count := 0
 	if db.Model(&User{}).Count(&count); count == 0 {
@@ -29,5 +29,8 @@ func InitGorm() {
 	}
 	if db.Model(&Peotry{}).Count(&count); count == 0 {
 		initSystemPeotry()
+	}
+	if db.Model(&GameData{}).Count(&count); count == 0 {
+		initSystemGameData()
 	}
 }
