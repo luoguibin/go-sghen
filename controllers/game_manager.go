@@ -74,6 +74,11 @@ func (manager *GameManager) gameClientHandle(gameClient *models.GameClient) {
 				if client.GameData.GBlood < 0 {
 					client.GameData.GBlood = 0
 				}
+			case "drug":
+				gameClient.GameData.GBlood += gameClient.GameData.GBloodAll / 10
+				if gameClient.GameData.GBlood > gameClient.GameData.GBloodAll {
+					gameClient.GameData.GBlood = gameClient.GameData.GBloodAll
+				}
 			case "msg":
 				action.Target = gameClient.ID
 				client.Conn.WriteJSON(action)
