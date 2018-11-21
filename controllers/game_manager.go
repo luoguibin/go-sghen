@@ -2,6 +2,8 @@ package controllers
 
 import (
 	"SghenApi/models"
+	"SghenApi/helper"
+	"encoding/json"
 	"sync"
 	"math/rand"
 	"time"
@@ -26,65 +28,165 @@ func (manager *GameManager) Init() {
 }
 
 func (manager *GameManager) gameClientHandle(gameClient *models.GameClient) {
-	for { 
-		var action models.GameAction
-		err := gameClient.Conn.ReadJSON(&action)
+	preTime := time.Now().UnixNano() / 1e6
+	for {
+		// 获取指令 
+		var order models.GameOrder
+		err := gameClient.Conn.ReadJSON(&order)
 		if err != nil {
 			models.MConfig.MLogger.Error("ws read msg error: " + err.Error())
-			break;
+			return
 		}
-		client_, ok := gameManager.gameClientMap.Load(action.Target)
-		if !ok {
-			models.MConfig.MLogger.Error("gameClientMap.Load error")
-			break;
+		curTime := time.Now().UnixNano() / 1e6
+		// fmt.Printf("%v  %d\n", order, curTime - preTime)
+		if (curTime - preTime < 300) {
+			continue
 		}
+		preTime = curTime
 		
-		client, ok := (client_).(*models.GameClient)
-		if !ok {
-			models.MConfig.MLogger.Error("gameClientMap cast error")
-			break;
-		}
-
-		switch action.Action {
-			case "fist":
-				ran := rand.Intn(200)
-				if rand.Intn(10) < 5 {
-					ran = gameClient.GameData.GPower + ran
-				} else {
-					ran = gameClient.GameData.GPower - ran
-				}
-				client.GameData.GBlood -= ran
-
-				if client.GameData.GBlood < 0 {
-					client.GameData.GBlood = 0
-				}
-			case "skill":
-				ran := rand.Intn(200)
-				ran = int(float32(gameClient.GameData.GPower) * 1.3) + ran
-				client.GameData.GBlood -= ran
-
-				if client.GameData.GBlood < 0 {
-					client.GameData.GBlood = 0
-				}
-			case "skill_big":
-				ran := rand.Intn(10000)
-				ran = int(float32(gameClient.GameData.GPower) * 3.3) + ran
-				client.GameData.GBlood -= ran
-
-				if client.GameData.GBlood < 0 {
-					client.GameData.GBlood = 0
-				}
-			case "drug":
-				gameClient.GameData.GBlood += gameClient.GameData.GBloodAll / 10
-				if gameClient.GameData.GBlood > gameClient.GameData.GBloodAll {
-					gameClient.GameData.GBlood = gameClient.GameData.GBloodAll
-				}
-			case "msg":
-				action.Target = gameClient.ID
-				client.Conn.WriteJSON(action)
+		switch order.OrderType {
+			case models.OrderMsg:
+				manager.dealOrderMsg(gameClient, order)
+			case models.OrderSkill:
+				manager.dealOrderSkill(gameClient, order)
+			case models.OrderNormal:
+				manager.dealOrderNormal(gameClient, order)
 			default:
+				models.MConfig.MLogger.Error(string(gameClient.ID) + " order invalid: " + string(order.OrderType))
 		}
 	} 
+}
+
+func (manager *GameManager) dealOrderMsg(gameClient *models.GameClient, order models.GameOrder) {
+	client_, ok := manager.gameClientMap.Load(order.Target)
+	if !ok {
+		models.MConfig.MLogger.Error("gameClientMap.Load error")
+		return;
+	}
+	
+	client, ok := (client_).(*models.GameClient)
+	if !ok {
+		models.MConfig.MLogger.Error("gameClientMap cast error")
+		return;
+	}
+
+	order.Target = gameClient.ID
+	client.Conn.WriteJSON(order)
+}
+
+func (manager *GameManager) dealOrderSkill(gameClient *models.GameClient, order models.GameOrder) {
+	client_, ok := manager.gameClientMap.Load(order.Target)
+	if !ok {
+		models.MConfig.MLogger.Error("gameClientMap.Load error")
+		return;
+	}
+	
+	client, ok := (client_).(*models.GameClient)
+	if !ok {
+		models.MConfig.MLogger.Error("gameClientMap cast error")
+		return;
+	}
+
+	switch order.Msg {
+		case "fist":
+			data0 := gameClient.GameData
+			data1 := client.GameData
+			d := helper.GClientDistance(data0.GX, data0.GY, data1.GX, data1.GY)
+			if d > 50 {
+				gameClient.Conn.WriteJSON(models.GameOrder{
+					OrderType: 	models.OrderMsg,
+					Target:		-1,
+					Msg: 		"距离超过50",
+				})
+				break
+			}
+			ran := rand.Intn(200)
+			if rand.Intn(10) < 5 {
+				ran = data0.GPower + ran
+			} else {
+				ran = data0.GPower - ran
+			}
+			data1.GBlood -= ran
+
+			if data1.GBlood < 0 {
+				data1.GBlood = 0
+			}
+		case "skill":
+			data0 := gameClient.GameData
+			data1 := client.GameData
+			d := helper.GClientDistance(data0.GX, data0.GY, data1.GX, data1.GY)
+			if d > 50 {
+				gameClient.Conn.WriteJSON(models.GameOrder{
+					OrderType: 	models.OrderMsg,
+					Target:		-1,
+					Msg: 		"距离超过50",
+				})
+				break
+			}
+			ran := rand.Intn(200)
+			ran = int(float32(data0.GPower) * 1.3) + ran
+			data1.GBlood -= ran
+
+			if data1.GBlood < 0 {
+				data1.GBlood = 0
+			}
+		case "skill_big":
+			data0 := gameClient.GameData
+			data1 := client.GameData
+			d := helper.GClientDistance(data0.GX, data0.GY, data1.GX, data1.GY)
+			if d > 80 {
+				gameClient.Conn.WriteJSON(models.GameOrder{
+					OrderType: 	models.OrderMsg,
+					Target:		-1,
+					Msg: 		"距离超过80",
+				})
+				break
+			}
+			ran := rand.Intn(10000)
+			ran = int(float32(data0.GPower) * 3.3) + ran
+			data1.GBlood -= ran
+
+			if data1.GBlood < 0 {
+				data1.GBlood = 0
+			}
+		default:
+	}
+}
+
+func (manager *GameManager) dealOrderNormal(gameClient *models.GameClient, order models.GameOrder) {
+	// client_, ok := manager.gameClientMap.Load(order.Target)
+	// if !ok {
+	// 	models.MConfig.MLogger.Error("gameClientMap.Load error")
+	// 	return;
+	// }
+	
+	// client, ok := (client_).(*models.GameClient)
+	// if !ok {
+	// 	models.MConfig.MLogger.Error("gameClientMap cast error")
+	// 	return;
+	// }
+
+	switch order.Msg {
+		case "drug":
+			data0 := gameClient.GameData
+			data0.GBlood += data0.GBloodAll / 10
+			if data0.GBlood > data0.GBloodAll {
+				data0.GBlood = data0.GBloodAll
+			}
+		case "action":
+			b := []byte(order.Data)
+			action := models.GameAction{}
+			err := json.Unmarshal(b, &action)
+			if err != nil {
+				models.MConfig.MLogger.Error("dealOrderNormal() action parse err " + err.Error())
+				break
+			}
+
+			data0 := gameClient.GameData
+			data0.GX = action.GX
+			data0.GY = action.GY
+		default:
+	}
 }
 
 func (manager *GameManager) dataCenter() {	

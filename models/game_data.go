@@ -9,15 +9,17 @@ type GameData struct {
 	GBlood	   		int 		`gorm:"column:g_blood" json:"blood"`
 	GBloodAll	   	int 		`gorm:"column:g_blood_all" json:"blood_all"`
 	GPower	   		int 		`gorm:"column:g_power" json:"power"`
+	GX				int			`gorm:"column:g_x" json:"x"`
+	GY				int 		`gorm:"column:g_y" json:"y"`
 }
 
 func initSystemGameData() {
-	CreateGameData(15625045984, "Sghen", 103, 300000, 350000, 5000)
-	CreateGameData(66666666, "Morge", 102, 350000, 500000, 4900)
-	CreateGameData(88888888, "SghenMorge", 105, 320000, 400000, 5500)
+	CreateGameData(15625045984, "Sghen", 103, 300000, 350000, 5000, 0, 0)
+	CreateGameData(66666666, "Morge", 102, 350000, 500000, 4900, 0, 0)
+	CreateGameData(88888888, "SghenMorge", 105, 320000, 400000, 5500, 0, 0)
 }
 
-func CreateGameData(id int64, gName string, gLevel int, gBlood int, gBloodAll int, gPower int) {
+func CreateGameData(id int64, gName string, gLevel int, gBlood int, gBloodAll int, gPower int, gX int, gY int) {
 	gameData := GameData {
 		ID:			id,
 		GName:		gName,
@@ -25,6 +27,8 @@ func CreateGameData(id int64, gName string, gLevel int, gBlood int, gBloodAll in
 		GBlood: 	gBlood,
 		GBloodAll: 	gBloodAll,
 		GPower:		gPower,
+		GX:			gX,
+		GY:			gY,
 	}
 	err := dbOrmDefault.Model(&GameData{}).Save(gameData).Error
 	if err != nil {

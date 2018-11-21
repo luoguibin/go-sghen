@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"SghenApi/models"
+	"encoding/json"
 	"fmt"
 )
 
@@ -31,19 +32,44 @@ func checkLogin(gameClient *models.GameClient) {
 	if !ok {
 		addGameUser(gameClient)
 	} else {
-		gameClient.Conn.WriteJSON(models.GameAction{Msg: "重复登录"})
+		gameClient.Conn.WriteJSON(models.GameOrder{
+			OrderType: 	models.OrderMsg,
+			Target:		-1,
+			Msg: 		"重复登录",
+		})
 	}
 }
 
 func addGameUser(gameClient *models.GameClient) {
 	gameData, err := models.QueryGameData(gameClient.ID)
 	if err != nil {
-		gameClient.Conn.WriteJSON(models.GameAction{Msg: "该账号下未查询到游戏数据"})
+		gameClient.Conn.WriteJSON(models.GameOrder{
+			OrderType: 	models.OrderMsg,
+			Target:		-1,
+			Msg: 		"该账号下未查询到游戏数据",
+		})
 		gameClient.Conn.Close()
 		return
 	}
 
 	gameClient.GameData = gameData
+	d, err := json.Marshal(gameClient.GameData)
+	if err != nil {
+		gameClient.Conn.WriteJSON(models.GameOrder{
+			OrderType: 	models.OrderMsg,
+			Target:		-1,
+			Msg: 		"该账号下游戏数据解析出错",
+		})
+		gameClient.Conn.Close()
+		return
+	}
+	gameClient.Conn.WriteJSON(models.GameOrder{
+		OrderType:	models.OrderMsg,
+		Target:		-1,
+		Msg:		"info",
+		Data:		string(d),
+	})
+
 	gameManager.gameClientMap.Store(gameClient.ID, gameClient)
 	go gameManager.gameClientHandle(gameClient)
 }
