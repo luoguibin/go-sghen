@@ -33,9 +33,14 @@ func checkLogin(gameClient *models.GameClient) {
 		addGameUser(gameClient)
 	} else {
 		gameClient.Conn.WriteJSON(models.GameOrder{
-			OrderType: 	models.OrderMsg,
-			Target:		-1,
-			Msg: 		"重复登录",
+			OrderType: 	models.OrderMsgSystem,
+			FromType:	models.FromSystem,
+			FromID:		models.IDSystem,
+			Data:		models.GameOrderMsg {
+							ToType:		models.FromUser,
+							ToID:		gameClient.ID,
+							Msg: 		"重复登录",
+						},
 		})
 	}
 }
@@ -44,9 +49,14 @@ func addGameUser(gameClient *models.GameClient) {
 	gameData, err := models.QueryGameData(gameClient.ID)
 	if err != nil {
 		gameClient.Conn.WriteJSON(models.GameOrder{
-			OrderType: 	models.OrderMsg,
-			Target:		-1,
-			Msg: 		"该账号下未查询到游戏数据",
+			OrderType: 	models.OrderMsgSystem,
+			FromType:	models.FromSystem,
+			FromID:		models.IDSystem,
+			Data:		models.GameOrderMsg {
+							ToType:		models.FromUser,
+							ToID:		gameClient.ID,
+							Msg: 		"该账号下未查询到游戏数据",
+						},
 		})
 		gameClient.Conn.Close()
 		return
@@ -56,20 +66,25 @@ func addGameUser(gameClient *models.GameClient) {
 	d, err := json.Marshal(gameClient.GameData)
 	if err != nil {
 		gameClient.Conn.WriteJSON(models.GameOrder{
-			OrderType: 	models.OrderMsg,
-			Target:		-1,
-			Msg: 		"该账号下游戏数据解析出错",
+			OrderType: 	models.OrderMsgSystem,
+			FromType:	models.FromSystem,
+			FromID:		models.IDSystem,
+			Data:		models.GameOrderMsg {
+							ToType:		models.FromUser,
+							ToID:		gameClient.ID,
+							Msg: 		"该账号下游戏数据解析出错",
+						},
 		})
 		gameClient.Conn.Close()
 		return
 	}
 	gameClient.Conn.WriteJSON(models.GameOrder{
-		OrderType:	models.OrderMsg,
-		Target:		-1,
-		Msg:		"info",
+		OrderType: 	models.OrderUserData,
+		FromType:	models.FromSystem,
+		FromID:		models.IDSystem,
 		Data:		string(d),
 	})
-
+	
 	gameManager.gameClientMap.Store(gameClient.ID, gameClient)
 	go gameManager.gameClientHandle(gameClient)
 }

@@ -7,7 +7,7 @@ type GameData struct {
 	GLevel	   		int 		`gorm:"column:g_level" json:"level"`
 
 	GBlood	   		int 		`gorm:"column:g_blood" json:"blood"`
-	GBloodAll	   	int 		`gorm:"column:g_blood_all" json:"blood_all"`
+	GBloodAll	   	int 		`gorm:"column:g_blood_all" json:"bloodAll"`
 	GPower	   		int 		`gorm:"column:g_power" json:"power"`
 	GX				int			`gorm:"column:g_x" json:"x"`
 	GY				int 		`gorm:"column:g_y" json:"y"`

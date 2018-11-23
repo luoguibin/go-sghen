@@ -1,10 +1,30 @@
 package models
 
 var (
-	OrderMsg 		= 	1
-	OrderSkill		=	2
-	OrderNormal		=	3
+	OrderMsg		= 	1000
+	OrderMsgSystem 	= 	1001
+	OrderMsgPerson	= 	1002
+	OrderMsgGroup   =   1003
+	OrderMsgAll		= 	1004
+
+	OrderSkill		=	2000
+	
+	OrderNormal		=	3000
+
+	OrderUserData	=	4000
+	OrderGameData	=	4001
 )
+
+var (
+	FromSystem		=	1000
+	FromUser		=	2000
+)
+
+var (
+	IDSystem int64	=	1000
+	IDUser	 int64	=	2000
+)
+
 /*
  * 指令集合：
  *		①消息指令：
@@ -20,10 +40,26 @@ var (
  */
 
 type GameOrder struct {
+	// who makes the `order`
+	FromType	int			`json:"fromType"`
+	FromID		int64		`json:"fromId"`
+
+	// the `order` type
 	OrderType 	int			`json:"order"`
-	Target		int64		`json:"target"`
-	Msg         string		`json:"msg"`
-	Data		string		`json:"data"`
+
+	// the `order` data than need to be translated and executed
+	Data		interface{}	`json:"data"`
+}
+
+type GameOrderMsg struct {
+	ToType		int 		`json:"toType"`
+	ToID		int64		`json:"toId"`
+	Msg			string		`json:"msg"`
+}
+
+type GameOrderSkill struct {
+	ToID		int 		`json:"toId"`
+	
 }
 
 type GameAction struct {
