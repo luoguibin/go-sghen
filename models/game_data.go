@@ -21,7 +21,7 @@ type GameData struct {
 	GX				int				`gorm:"column:g_x" json:"x"`
 	GY				int 			`gorm:"column:g_y" json:"y"`
 
-	GOrders			[]*GameOrder		`gorm:"-" json:"orders"`
+	GOrders			[]*interface{}		`gorm:"-" json:"orders"`
 }
 
 func initSystemGameData() {
@@ -33,9 +33,9 @@ func initSystemGameData() {
 		initSystemGameShield()
 	}
 
-	CreateGameData(15625045984, "Sghen", 103, 11100, 11100, 50, 0, 0, 0)
-	CreateGameData(66666666, "Morge", 102, 10000, 10000, 50, 0, 0, 0)
-	CreateGameData(88888888, "SghenMorge", 105, 11000, 11000, 50, 0, 0, 0)
+	CreateGameData(15625045984, "Sghen", 103, 11100, 11100, 0, 50, 0, 0)
+	CreateGameData(66666666, "Morge", 102, 10000, 10000, 0, 50, 0, 0)
+	CreateGameData(88888888, "SghenMorge", 105, 11000, 11000, 0, 50, 0, 0)
 }
 
 func CreateGameData(id int64, gName string, gLevel int, gBloodBase int, gBlood int, gMapId int, gSpeedBase int, gX int, gY int) {

@@ -1,4 +1,4 @@
-package controllers
+package game
 
 import (
 	"SghenApi/models"
@@ -21,12 +21,12 @@ func (service *GLoginService) start() {
 		v, ok := <- GLoginChan
 		if ok {
 			switch v.GameStatus {
-			case GStatusLogin:
-				checkLogin(v)
-			case GStatusLogout:
-				checkLogout(v)
-			case GGStatusLogoutAll:
-				checkLogout(v)
+				case GStatusLogin:
+					checkLogin(v)
+				case GStatusLogout:
+					checkLogout(v)
+				case GGStatusLogoutAll:
+					checkLogout(v)
 			}
 		} else {
 			fmt.Println("loginChan get error")
@@ -35,15 +35,15 @@ func (service *GLoginService) start() {
 }
 
 func checkLogin(gameClient *GameClient) {
-	if (GameStatus != 1) {
-		gameClient.Conn.WriteJSON(models.GameOrder{
-			OrderType: 	OTypeMsgSystemMaintenance,
-			FromType:	ITypeSystem,
+	if (gServerStatus != 1) {
+		gameClient.Conn.WriteJSON(GameOrder{
+			OrderType: 	OT_MsgSystemInner,
+			FromType:	ITSystem,
 			FromID:		IDSYSTEM,
-			Data:		models.GameOrderMsg {
-							ToType:		ITypePerson,
+			Data:		GameOrderMsg {
+							ToType:		ITPerson,
 							ToID:		gameClient.ID,
-							Msg: 		"系统维护中，代码：" + strconv.Itoa(GameStatus),
+							Msg: 		"系统维护中，代码：" + strconv.Itoa(gServerStatus),
 						},
 		})
 		gameClient.Conn.Close()
@@ -51,7 +51,7 @@ func checkLogin(gameClient *GameClient) {
 	}
 
 	isRepeat := false
-	GMapMap.Range(func(key, gMap_ interface{}) bool {
+	gMapMap.Range(func(key, gMap_ interface{}) bool {
 		gMap, ok := (gMap_).(*GMapService)
 		if !ok {
 			models.MConfig.MLogger.Error("checkLogin() gMap cast error")
@@ -66,12 +66,12 @@ func checkLogin(gameClient *GameClient) {
 	})
 	
 	if isRepeat {
-		gameClient.Conn.WriteJSON(models.GameOrder{
-			OrderType: 	OTypeMsgSystem,
-			FromType:	ITypeSystem,
+		gameClient.Conn.WriteJSON(GameOrder{
+			OrderType: 	OT_MsgSystem,
+			FromType:	ITSystem,
 			FromID:		IDSYSTEM,
-			Data:		models.GameOrderMsg {
-							ToType:		ITypePerson,
+			Data:		GameOrderMsg {
+							ToType:		ITPerson,
 							ToID:		gameClient.ID,
 							Msg: 		"重复登录",
 						},
@@ -84,12 +84,12 @@ func checkLogin(gameClient *GameClient) {
 func addGameClient(gameClient *GameClient) {
 	gameData, err := models.QueryGameData(gameClient.ID)
 	if err != nil {
-		gameClient.Conn.WriteJSON(models.GameOrder{
-			OrderType: 	OTypeMsgSystem,
-			FromType:	ITypeSystem,
+		gameClient.Conn.WriteJSON(GameOrder{
+			OrderType: 	OT_MsgSystem,
+			FromType:	ITSystem,
 			FromID:		IDSYSTEM,
-			Data:		models.GameOrderMsg {
-							ToType:		ITypePerson,
+			Data:		GameOrderMsg {
+							ToType:		ITPerson,
 							ToID:		gameClient.ID,
 							Msg: 		"该账号下未查询到游戏数据",
 						},
@@ -97,17 +97,17 @@ func addGameClient(gameClient *GameClient) {
 		gameClient.Conn.Close()
 		return
 	}
-	ResetGameData(gameData)
+	resetGameData(gameData)
 
 	gameClient.GameData = gameData
 	d, err := json.Marshal(gameClient.GameData)
 	if err != nil {
-		gameClient.Conn.WriteJSON(models.GameOrder{
-			OrderType: 	OTypeMsgSystem,
-			FromType:	ITypeSystem,
+		gameClient.Conn.WriteJSON(GameOrder{
+			OrderType: 	OT_MsgSystem,
+			FromType:	ITSystem,
 			FromID:		IDSYSTEM,
-			Data:		models.GameOrderMsg {
-							ToType:		ITypePerson,
+			Data:		GameOrderMsg {
+							ToType:		ITPerson,
 							ToID:		gameClient.ID,
 							Msg: 		"该账号下游戏数据解析出错",
 						},
@@ -115,14 +115,14 @@ func addGameClient(gameClient *GameClient) {
 		gameClient.Conn.Close()
 		return
 	}
-	gameClient.Conn.WriteJSON(models.GameOrder{
-		OrderType: 	OTypeDataPerson,
-		FromType:	ITypeSystem,
+	gameClient.Conn.WriteJSON(GameOrder{
+		OrderType: 	OT_DataPerson,
+		FromType:	ITSystem,
 		FromID:		IDSYSTEM,
 		Data:		string(d),
 	})
 
-	gMap_, ok := GMapMap.Load(gameData.GMapId)
+	gMap_, ok := gMapMap.Load(gameData.GMapId)
 	if !ok {
 		models.MConfig.MLogger.Error("addGameClient() gMap load error %s", gameData)
 	} else {
@@ -131,7 +131,7 @@ func addGameClient(gameClient *GameClient) {
 			models.MConfig.MLogger.Error("addGameClient() gMap cast error")
 		} else {
 			gMap.gameClientMap.Store(gameClient.ID, gameClient)
-			go gMap.gameClientHandle(gameClient)
+			go goGameClientHandle(gameClient)
 		}
 	}
 }

@@ -16,7 +16,7 @@ import (
 
 func init() {
 	beego.Router("/", &controllers.BaseController{}, "GET:BaseGetTest")
-	beego.Router("/ws", &controllers.WSServerController{})
+	beego.Router("/ws", &controllers.GameController{})
 
 	beego.InsertFilter("/ws", beego.BeforeRouter, func(ctx *context.Context) {
 		controllers.GatewayAccessUser(ctx, false)

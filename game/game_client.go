@@ -1,4 +1,4 @@
-package controllers
+package game
 
 import(
 	"SghenApi/models"
