@@ -10,11 +10,14 @@ type GameData struct {
 
 	GBloodBase		int 			`gorm:"column:g_blood_base" json:"bloodBase"`
 	GBlood	   		int 			`gorm:"column:g_blood" json:"blood"`
-	GBloodAll	   	int 			`gorm:"column:g_blood_all" json:"bloodAll"`
+	GBloodAll	   	int 			`gorm:"-" json:"bloodAll"`
 
 	GSpear	   		*GameSpear 		`gorm:"foreignkey:id" json:"spear"`
 	GShield	   		*GameShield 	`gorm:"foreignkey:id" json:"shield"`
 
+	GMapId			int				`gorm:"column:g_map_id" json:"mapId"`
+	GSpeedBase		int 			`gorm:"column:g_speed_base" json:"speedBase"`
+	GSpeed			int 			`gorm:"-" json:"speed"`
 	GX				int				`gorm:"column:g_x" json:"x"`
 	GY				int 			`gorm:"column:g_y" json:"y"`
 
@@ -30,19 +33,19 @@ func initSystemGameData() {
 		initSystemGameShield()
 	}
 
-	CreateGameData(15625045984, "Sghen", 103, 11100, 300000, 350000, 5000, 0, 0)
-	CreateGameData(66666666, "Morge", 102, 10000, 350000, 500000, 4900, 0, 0)
-	CreateGameData(88888888, "SghenMorge", 105, 11000, 320000, 400000, 5500, 0, 0)
+	CreateGameData(15625045984, "Sghen", 103, 11100, 11100, 50, 0, 0, 0)
+	CreateGameData(66666666, "Morge", 102, 10000, 10000, 50, 0, 0, 0)
+	CreateGameData(88888888, "SghenMorge", 105, 11000, 11000, 50, 0, 0, 0)
 }
 
-func CreateGameData(id int64, gName string, gLevel int, gBloodBase int, gBlood int, gBloodAll int, gPower int, gX int, gY int) {
+func CreateGameData(id int64, gName string, gLevel int, gBloodBase int, gBlood int, gMapId int, gSpeedBase int, gX int, gY int) {
 	gameData := GameData {
 		ID:			id,
 		GName:		gName,
 		GLevel:		gLevel,
 		GBloodBase:	gBloodBase,
-		GBlood: 	gBlood,
-		GBloodAll: 	gBloodAll,
+		GBlood:		gBlood,
+		GSpeedBase:	gSpeedBase,
 		GX:			gX,
 		GY:			gY,
 	}

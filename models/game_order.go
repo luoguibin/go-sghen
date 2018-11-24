@@ -1,33 +1,5 @@
 package models
 
-var (
-	OrderMsg			= 	1000
-	OrderMsgSystem 		= 	1001
-	OrderMsgPerson		= 	1002
-	OrderMsgGroup   	=   1003
-	OrderMsgAll			= 	1004
-	OrderMsgFeedback	=	1005
-
-	OrderSkill			=	2000
-	
-	OrderNormal			=	3000
-
-	OrderUserData		=	4000
-	OrderGameData		=	4001
-	OrderLogout			= 	4002
-	OrderSystemInfo		=	4003	
-)
-
-var (
-	FromSystem			=	1000
-	FromUser			=	2000
-)
-
-var (
-	IDSystem 	int64	=	1000
-	IDUser	 	int64	=	2000
-)
-
 /*
  * 指令集合：
  *		①消息指令：
