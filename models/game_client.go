@@ -15,4 +15,5 @@ var (
 	StatusLogin 	=	0
 	StatusInGame	=   1
 	StatusLogout	= 	-1
+	StatusLogoutAll	=	-2
 )

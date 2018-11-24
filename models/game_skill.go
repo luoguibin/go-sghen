@@ -1,18 +1,28 @@
 package models
 
 var (
-	SkillA0		= 2000
+	SkillA		= 1000
 
-	SkillG0		= 3000
-	SkillG1		= 3001
-	SkillG2		= 3002
-	SkillG3		= 3003
-	SkillG4		= 3004
+	SkillG		= 2000
+	SkillG1		= 2001
+	SkillG2		= 2002
+	SkillG3		= 2003
+	SkillG4		= 2004
 
-	SkillS0		= 4000
-	SkillS1		= 4001
-	SkillS2		= 4002
-	SkillS3		= 4003
-	SkillS4		= 4004
+	SkillS		= 3000
+	SkillS1		= 3001
+	SkillS2		= 3002
+	SkillS3		= 3003
+	SkillS4		= 3004
 )
 
+
+func GetSkillDamage(id int, data0 *GameData, data1 *GameData) {
+
+	switch id {
+	case SkillS:
+		return 
+	default:
+
+	}
+}

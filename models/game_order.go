@@ -1,28 +1,31 @@
 package models
 
 var (
-	OrderMsg		= 	1000
-	OrderMsgSystem 	= 	1001
-	OrderMsgPerson	= 	1002
-	OrderMsgGroup   =   1003
-	OrderMsgAll		= 	1004
+	OrderMsg			= 	1000
+	OrderMsgSystem 		= 	1001
+	OrderMsgPerson		= 	1002
+	OrderMsgGroup   	=   1003
+	OrderMsgAll			= 	1004
+	OrderMsgFeedback	=	1005
 
-	OrderSkill		=	2000
+	OrderSkill			=	2000
 	
-	OrderNormal		=	3000
+	OrderNormal			=	3000
 
-	OrderUserData	=	4000
-	OrderGameData	=	4001
+	OrderUserData		=	4000
+	OrderGameData		=	4001
+	OrderLogout			= 	4002
+	OrderSystemInfo		=	4003	
 )
 
 var (
-	FromSystem		=	1000
-	FromUser		=	2000
+	FromSystem			=	1000
+	FromUser			=	2000
 )
 
 var (
-	IDSystem int64	=	1000
-	IDUser	 int64	=	2000
+	IDSystem 	int64	=	1000
+	IDUser	 	int64	=	2000
 )
 
 /*
@@ -51,6 +54,11 @@ type GameOrder struct {
 	Data		interface{}	`json:"data"`
 }
 
+type GameOrderData struct {
+	Orders		[]interface{}	`json:"orders"`
+	Data		[]interface{}	`json:"data"`
+}
+
 type GameOrderMsg struct {
 	ToType		int 		`json:"toType"`
 	ToID		int64		`json:"toId"`
@@ -58,8 +66,13 @@ type GameOrderMsg struct {
 }
 
 type GameOrderSkill struct {
-	ToID		int 		`json:"toId"`
-	
+	ToID			int64 		`json:"toId"`
+	SkillID			int			`json:"skillId"`
+	Targets			[]int64		`json:"targets"`
+	Damage			int 		`json:"damage"`
+	DamageAll 		int 		`json:"damageAll"`
+	DamageCount		int			`json:"damageCount,omitempty"`
+	DamageCountAll	int			`json:"damageCountAll,omitempty"`
 }
 
 type GameAction struct {

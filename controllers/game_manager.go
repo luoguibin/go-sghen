@@ -2,10 +2,11 @@ package controllers
 
 import (
 	"SghenApi/models"
-	// "SghenApi/helper"
+	"SghenApi/helper"
 	// "encoding/json"
+	"container/list"
 	"sync"
-	// "math/rand"
+	"math/rand"
 	"time"
 	"fmt"
 	"github.com/goinggo/mapstructure"
@@ -13,6 +14,7 @@ import (
 
 type GameManager struct {
 	gameClientMap  	sync.Map
+	orderList		*list.List
 
 	loginChan		chan *models.GameClient
 	gLoginService 	GLoginService
@@ -23,9 +25,23 @@ func (manager *GameManager) Init() {
 
 	manager.loginChan = make(chan *models.GameClient)
 	manager.gLoginService = GLoginService{}
+	manager.orderList = list.New()
+
 	go manager.gLoginService.start()
 
 	go manager.dataCenter()
+}
+
+func (manager *GameManager) getUserData(id int64) *models.GameData {
+	client_, ok := manager.gameClientMap.Load(id)
+	if !ok {
+		return nil
+	}
+	client, ok := (client_).(*models.GameClient)
+	if !ok { 
+		return nil
+	}
+	return client.GameData
 }
 
 func (manager *GameManager) gameClientHandle(gameClient *models.GameClient) {
@@ -51,9 +67,12 @@ func (manager *GameManager) gameClientHandle(gameClient *models.GameClient) {
 		v := order.OrderType >> 3 << 3
 		switch v {
 			case models.OrderMsg:
-				manager.dealOrderMsg(gameClient, order)
-			// case models.OrderSkill:
-			// 	manager.dealOrderSkill(gameClient, order)
+				ok := manager.dealOrderMsg(gameClient, &order)
+				if !ok {
+					gameManager.orderList.PushBack(&order)
+				}
+			case models.OrderSkill:
+				manager.dealOrderSkill(gameClient, &order)
 			// case models.OrderNormal:
 			// 	manager.dealOrderNormal(gameClient, order)
 			default:
@@ -68,7 +87,7 @@ func (manager *GameManager) gameClientHandle(gameClient *models.GameClient) {
  *		个体对个体自建群组的消息指令，则直接执行
  * 		个体对大众的消息指令，加入中心指令队列
  */
-func (manager *GameManager) dealOrderMsg(gameClient *models.GameClient, order models.GameOrder) bool{
+func (manager *GameManager) dealOrderMsg(gameClient *models.GameClient, order *models.GameOrder) bool{
 	switch order.OrderType {
 		case models.OrderMsgPerson:
 			var orderMsg models.GameOrderMsg
@@ -79,7 +98,7 @@ func (manager *GameManager) dealOrderMsg(gameClient *models.GameClient, order mo
 			}
 			client_, ok := manager.gameClientMap.Load(orderMsg.ToID)
 			if !ok {
-				fmt.Println(orderMsg)
+				// fmt.Println(orderMsg)
 				models.MConfig.MLogger.Error("gameClientMap.Load error")
 				return true;
 			}
@@ -94,6 +113,13 @@ func (manager *GameManager) dealOrderMsg(gameClient *models.GameClient, order mo
 		case models.OrderMsgGroup:
 			return true;
 		case models.OrderMsgAll:
+			var orderMsg models.GameOrderMsg
+			err := mapstructure.Decode(order.Data, &orderMsg)
+			if err != nil {
+				models.MConfig.MLogger.Error("mapstructure.Decode error %s", err.Error())
+				return true
+			}
+			order.Data = orderMsg
 			return false;
 		case models.OrderMsgSystem:
 			return false;
@@ -102,84 +128,160 @@ func (manager *GameManager) dealOrderMsg(gameClient *models.GameClient, order mo
 	}
 }
 
-// func (manager *GameManager) dealOrderSkill(gameClient *models.GameClient, order models.GameOrder) {
-// 	client_, ok := manager.gameClientMap.Load(order.Target)
-// 	if !ok {
-// 		models.MConfig.MLogger.Error("gameClientMap.Load error")
-// 		return;
-// 	}
+func (manager *GameManager) dealOrderSkill(gameClient *models.GameClient, order *models.GameOrder) {
+	var orderSkill models.GameOrderSkill
+	err := mapstructure.Decode(order.Data, &orderSkill)
+	if err != nil {
+		models.MConfig.MLogger.Error("mapstructure.Decode error %s", err.Error())
+		return
+	}
+
+	skillID := orderSkill.SkillID
+	if skillID < 1000 {
+		models.MConfig.MLogger.Error("skillID < 1000")
+		return
+	}
+
+	switch skillID >> 3 << 3 {
+		case models.SkillS:
+			// single oject skill
+			client_, ok := manager.gameClientMap.Load(order.FromID)
+			if !ok {
+				models.MConfig.MLogger.Error("gameClientMap.Load error")
+				return;
+			}
+			
+			client, ok := (client_).(*models.GameClient)
+			if !ok {
+				models.MConfig.MLogger.Error("gameClientMap cast error", client.ID)
+				return;
+			}
+			data0 := gameClient.GameData
+			data1 := client.GameData
+			switch skillID {
+				case models.SkillS1:
+					d := helper.GClientDistance(data0.GX, data0.GY, data1.GX, data1.GY)
+					if d > 50 {
+						gameClient.Conn.WriteJSON(models.GameOrder{
+							OrderType: 	models.OrderMsgFeedback,
+							FromType:	models.FromSystem,
+							FromID:		models.IDSystem,
+							Data:		models.GameOrderMsg {
+											ToType:		models.FromUser,
+											ToID:		gameClient.ID,
+											Msg: 		"距离超过50",
+										},
+						})
+						break
+					}
+					ran := rand.Intn(100)
+					if rand.Intn(10) < 5 {
+						ran = data0.GSpear.SStrength + ran
+					} else {
+						ran = data0.GSpear.SStrength - ran
+					}
+					data1.GBlood -= ran
+		
+					if data1.GBlood < 0 {
+						data1.GBlood = 0
+					}
+					orderSkill.Damage = ran
+					orderSkill.DamageAll = ran
+					orderSkill.DamageCount	= 1
+					orderSkill.DamageCountAll = 1
+					order.Data = orderSkill
+					
+					manager.orderList.PushBack(order)
+				default:	
+			}
+		case models.SkillG:
+		default:
+	}
+
 	
-// 	client, ok := (client_).(*models.GameClient)
-// 	if !ok {
-// 		models.MConfig.MLogger.Error("gameClientMap cast error")
-// 		return;
-// 	}
 
-// 	switch order.Msg {
-// 		case "fist":
-// 			data0 := gameClient.GameData
-// 			data1 := client.GameData
-// 			d := helper.GClientDistance(data0.GX, data0.GY, data1.GX, data1.GY)
-// 			if d > 50 {
-// 				gameClient.Conn.WriteJSON(models.GameOrder{
-// 					OrderType: 	models.OrderMsg,
-// 					Target:		-1,
-// 					Msg: 		"距离超过50",
-// 				})
-// 				break
-// 			}
-// 			ran := rand.Intn(200)
-// 			if rand.Intn(10) < 5 {
-// 				ran = data0.GPower + ran
-// 			} else {
-// 				ran = data0.GPower - ran
-// 			}
-// 			data1.GBlood -= ran
 
-// 			if data1.GBlood < 0 {
-// 				data1.GBlood = 0
-// 			}
-// 		case "skill":
-// 			data0 := gameClient.GameData
-// 			data1 := client.GameData
-// 			d := helper.GClientDistance(data0.GX, data0.GY, data1.GX, data1.GY)
-// 			if d > 50 {
-// 				gameClient.Conn.WriteJSON(models.GameOrder{
-// 					OrderType: 	models.OrderMsg,
-// 					Target:		-1,
-// 					Msg: 		"距离超过50",
-// 				})
-// 				break
-// 			}
-// 			ran := rand.Intn(200)
-// 			ran = int(float32(data0.GPower) * 1.3) + ran
-// 			data1.GBlood -= ran
 
-// 			if data1.GBlood < 0 {
-// 				data1.GBlood = 0
-// 			}
-// 		case "skill_big":
-// 			data0 := gameClient.GameData
-// 			data1 := client.GameData
-// 			d := helper.GClientDistance(data0.GX, data0.GY, data1.GX, data1.GY)
-// 			if d > 80 {
-// 				gameClient.Conn.WriteJSON(models.GameOrder{
-// 					OrderType: 	models.OrderMsg,
-// 					Target:		-1,
-// 					Msg: 		"距离超过80",
-// 				})
-// 				break
-// 			}
-// 			ran := rand.Intn(10000)
-// 			ran = int(float32(data0.GPower) * 3.3) + ran
-// 			data1.GBlood -= ran
+	// switch client.GameData.GName {
+	// 	case "fist":
+	// 		data0 := gameClient.GameData
+	// 		data1 := client.GameData
+	// 		d := helper.GClientDistance(data0.GX, data0.GY, data1.GX, data1.GY)
+	// 		if d > 50 {
+	// 			gameClient.Conn.WriteJSON(models.GameOrder{
+	// 				OrderType: 	models.OrderMsgFeedback,
+	// 				FromType:	models.FromSystem,
+	// 				FromID:		models.IDSystem,
+	// 				Data:		models.GameOrderMsg {
+	// 								ToType:		models.FromUser,
+	// 								ToID:		gameClient.ID,
+	// 								Msg: 		"距离超过50",
+	// 							},
+	// 			})
+	// 			break
+	// 		}
+	// 		ran := rand.Intn(200)
+	// 		if rand.Intn(10) < 5 {
+	// 			ran = data0.GSpear.SStrength + ran
+	// 		} else {
+	// 			ran = data0.GSpear.SStrength - ran
+	// 		}
+	// 		data1.GBlood -= ran
 
-// 			if data1.GBlood < 0 {
-// 				data1.GBlood = 0
-// 			}
-// 		default:
-// 	}
-// }
+	// 		if data1.GBlood < 0 {
+	// 			data1.GBlood = 0
+	// 		}
+	// 	case "skill":
+	// 		data0 := gameClient.GameData
+	// 		data1 := client.GameData
+	// 		d := helper.GClientDistance(data0.GX, data0.GY, data1.GX, data1.GY)
+	// 		if d > 50 {
+	// 			gameClient.Conn.WriteJSON(models.GameOrder{
+	// 				OrderType: 	models.OrderMsgFeedback,
+	// 				FromType:	models.FromSystem,
+	// 				FromID:		models.IDSystem,
+	// 				Data:		models.GameOrderMsg {
+	// 								ToType:		models.FromUser,
+	// 								ToID:		gameClient.ID,
+	// 								Msg: 		"距离超过50",
+	// 							},
+	// 			})
+	// 			break
+	// 		}
+	// 		ran := rand.Intn(200)
+	// 		ran = int(float32(data0.GSpear.SStrength) * 1.3) + ran
+	// 		data1.GBlood -= ran
+
+	// 		if data1.GBlood < 0 {
+	// 			data1.GBlood = 0
+	// 		}
+	// 	case "skill_big":
+	// 		data0 := gameClient.GameData
+	// 		data1 := client.GameData
+	// 		d := helper.GClientDistance(data0.GX, data0.GY, data1.GX, data1.GY)
+	// 		if d > 80 {
+	// 			gameClient.Conn.WriteJSON(models.GameOrder{
+	// 				OrderType: 	models.OrderMsgFeedback,
+	// 				FromType:	models.FromSystem,
+	// 				FromID:		models.IDSystem,
+	// 				Data:		models.GameOrderMsg {
+	// 								ToType:		models.FromUser,
+	// 								ToID:		gameClient.ID,
+	// 								Msg: 		"距离超过80",
+	// 							},
+	// 			})
+	// 			break
+	// 		}
+	// 		ran := rand.Intn(10000)
+	// 		ran = int(float32(data0.GSpear.SStrength) * 3.3) + ran
+	// 		data1.GBlood -= ran
+
+	// 		if data1.GBlood < 0 {
+	// 			data1.GBlood = 0
+	// 		}
+	// 	default:
+	// }
+}
 
 // func (manager *GameManager) dealOrderNormal(gameClient *models.GameClient, order models.GameOrder) {
 // 	// client_, ok := manager.gameClientMap.Load(order.Target)
@@ -220,7 +322,10 @@ func (manager *GameManager) dealOrderMsg(gameClient *models.GameClient, order mo
 func (manager *GameManager) dataCenter() {	
 	for {
 		// ①读取ws数据
-		
+		orders := make([]interface{}, 0)
+		for e := gameManager.orderList.Front(); e != nil; e = e.Next() {
+			orders = append(orders, e.Value.(*models.GameOrder))
+		}
 
 		// ②计算
 		wsDatas := make([]interface{}, 0)
@@ -230,6 +335,9 @@ func (manager *GameManager) dataCenter() {
 				models.MConfig.MLogger.Error("dataCenter() gameClientMap cast error")
 				return true
 			}
+
+			client.GameData.GOrders = make([]*models.GameOrder, 0)
+
 			wsDatas = append(wsDatas, client.GameData)
 			return true
 		})
@@ -247,7 +355,10 @@ func (manager *GameManager) dataCenter() {
 				OrderType:		models.OrderGameData,
 				FromType:		models.FromSystem,
 				FromID:			models.IDSystem,
-				Data:			wsDatas,
+				Data:			models.GameOrderData {
+									Orders:		orders,
+									Data:		wsDatas,
+								},
 			}) 
 			if err != nil { 
 				models.MConfig.MLogger.Debug(err.Error())
@@ -257,7 +368,37 @@ func (manager *GameManager) dataCenter() {
 			return true
 		})
 
+		for e := gameManager.orderList.Front(); e != nil;  {
+			e_ := e.Next()
+			gameManager.orderList.Remove(e)
+			e = e_
+		}
+
 		time.Sleep(time.Second * 1)
 		// fmt.Println("gameClientMap count=", count)
 	}
+}
+
+func (manager *GameManager) logoutAll() {
+	manager.gameClientMap.Range(func(key, client_ interface{}) bool {
+		client, ok := (client_).(*models.GameClient)
+		if !ok {
+			models.MConfig.MLogger.Error("dataCenter() gameClientMap cast error")
+			return true
+		}
+		client.Conn.WriteJSON(models.GameOrder{
+			OrderType:		models.OrderLogout,
+			FromType:		models.FromSystem,
+			FromID:			models.IDSystem,
+			Data:			models.GameOrderMsg {
+								ToType:		models.FromUser,
+								ToID:		client.ID,
+								Msg: 		"系统强制离线",
+							},
+		})
+
+		client.GameStatus = models.StatusLogoutAll
+		manager.loginChan <- client
+		return true
+	})
 }
