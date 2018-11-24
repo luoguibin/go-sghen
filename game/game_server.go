@@ -7,6 +7,7 @@ import(
 	"sync"
 	"time"
 	"fmt"
+	"runtime"
 	"github.com/gorilla/websocket"
 	"github.com/astaxie/beego/context"
 	"github.com/goinggo/mapstructure"
@@ -84,10 +85,12 @@ func goGameCommond() {
 			fmt.Scan(&str)
 			id, err := strconv.ParseInt(str, 10, 64)
 			if err == nil {
-				getUserData(id)
+				fmt.Println(getUserData(id))
 			} else {
 				fmt.Println(err)
 			}
+		} else if (str == "game:threadcount") {
+			fmt.Printf("	threadcount=%d\n", runtime.NumGoroutine())
 		}
 	}
 }
@@ -100,6 +103,8 @@ func goGameClientHandle(gameClient *GameClient) {
 		err := gameClient.Conn.ReadJSON(&order)
 		if err != nil {
 			models.MConfig.MLogger.Error("ws read msg error: " + err.Error())
+			gameClient.GameStatus = GStatusErrorLogout
+			GLoginChan <- gameClient
 			return
 		}
 		curTime := time.Now().UnixNano() / 1e6
@@ -178,7 +183,7 @@ func dealOrderAction(gameClient *GameClient, order *GameOrder) {
 
 func pushCenterOrder(order *GameOrder) {
 	gMapMap.Range(func (key, gMap_ interface{}) bool {
-		gMap, ok := gMap_.(GMapService)
+		gMap, ok := gMap_.(*GMapService)
 		if !ok {
 			models.MConfig.MLogger.Error("dataCenter() gameClientMap cast error")
 		} else {
@@ -191,7 +196,7 @@ func pushCenterOrder(order *GameOrder) {
 func goDataCenter() {
 	for {
 		gMapMap.Range(func (key, gMap_ interface{}) bool {
-			gMap, ok := gMap_.(GMapService)
+			gMap, ok := gMap_.(*GMapService)
 			if !ok {
 				models.MConfig.MLogger.Error("dataCenter() gameClientMap cast error")
 			} else {
@@ -220,15 +225,17 @@ func logoutAll() {
 	gServerStatus = -1
 }
 
-func getUserData(id int64) {
+func getUserData(id int64) *models.GameData {
+	var gameData *models.GameData
 	gMapMap.Range(func (key , gMap_ interface{}) bool{
 		gMap, ok := (gMap_).(*GMapService)
 		if !ok {
 			models.MConfig.MLogger.Error("addGameClient() gMap cast error")
 		} else {
-			data := gMap.getUserData(id)
-			fmt.Println(data)
+			gameData = gMap.getUserData(id)
+			return false
 		}
 		return true
 	})
+	return gameData
 }

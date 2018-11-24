@@ -12,7 +12,7 @@ import (
 
 type GMapService struct {
 	name			string
-	gameClientMap  	sync.Map
+	gameClientMap  	*sync.Map
 	orderList		*list.List
 	
 	gameMapMap		sync.Map
@@ -22,6 +22,7 @@ func (gMap *GMapService) Init(name string) {
 	fmt.Println("GMapService::Init() " + name)
 	gMap.name = name
 	gMap.orderList = list.New()
+	gMap.gameClientMap = &sync.Map{}
 }
 
 func (gMap *GMapService) getUserData(id int64) *models.GameData {
@@ -232,9 +233,9 @@ func (gMap *GMapService) dataCenter() {
 							},
 		}) 
 		if err != nil { 
-			models.MConfig.MLogger.Debug(err.Error())
-			client.GameStatus = GStatusErrorLogout
-			GLoginChan <- client
+			// models.MConfig.MLogger.Debug(err.Error())
+			// client.GameStatus = GStatusErrorLogout
+			// GLoginChan <- client
 		} 
 		return true
 	})

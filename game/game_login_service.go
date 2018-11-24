@@ -25,6 +25,8 @@ func (service *GLoginService) start() {
 					checkLogin(v)
 				case GStatusLogout:
 					checkLogout(v)
+				case GStatusErrorLogout:
+					checkLogout(v)
 				case GGStatusLogoutAll:
 					checkLogout(v)
 			}
@@ -50,22 +52,9 @@ func checkLogin(gameClient *GameClient) {
 		return
 	}
 
-	isRepeat := false
-	gMapMap.Range(func(key, gMap_ interface{}) bool {
-		gMap, ok := (gMap_).(*GMapService)
-		if !ok {
-			models.MConfig.MLogger.Error("checkLogin() gMap cast error")
-			return true
-		}
-		gameData := gMap.getUserData(gameClient.ID)
-		if gameData != nil {
-			isRepeat = true
-			return false
-		}
-		return true
-	})
+	gameData := getUserData(gameClient.ID)
 	
-	if isRepeat {
+	if gameData != nil {
 		gameClient.Conn.WriteJSON(GameOrder{
 			OrderType: 	OT_MsgSystem,
 			FromType:	ITSystem,
@@ -130,6 +119,7 @@ func addGameClient(gameClient *GameClient) {
 		if !ok {
 			models.MConfig.MLogger.Error("addGameClient() gMap cast error")
 		} else {
+			gameClient.GMap = gMap
 			gMap.gameClientMap.Store(gameClient.ID, gameClient)
 			go goGameClientHandle(gameClient)
 		}
@@ -138,9 +128,8 @@ func addGameClient(gameClient *GameClient) {
 
 func checkLogout(gameClient *GameClient) {
 	gameClient.Conn.Close()
-	
 	gameClient.GMap.gameClientMap.Delete(gameClient.ID)
-
+	
 	err := models.UpdateGameData(gameClient.GameData)
 	if err != nil {
 		models.MConfig.MLogger.Error(err.Error())
