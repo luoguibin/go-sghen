@@ -1,8 +1,7 @@
 package game
 
 //  order type key          value   description
-const (
-    TYPE_TRANS          =   4       // 移位个数
+const (    
     OT_Msg              =   10000   // message order
     OT_MsgPerson        =   11000   // msg from client to client
     OT_MsgPersonGroup   =   11001   // msg from client to group created by the client

@@ -50,9 +50,9 @@ func (gMap *GMapService) dealOrderSkill(gameClient *GameClient, order *GameOrder
 
 	skillID := order.OrderType
 
-	switch skillID >> (TYPE_TRANS - 1) << (TYPE_TRANS - 1) {
+	switch skillID / 1000 * 1000 {
 		case OT_SkillSingle:
-			client_, ok := gMap.gameClientMap.Load(order.FromID)
+			client_, ok := gMap.gameClientMap.Load(orderSkill.ToID)
 			if !ok {
 				models.MConfig.MLogger.Error("gameClientMap.Load error")
 				return;
@@ -97,98 +97,29 @@ func (gMap *GMapService) dealOrderSkill(gameClient *GameClient, order *GameOrder
 		case OT_SkillNearK:
 		default:
 	}
-
-	
-
-
-
-	// switch client.GameData.GName {
-	// 	case "fist":
-	// 		data0 := gameClient.GameData
-	// 		data1 := client.GameData
-	// 		d := helper.GClientDistance(data0.GX, data0.GY, data1.GX, data1.GY)
-	// 		if d > 50 {
-	// 			gameClient.Conn.WriteJSON(GameOrder{
-	// 				OrderType: 	models.OrderMsgFeedback,
-	// 				FromType:	models.FromSystem,
-	// 				FromID:		models.IDSystem,
-	// 				Data:		GameOrderMsg {
-	// 								ToType		models.FromUser,
-	// 								ToID:		gameClient.ID,
-	// 								Msg: 		"距离超过50",
-	// 							},
-	// 			})
-	// 			break
-	// 		}
-	// 		ran := rand.Intn(200)
-	// 		if rand.Intn(10) < 5 {
-	// 			ran = data0.GSpear.SStrength + ran
-	// 		} else {
-	// 			ran = data0.GSpear.SStrength - ran
-	// 		}
-	// 		data1.GBlood -= ran
-
-	// 		if data1.GBlood < 0 {
-	// 			data1.GBlood = 0
-	// 		}
-	// 	case "skill":
-	// 		data0 := gameClient.GameData
-	// 		data1 := client.GameData
-	// 		d := helper.GClientDistance(data0.GX, data0.GY, data1.GX, data1.GY)
-	// 		if d > 50 {
-	// 			gameClient.Conn.WriteJSON(GameOrder{
-	// 				OrderType: 	models.OrderMsgFeedback,
-	// 				FromType:	models.FromSystem,
-	// 				FromID:		models.IDSystem,
-	// 				Data:		GameOrderMsg {
-	// 								ToType		models.FromUser,
-	// 								ToID:		gameClient.ID,
-	// 								Msg: 		"距离超过50",
-	// 							},
-	// 			})
-	// 			break
-	// 		}
-	// 		ran := rand.Intn(200)
-	// 		ran = int(float32(data0.GSpear.SStrength) * 1.3) + ran
-	// 		data1.GBlood -= ran
-
-	// 		if data1.GBlood < 0 {
-	// 			data1.GBlood = 0
-	// 		}
-	// 	case "skill_big":
-	// 		data0 := gameClient.GameData
-	// 		data1 := client.GameData
-	// 		d := helper.GClientDistance(data0.GX, data0.GY, data1.GX, data1.GY)
-	// 		if d > 80 {
-	// 			gameClient.Conn.WriteJSON(GameOrder{
-	// 				OrderType: 	models.OrderMsgFeedback,
-	// 				FromType:	models.FromSystem,
-	// 				FromID:		models.IDSystem,
-	// 				Data:		GameOrderMsg {
-	// 								ToType		models.FromUser,
-	// 								ToID:		gameClient.ID,
-	// 								Msg: 		"距离超过80",
-	// 							},
-	// 			})
-	// 			break
-	// 		}
-	// 		ran := rand.Intn(10000)
-	// 		ran = int(float32(data0.GSpear.SStrength) * 3.3) + ran
-	// 		data1.GBlood -= ran
-
-	// 		if data1.GBlood < 0 {
-	// 			data1.GBlood = 0
-	// 		}
-	// 	default:
-	// }
 }
 
 func (gMap *GMapService) dealOrderAction(gameClient *GameClient, order *GameOrder) {
 	skillID := order.OrderType
 
-	switch skillID >> (TYPE_TRANS - 1) << (TYPE_TRANS - 1) {
+	switch skillID / 1000 * 1000 {
 		case OT_ActionDrug:
+			data := gameClient.GameData
+			data.GBlood += data.GBloodBase / 10
+			if data.GBlood > data.GBloodAll {
+				data.GBlood = data.GBloodAll
+			}
 		case OT_ActionMove:
+			var orderAction GameOrderAction
+			err := mapstructure.Decode(order.Data, &orderAction)
+			if err != nil {
+				models.MConfig.MLogger.Error("mapstructure.Decode error %s", err.Error())
+				return
+			}
+
+			data := gameClient.GameData
+			data.GX = orderAction.X
+			data.GY = orderAction.Y
 		default:
 	}
 }
@@ -197,7 +128,12 @@ func (gMap *GMapService) dataCenter() {
 	// ①读取ws数据
 	orders := make([]interface{}, 0)
 	for e := gMap.orderList.Front(); e != nil; e = e.Next() {
-		orders = append(orders, e.Value.(*GameOrder))
+		order, ok := e.Value.(*GameOrder)
+		if !ok {
+			models.MConfig.MLogger.Error("dataCenter() GameOrder cast error")
+			continue
+		}
+		orders = append(orders, order)
 	}
 
 	// ②计算

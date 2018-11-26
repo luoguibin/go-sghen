@@ -23,16 +23,41 @@ const (
 
 
 func getSkillSingleDamage(id int, data0 *models.GameData, data1 *models.GameData) int {
-	d := helper.GClientDistance(data0.GX, data0.GY, data1.GX, data1.GY)
-	if d > 50 {
-		return int(-d)
+	distance := helper.GClientDistance(data0.GX, data0.GY, data1.GX, data1.GY)
+	if distance > 50 {
+		return int(-distance)
 	}
+	spear0 := getSpearValue(data0.GSpear)
+	shield1 := getShieldValue(data1.GShield)
+	damage := spear0 - shield1
 
-	ran := rand.Intn(100)
+	ran := rand.Intn(data0.GSpear.SStrength / 10)
 	if rand.Intn(10) < 5 {
-		ran = data0.GSpear.SStrength + ran
+		damage += ran
 	} else {
-		ran = data0.GSpear.SStrength - ran
+		damage -= ran
 	}
-	return ran
+	if (damage < 0) {
+		damage = 0
+	}
+	return damage
+}
+
+
+func getSpearValue(spear *models.GameSpear) int {
+	power := spear.SStrength;
+	power += spear.SMana * 10;
+
+	fiveVal := spear.SMetal + spear.SWood + spear.SWater + spear.SFire + spear.SEarth
+	power += fiveVal * 100
+	return power
+}
+
+func getShieldValue(shield *models.GameShield) int {
+	power := shield.SStrength;
+	power += shield.SMana * 10;
+
+	fiveVal := shield.SMetal + shield.SWood + shield.SWater + shield.SFire + shield.SEarth
+	power += fiveVal * 100
+	return power
 }

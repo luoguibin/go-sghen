@@ -9,7 +9,8 @@ type GameOrder struct {
 	// the `order` type
 	OrderType 	int			`json:"order"`
 
-	// the `order` data than need to be translated and executed
+	// the `order` data than need to be translated and executed, 
+	// use `mapstructure.Decode`, and should make the json label letter same as defined ignore uppercase
 	Data		interface{}	`json:"data"`
 }
 
@@ -31,4 +32,9 @@ type GameOrderSkill struct {
 	DamageAll 		int 		`json:"damageAll"`
 	DamageCount		int			`json:"damageCount,omitempty"`
 	DamageCountAll	int			`json:"damageCountAll,omitempty"`
+}
+
+type GameOrderAction struct {
+	X				int 		`json:"x"`
+	Y				int 		`json:"y"`
 }

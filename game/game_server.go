@@ -107,6 +107,7 @@ func goGameClientHandle(gameClient *GameClient) {
 			GLoginChan <- gameClient
 			return
 		}
+		
 		curTime := time.Now().UnixNano() / 1e6
 		// fmt.Printf("%v  %d\n", order, curTime - preTime)
 		if (curTime - preTime < 300) {
@@ -117,7 +118,7 @@ func goGameClientHandle(gameClient *GameClient) {
 			models.MConfig.MLogger.Error("ws read msg error: order.OrderType < 1000")
 			continue
 		}
-		v := order.OrderType >> TYPE_TRANS << TYPE_TRANS
+		v := order.OrderType / 10000 * 10000
 		switch v {
 			case OT_Msg:
 				dealOrderMsg(gameClient, &order)
@@ -187,7 +188,7 @@ func pushCenterOrder(order *GameOrder) {
 		if !ok {
 			models.MConfig.MLogger.Error("dataCenter() gameClientMap cast error")
 		} else {
-			gMap.orderList.PushBack(&order)
+			gMap.orderList.PushBack(order)
 		}
 		return true
 	})
