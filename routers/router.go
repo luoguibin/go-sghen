@@ -17,7 +17,9 @@ import (
 func init() {
 	beego.Router("/", &controllers.BaseController{}, "GET:BaseGetTest")
 	beego.Router("/ws", &controllers.GameController{})
-
+	beego.Router("/html", &controllers.HtmlController{}, "GET:Get")
+	beego.Router("/htmldata", &controllers.HtmlController{}, "POST:Post")
+	
 	beego.InsertFilter("/ws", beego.BeforeRouter, func(ctx *context.Context) {
 		controllers.GatewayAccessUser(ctx, false)
 	})

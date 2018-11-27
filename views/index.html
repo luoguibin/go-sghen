@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>SghenApi-Index</title>
+</head>
+
+<body>
+    <div>hello, {{.user.UName}}</div>
+    {{if ge .user.ULevel 8}}
+    <div>管理员</div>
+    <div>
+        <form action="./htmldata?post=user" method="post">
+            {{.user | renderform}}
+            <!-- <button type="submit">submit</button> -->
+        </form>
+    </div>
+    {{else}}
+    <div>路人</div>
+    {{end}}
+</body>
+
+</html>
