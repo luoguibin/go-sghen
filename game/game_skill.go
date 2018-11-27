@@ -24,8 +24,8 @@ const (
 
 func getSkillSingleDamage(id int, data0 *models.GameData, data1 *models.GameData) int {
 	distance := helper.GClientDistance(data0.GX, data0.GY, data1.GX, data1.GY)
-	if distance > 50 {
-		return -50
+	if distance > 150 {
+		return -150
 	}
 	spear0 := getSpearValue(data0.GSpear)
 	switch id {
