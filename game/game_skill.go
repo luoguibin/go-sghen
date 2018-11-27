@@ -25,9 +25,15 @@ const (
 func getSkillSingleDamage(id int, data0 *models.GameData, data1 *models.GameData) int {
 	distance := helper.GClientDistance(data0.GX, data0.GY, data1.GX, data1.GY)
 	if distance > 50 {
-		return int(-distance)
+		return -50
 	}
 	spear0 := getSpearValue(data0.GSpear)
+	switch id {
+	case OT_SkillSingle0:
+		spear0 += int(0.5 * float32(data0.GSpear.SMana)) * 10
+	case OT_SkillSingle1:
+		spear0 += int(1.3 * float32(getSpearFiveEleValue(data0.GSpear))) * 100
+	}
 	shield1 := getShieldValue(data1.GShield)
 	damage := spear0 - shield1
 
@@ -48,7 +54,7 @@ func getSpearValue(spear *models.GameSpear) int {
 	power := spear.SStrength;
 	power += spear.SMana * 10;
 
-	fiveVal := spear.SMetal + spear.SWood + spear.SWater + spear.SFire + spear.SEarth
+	fiveVal := getSpearFiveEleValue(spear)
 	power += fiveVal * 100
 	return power
 }
@@ -57,7 +63,15 @@ func getShieldValue(shield *models.GameShield) int {
 	power := shield.SStrength;
 	power += shield.SMana * 10;
 
-	fiveVal := shield.SMetal + shield.SWood + shield.SWater + shield.SFire + shield.SEarth
+	fiveVal := getShieldFiveEleValue(shield)
 	power += fiveVal * 100
 	return power
+}
+
+func getSpearFiveEleValue(spear *models.GameSpear) int {
+	return spear.SMetal + spear.SWood + spear.SWater + spear.SFire + spear.SEarth
+}
+
+func getShieldFiveEleValue(shield *models.GameShield) int {
+	return shield.SMetal + shield.SWood + shield.SWater + shield.SFire + shield.SEarth
 }

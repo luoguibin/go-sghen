@@ -103,8 +103,6 @@ func goGameClientHandle(gameClient *GameClient) {
 		err := gameClient.Conn.ReadJSON(&order)
 		if err != nil {
 			models.MConfig.MLogger.Error("ws read msg error: " + err.Error())
-			gameClient.GameStatus = GStatusErrorLogout
-			GLoginChan <- gameClient
 			return
 		}
 		

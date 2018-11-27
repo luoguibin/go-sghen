@@ -82,6 +82,7 @@ func (gMap *GMapService) dealOrderSkill(gameClient *GameClient, order *GameOrder
 				data1.GBlood -= damage
 	
 				if data1.GBlood < 0 {
+					damage += data1.GBlood
 					data1.GBlood = 0
 				}
 				orderSkill.Damage = damage
@@ -169,9 +170,9 @@ func (gMap *GMapService) dataCenter() {
 							},
 		}) 
 		if err != nil { 
-			// models.MConfig.MLogger.Debug(err.Error())
-			// client.GameStatus = GStatusErrorLogout
-			// GLoginChan <- client
+			models.MConfig.MLogger.Debug("dataCenter() " + err.Error())
+			client.GameStatus = GStatusErrorLogout
+			GLoginChan <- client
 		} 
 		return true
 	})

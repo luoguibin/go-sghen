@@ -67,7 +67,8 @@ func QueryGameData(id int64) (*GameData, error){
 }
 
 func UpdateGameData(gameData *GameData) error{
-	err := dbOrmDefault.Model(&GameData{}).Update(gameData).Error
+	// update: nothing will be updated such as "", 0, false are blank values of their types
+	err := dbOrmDefault.Model(&GameData{}).Save(gameData).Error
 	if err != nil {
 		return err
 	} else {
