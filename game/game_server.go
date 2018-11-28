@@ -208,7 +208,7 @@ func goDataCenter() {
 }
 
 func resetGameData(gameData *models.GameData) {
-	gameData.GBloodAll = gameData.GBloodBase + 30000
+	gameData.GBloodAll = gameData.GBloodBase + 300000
 }
 
 func logoutAll() {

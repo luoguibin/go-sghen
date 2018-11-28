@@ -33,9 +33,9 @@ func initSystemGameData() {
 		initSystemGameShield()
 	}
 
-	CreateGameData(15625045984, "Sghen", 103, 11100, 11100, 0, 50, 0, 0)
-	CreateGameData(66666666, "Morge", 102, 10000, 10000, 0, 50, 0, 0)
-	CreateGameData(88888888, "SghenMorge", 105, 11000, 11000, 0, 50, 0, 0)
+	CreateGameData(15625045984, "Sghen", 103, 111000, 11100, 0, 50, 0, 0)
+	CreateGameData(66666666, "Morge", 102, 100000, 10000, 0, 50, 0, 0)
+	CreateGameData(88888888, "SghenMorge", 105, 110000, 11000, 0, 50, 0, 0)
 }
 
 func CreateGameData(id int64, gName string, gLevel int, gBloodBase int, gBlood int, gMapId int, gSpeedBase int, gX int, gY int) {

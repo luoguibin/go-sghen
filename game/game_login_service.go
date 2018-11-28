@@ -2,7 +2,6 @@ package game
 
 import (
 	"SghenApi/models"
-	"encoding/json"
 	"strconv"
 	"fmt"
 )
@@ -89,26 +88,11 @@ func addGameClient(gameClient *GameClient) {
 	resetGameData(gameData)
 
 	gameClient.GameData = gameData
-	d, err := json.Marshal(gameClient.GameData)
-	if err != nil {
-		gameClient.Conn.WriteJSON(GameOrder{
-			OrderType: 	OT_MsgSystem,
-			FromType:	ITSystem,
-			FromID:		IDSYSTEM,
-			Data:		GameOrderMsg {
-							ToType:		ITPerson,
-							ToID:		gameClient.ID,
-							Msg: 		"该账号下游戏数据解析出错",
-						},
-		})
-		gameClient.Conn.Close()
-		return
-	}
 	gameClient.Conn.WriteJSON(GameOrder{
 		OrderType: 	OT_DataPerson,
 		FromType:	ITSystem,
 		FromID:		IDSYSTEM,
-		Data:		string(d),
+		Data:		gameData,
 	})
 
 	gMap_, ok := gMapMap.Load(gameData.GMapId)

@@ -106,7 +106,7 @@ func (gMap *GMapService) dealOrderAction(gameClient *GameClient, order *GameOrde
 	switch skillID / 1000 * 1000 {
 		case OT_ActionDrug:
 			data := gameClient.GameData
-			data.GBlood += data.GBloodBase / 10
+			data.GBlood += data.GBloodAll / 15
 			if data.GBlood > data.GBloodAll {
 				data.GBlood = data.GBloodAll
 			}
