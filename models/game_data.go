@@ -21,6 +21,14 @@ type GameData struct {
 	GX				int				`gorm:"column:g_x" json:"x"`
 	GY				int 			`gorm:"column:g_y" json:"y"`
 
+	GMove			int 			`gorm:"-" json:"-"`
+	GX0				int				`gorm:"-" json:"-"`
+	GY0				int				`gorm:"-" json:"-"`
+	GX1				int				`gorm:"-" json:"-"`
+	GY1				int				`gorm:"-" json:"-"`
+	GMoveTime		int64			`gorm:"-" json:"-"`
+	GEndTime		int64			`gorm:"-" json:"-"`
+
 	GOrders			[]*interface{}		`gorm:"-" json:"orders"`
 }
 

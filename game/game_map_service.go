@@ -65,6 +65,8 @@ func (gMap *GMapService) dealOrderSkill(gameClient *GameClient, order *GameOrder
 			}
 			data0 := gameClient.GameData
 			data1 := client.GameData
+			resetGameDataMove(data0, nil)
+			resetGameDataMove(data1, nil)
 			damage := getSkillSingleDamage(skillID, data0, data1)
 			
 			if damage < 0 {
@@ -117,10 +119,12 @@ func (gMap *GMapService) dealOrderAction(gameClient *GameClient, order *GameOrde
 				models.MConfig.MLogger.Error("mapstructure.Decode error %s", err.Error())
 				return
 			}
-
-			data := gameClient.GameData
-			data.GX = orderAction.X
-			data.GY = orderAction.Y
+			order.Data = orderAction
+			resetGameDataMove(gameClient.GameData, &orderAction)
+			pushCenterOrder(order)
+			// fmt.Println(gameClient.GameData)
+			// data.GX = orderAction.X
+			// data.GY = orderAction.Y
 		default:
 	}
 }

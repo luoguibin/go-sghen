@@ -2,6 +2,7 @@ package game
 
 import(
 	"SghenApi/models"
+	"SghenApi/helper"
 	"net/http"
 	"strconv"
 	"sync"
@@ -209,6 +210,43 @@ func goDataCenter() {
 
 func resetGameData(gameData *models.GameData) {
 	gameData.GBloodAll = gameData.GBloodBase + 300000
+	gameData.GX0 = gameData.GX
+	gameData.GY0 = gameData.GY
+	gameData.GX1 = gameData.GX
+	gameData.GY1 = gameData.GY
+	gameData.GSpeed = gameData.GSpeedBase
+	gameData.GMoveTime = 0
+	gameData.GEndTime = 0
+	gameData.GMove = 0
+}
+
+func resetGameDataMove(gameData *models.GameData, orderAction *GameOrderAction) {
+	curTime := helper.GetMillisecond()
+	if gameData.GMove == 1 {
+		if gameData.GEndTime < curTime {
+			gameData.GX = gameData.GX1
+			gameData.GY = gameData.GY1
+			gameData.GMove = 0
+		} else {
+			stayTime := gameData.GEndTime - curTime
+			moveRatio := float64(1) - float64(stayTime) / float64(gameData.GMoveTime)
+			gameData.GX = int(float64(gameData.GX1 - gameData.GX0) * moveRatio) + gameData.GX0
+			gameData.GY = int(float64(gameData.GY1 - gameData.GY0) * moveRatio) + gameData.GY0
+		}
+	}
+	if orderAction != nil {
+		gameData.GX1 = orderAction.X
+		gameData.GY1 = orderAction.Y
+		gameData.GX0 = gameData.GX
+		gameData.GY0 = gameData.GY
+		distance := helper.GClientDistance(gameData.GX, gameData.GY, orderAction.X, orderAction.Y)
+		moveTime := distance / float64(gameData.GSpeed)
+		gameData.GMoveTime = int64(moveTime * 1000)
+		gameData.GEndTime = curTime + gameData.GMoveTime
+		gameData.GMove = 1
+		// fmt.Printf("distance=%v  moveTime=%v\n", distance, gameData.GMoveTime)
+	}
+	
 }
 
 func logoutAll() {

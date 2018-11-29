@@ -113,7 +113,7 @@ func addGameClient(gameClient *GameClient) {
 func checkLogout(gameClient *GameClient) {
 	gameClient.Conn.Close()
 	gameClient.GMap.gameClientMap.Delete(gameClient.ID)
-	
+	resetGameDataMove(gameClient.GameData, nil)
 	err := models.UpdateGameData(gameClient.GameData)
 	if err != nil {
 		models.MConfig.MLogger.Error(err.Error())
