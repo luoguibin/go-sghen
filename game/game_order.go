@@ -27,7 +27,7 @@ type GameOrderMsg struct {
 
 type GameOrderSkill struct {
 	ToID			int64 		`json:"toId"`
-	Targets			[]int64		`json:"targets"`
+	// Targets			[]int64		`json:"targets"`
 	Damage			int 		`json:"damage"`
 	DamageAll 		int 		`json:"damageAll"`
 	DamageCount		int			`json:"damageCount,omitempty"`

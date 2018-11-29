@@ -2,11 +2,13 @@ package game
 
 import (
 	"SghenApi/models"
+	"SghenApi/helper"
 	// "encoding/json"
 	"container/list"
 	"sync"
 	"strconv"
 	"fmt"
+	"sort"
 	"github.com/goinggo/mapstructure"
 )
 
@@ -49,7 +51,6 @@ func (gMap *GMapService) dealOrderSkill(gameClient *GameClient, order *GameOrder
 	}
 
 	skillID := order.OrderType
-
 	switch skillID / 1000 * 1000 {
 		case OT_SkillSingle:
 			client_, ok := gMap.gameClientMap.Load(orderSkill.ToID)
@@ -97,6 +98,64 @@ func (gMap *GMapService) dealOrderSkill(gameClient *GameClient, order *GameOrder
 			}
 		case OT_SkillSingleK:
 		case OT_SkillNear:
+			s := make([]*GameSortItem, 0)
+			data0 := gameClient.GameData
+			resetGameDataMove(data0, nil)
+
+			gMap.gameClientMap.Range(func(key, client_ interface{}) bool {
+				client, ok := (client_).(*GameClient)
+				if !ok {
+					models.MConfig.MLogger.Error("dataCenter() gameClientMap cast error")
+					return true
+				}
+				if client.ID == gameClient.ID {
+					 return true
+				}
+
+				data1 := client.GameData
+				resetGameDataMove(data1, nil)
+				distance := helper.GClientDistance(data0.GX, data0.GY, data1.GX0, data1.GY)
+				if (distance < 180) {
+					s = append(s, &GameSortItem{
+						Value:			distance,
+						GameClient:		client,
+					})
+				}
+
+				return true
+			})
+
+			sort.Sort(GameSort(s)) 
+			count := 0
+			for _, v := range s {
+				data1 := v.GameClient.GameData
+				damage := getSkillSingleDamage(skillID, data0, data1)
+				if data1.GBlood <= 0 {
+					continue
+				}
+				if count > 6 {
+					break
+				}
+				count++
+				data1.GBlood -= damage
+	
+				if data1.GBlood < 0 {
+					damage += data1.GBlood
+					data1.GBlood = 0
+				}
+				pushCenterOrder(&GameOrder {
+					OrderType:		order.OrderType,
+					FromID:			order.FromID,
+					FromType:		order.FromType,
+					Data:			GameOrderSkill{
+										ToID:			v.GameClient.ID,
+										Damage:			damage,
+										DamageAll:		damage,
+										DamageCount:	1,
+										DamageCountAll:	1,
+									},
+				})
+			}
 		case OT_SkillNearK:
 		default:
 	}
