@@ -25,6 +25,7 @@ const (
     OT_Data             =   40000   // game data signal order
     OT_DataPerson       =   40001   // update personal game data
     OT_DataAll          =   40002   // update clients game data
+    OT_DataPersonLogin  =   40003   // feedback to the other clients when a client login
 )  
 
 //  id type key             value   description

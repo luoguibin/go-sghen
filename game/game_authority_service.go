@@ -6,18 +6,16 @@ import (
 	"fmt"
 )
 
-var (
-	GLoginChan	 = 	make(chan *GameClient)
-)
-
-type GLoginService struct {
-	
+type GameAuthorityService struct {
+	LoginChan	  	chan *GameClient
 }
 
-func (service *GLoginService) start() {
-	fmt.Println("GLoginService::Start()")
+func (service *GameAuthorityService) Start() {
+	fmt.Println("GameAuthorityService::Start()")
+
+	service.LoginChan = make(chan *GameClient)
 	for {
-		v, ok := <- GLoginChan
+		v, ok := <- service.LoginChan
 		if ok {
 			switch v.GameStatus {
 				case GStatusLogin:
@@ -36,7 +34,7 @@ func (service *GLoginService) start() {
 }
 
 func checkLogin(gameClient *GameClient) {
-	if (gServerStatus != 1) {
+	if (GameServerStatus != 1) {
 		gameClient.Conn.WriteJSON(GameOrder{
 			OrderType: 	OT_MsgSystemInner,
 			FromType:	ITSystem,
@@ -44,16 +42,16 @@ func checkLogin(gameClient *GameClient) {
 			Data:		GameOrderMsg {
 							ToType:		ITPerson,
 							ToID:		gameClient.ID,
-							Msg: 		"系统维护中，代码：" + strconv.Itoa(gServerStatus),
+							Msg: 		"系统维护中，代码：" + strconv.Itoa(GameServerStatus),
 						},
 		})
 		gameClient.Conn.Close()
 		return
 	}
 
-	gameData := getUserData(gameClient.ID)
+	client := MGameServer.GameMapService.GetUserData(gameClient.ID)
 	
-	if gameData != nil {
+	if client != nil && client.GameData != nil {
 		gameClient.Conn.WriteJSON(GameOrder{
 			OrderType: 	OT_MsgSystem,
 			FromType:	ITSystem,
@@ -85,7 +83,7 @@ func addGameClient(gameClient *GameClient) {
 		gameClient.Conn.Close()
 		return
 	}
-	resetGameData(gameData)
+	ResetGameData(gameData)
 
 	gameClient.GameData = gameData
 	gameClient.Conn.WriteJSON(GameOrder{
@@ -95,25 +93,13 @@ func addGameClient(gameClient *GameClient) {
 		Data:		gameData,
 	})
 
-	gMap_, ok := gMapMap.Load(gameData.GMapId)
-	if !ok {
-		models.MConfig.MLogger.Error("addGameClient() gMap load error %s", gameData)
-	} else {
-		gMap, ok := (gMap_).(*GMapService)
-		if !ok {
-			models.MConfig.MLogger.Error("addGameClient() gMap cast error")
-		} else {
-			gameClient.GMap = gMap
-			gMap.gameClientMap.Store(gameClient.ID, gameClient)
-			go goGameClientHandle(gameClient)
-		}
-	}
+	MGameServer.GameMapService.AddGameClient(gameClient)
+	go GoGameClientHandle(gameClient)
 }
 
 func checkLogout(gameClient *GameClient) {
 	gameClient.Conn.Close()
-	gameClient.GMap.gameClientMap.Delete(gameClient.ID)
-	resetGameDataMove(gameClient.GameData, nil)
+	MGameServer.GameMapService.RemoveGameClient(gameClient)
 	err := models.UpdateGameData(gameClient.GameData)
 	if err != nil {
 		models.MConfig.MLogger.Error(err.Error())

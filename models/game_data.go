@@ -3,33 +3,34 @@ package models
 
 type GameData struct {
 	ID         		int64     		`gorm:"primary_key,id" json:"id,omitempty"`
-	GName      		string    		`gorm:"column:g_name;type:varchar(100)" json:"name,omitempty"`
-	GLevel	   		int 			`gorm:"column:g_level" json:"level"`
+	Name      		string    		`gorm:"column:g_name;type:varchar(100)" json:"name,omitempty"`
+	Level	   		int 			`gorm:"column:g_level" json:"level"`
 
-	GCondition		int   			`gorm:"column:g_condition" json:"condition"`
+	Condition		int   			`gorm:"column:g_condition" json:"condition"`
 
-	GBloodBase		int 			`gorm:"column:g_blood_base" json:"bloodBase"`
-	GBlood	   		int 			`gorm:"column:g_blood" json:"blood"`
-	GBloodAll	   	int 			`gorm:"-" json:"bloodAll"`
+	BloodBase		int 			`gorm:"column:g_blood_base" json:"bloodBase"`
+	Blood	   		int 			`gorm:"column:g_blood" json:"blood"`
+	BloodAll	   	int 			`gorm:"-" json:"bloodAll"`
 
-	GSpear	   		*GameSpear 		`gorm:"foreignkey:id" json:"spear"`
-	GShield	   		*GameShield 	`gorm:"foreignkey:id" json:"shield"`
+	Spear	   		*GameSpear 		`gorm:"foreignkey:id" json:"spear"`
+	Shield	   		*GameShield 	`gorm:"foreignkey:id" json:"shield"`
 
-	GMapId			int				`gorm:"column:g_map_id" json:"mapId"`
-	GSpeedBase		int 			`gorm:"column:g_speed_base" json:"speedBase"`
-	GSpeed			int 			`gorm:"-" json:"speed"`
-	GX				int				`gorm:"column:g_x" json:"x"`
-	GY				int 			`gorm:"column:g_y" json:"y"`
+	MapId			int				`gorm:"column:g_map_id" json:"mapId"`
+	ScreenId		int 			`gorm:"-" json:"screenId"`
+	SpeedBase		int 			`gorm:"column:g_speed_base" json:"speedBase"`
+	Speed			int 			`gorm:"-" json:"speed"`
+	X				int				`gorm:"column:g_x" json:"x"`
+	Y				int 			`gorm:"column:g_y" json:"y"`
 
-	GMove			int 			`gorm:"-" json:"-"`
-	GX0				int				`gorm:"-" json:"-"`
-	GY0				int				`gorm:"-" json:"-"`
-	GX1				int				`gorm:"-" json:"-"`
-	GY1				int				`gorm:"-" json:"-"`
-	GMoveTime		int64			`gorm:"-" json:"-"`
-	GEndTime		int64			`gorm:"-" json:"-"`
+	Move			int 			`gorm:"-" json:"-"`
+	X0				int				`gorm:"-" json:"-"`
+	Y0				int				`gorm:"-" json:"-"`
+	X1				int				`gorm:"-" json:"-"`
+	Y1				int				`gorm:"-" json:"-"`
+	MoveTime		int64			`gorm:"-" json:"-"`
+	EndTime		int64			`gorm:"-" json:"-"`
 
-	GOrders			[]*interface{}		`gorm:"-" json:"orders"`
+	Orders			[]*interface{}		`gorm:"-" json:"orders"`
 }
 
 func initSystemGameData() {
@@ -46,16 +47,16 @@ func initSystemGameData() {
 	CreateGameData(88888888, "SghenMorge", 105, 110000, 11000, 0, 50, 0, 0)
 }
 
-func CreateGameData(id int64, gName string, gLevel int, gBloodBase int, gBlood int, gMapId int, gSpeedBase int, gX int, gY int) {
+func CreateGameData(id int64, name string, level int, bloodBase int, blood int, mapId int,speedBase int, x int, y int) {
 	gameData := GameData {
 		ID:			id,
-		GName:		gName,
-		GLevel:		gLevel,
-		GBloodBase:	gBloodBase,
-		GBlood:		gBlood,
-		GSpeedBase:	gSpeedBase,
-		GX:			gX,
-		GY:			gY,
+		Name:		name,
+		Level:		level,
+		BloodBase:	bloodBase,
+		Blood:		blood,
+		SpeedBase:	speedBase,
+		X:			x,
+		Y:			y,
 	}
 	err := dbOrmDefault.Model(&GameData{}).Save(gameData).Error
 	if err != nil {
@@ -67,7 +68,7 @@ func QueryGameData(id int64) (*GameData, error){
 	gameData := &GameData {
 		ID: 	id,
 	}
-	err := dbOrmDefault.Model(&GameData{}).Preload("GSpear").Preload("GShield").Find(gameData).Error
+	err := dbOrmDefault.Model(&GameData{}).Preload("Spear").Preload("Shield").Find(gameData).Error
 	if err != nil {
 		return nil, err
 	}

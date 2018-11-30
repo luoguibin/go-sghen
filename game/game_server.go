@@ -5,13 +5,11 @@ import(
 	"SghenApi/helper"
 	"net/http"
 	"strconv"
-	"sync"
 	"time"
 	"fmt"
 	"runtime"
 	"github.com/gorilla/websocket"
 	"github.com/astaxie/beego/context"
-	"github.com/goinggo/mapstructure"
 )
 
 var (
@@ -22,81 +20,91 @@ var (
 							return true
 						},
 					}
+	MGameServer		= &GameServer{}
 
-	gServerStatus	=	1
-
-	gLoginService 	GLoginService
-	gMapMap 		sync.Map	
+	GameServerStatus	=	1
 )
 
 
 type GameServer struct {
-	
+	GameMapService			*GameMapService
+	GameAuthorityService	*GameAuthorityService
 }
 
-
+/*
+ * init MGameServer
+ */
 func init() {
-	fmt.Println("GameServer::init()");
+	MGameServer.Start()
 
-	gMapService0 := &GMapService{}
-	gMapService0.Init("HumanWorld")
-	gMapMap.Store(0, gMapService0)
-
-	// gMapService1 := &GMapService{}
-	// gMapService1.Init("Hell")
-	// gMapMap.Store(1, gMapService1)
-
-	// gMapService2 := &GMapService{}
-	// gMapService2.Init("Heaven")
-	// gMapMap.Store(2, gMapService2)
-
-	go gLoginService.start()
-	go goDataCenter()
-	go goGameCommond()
+	go func () {
+		for {
+			var str string
+			fmt.Scan(&str)
+	
+			if (str == "game:finish") {
+				MGameServer.GameMapService.LogoutAll()
+				GameServerStatus = -1
+			} else if (str == "game:start") {
+				GameServerStatus = 1
+			} else if (str == "game:getUser") {
+				fmt.Print("input id:")
+				fmt.Scan(&str)
+				id, err := strconv.ParseInt(str, 10, 64)
+				if err == nil {
+					client := MGameServer.GameMapService.GetUserData(id)
+					if client != nil {
+						fmt.Println(client.GameData)
+					} else {
+						fmt.Println("query result is nil")
+					}
+				} else {
+					fmt.Println(err)
+				}
+			} else if (str == "game:threadcount") {
+				fmt.Printf("	threadcount=%d\n", runtime.NumGoroutine())
+			} else if (str == "exit") {
+				break
+			}
+		}
+	} ()
 }
 
+/*
+ * game server start
+ */
+func (gameServer *GameServer) Start() {
+	fmt.Println("GameServer::Start()");
+
+	MGameServer.GameAuthorityService = &GameAuthorityService{}
+	go MGameServer.GameAuthorityService.Start()
+
+	MGameServer.GameMapService = &GameMapService{}
+	MGameServer.GameMapService.Start()
+}
+
+/*
+ * add the context to the server
+ */
 func AddToServer(Ctx *context.Context, uId int64) {
 	ws, err := upgrader.Upgrade(Ctx.ResponseWriter, Ctx.Request, nil) 
 	if err != nil { 
 		models.MConfig.MLogger.Error("get ws error:\n%s", err)
 	} 
-
 	models.MConfig.MLogger.Debug("get ws: " + ws.RemoteAddr().String())
 
-	
 	gameClient := &GameClient {
 		ID:				uId,
 		Conn:			ws,
 		GameStatus:		GStatusLogin,
 	}
-	GLoginChan <- gameClient
+	MGameServer.GameAuthorityService.LoginChan <- gameClient
 }
 
-func goGameCommond() {
-	for {
-		var str string
-		fmt.Scan(&str)
-
-		if (str == "game:finish") {
-			logoutAll()
-		} else if (str == "game:start") {
-			gServerStatus = 1
-		} else if (str == "game:getUser") {
-			fmt.Print("input id:")
-			fmt.Scan(&str)
-			id, err := strconv.ParseInt(str, 10, 64)
-			if err == nil {
-				fmt.Println(getUserData(id))
-			} else {
-				fmt.Println(err)
-			}
-		} else if (str == "game:threadcount") {
-			fmt.Printf("	threadcount=%d\n", runtime.NumGoroutine())
-		}
-	}
-}
-
-func goGameClientHandle(gameClient *GameClient) {
+/*
+ * the client order handler
+ */
+func GoGameClientHandle(gameClient *GameClient) {
 	preTime := time.Now().UnixNano() / 1e6
 	for {
 		// 获取指令 
@@ -120,159 +128,60 @@ func goGameClientHandle(gameClient *GameClient) {
 		v := order.OrderType / 10000 * 10000
 		switch v {
 			case OT_Msg:
-				dealOrderMsg(gameClient, &order)
+				MGameServer.GameMapService.DealOrderMsg(gameClient, &order)
 			case OT_Skill:
-				dealOrderSkill(gameClient, &order)
+				MGameServer.GameMapService.DealOrderSkill(gameClient, &order)
 			case OT_Action:
-				dealOrderAction(gameClient, &order)
+				MGameServer.GameMapService.DealOrderAction(gameClient, &order)
 			default:
 				models.MConfig.MLogger.Error(string(gameClient.ID) + " order invalid: " + string(order.OrderType))
 		}
 	} 
 }
 
-/**
- * 处理消息指令：
- *		个体对个体的消息指令，则直接执行
- *		个体对个体自建群组的消息指令，则直接执行
- * 		个体对大众的消息指令，加入中心指令队列
+/*
+ * reset the game data when login successfully
  */
-func dealOrderMsg(gameClient *GameClient, order *GameOrder) {
-	switch order.OrderType {
-		case OT_MsgPerson:
-			var orderMsg GameOrderMsg
-			err := mapstructure.Decode(order.Data, &orderMsg)
-			if err != nil {
-				models.MConfig.MLogger.Error("mapstructure.Decode error %s", err.Error())
-				return
-			}
-			
-			client_, ok := gameClient.GMap.gameClientMap.Load(orderMsg.ToID)
-			if !ok {
-				// fmt.Println(orderMsg)
-				models.MConfig.MLogger.Error("gameClientMap.Load error")
-				return
-			}
-			
-			client, ok := (client_).(*GameClient)
-			if !ok {
-				models.MConfig.MLogger.Error("gameClientMap cast error")
-				return
-			}
-			client.Conn.WriteJSON(order)
-		case OT_MsgAll:
-			var orderMsg GameOrderMsg
-			err := mapstructure.Decode(order.Data, &orderMsg)
-			if err != nil {
-				models.MConfig.MLogger.Error("mapstructure.Decode error %s", err.Error())
-				return
-			}
-			order.Data = orderMsg
-			pushCenterOrder(order)
-		default:
-	}
+func ResetGameData(gameData *models.GameData) {
+	gameData.BloodAll = gameData.BloodBase + 300000
+	gameData.X0 = gameData.X
+	gameData.Y0 = gameData.Y
+	gameData.X1 = gameData.X
+	gameData.Y1 = gameData.Y
+	gameData.Speed = gameData.SpeedBase
+	gameData.MoveTime = 0
+	gameData.EndTime = 0
+	gameData.Move = 0
 }
 
-func dealOrderSkill(gameClient *GameClient, order *GameOrder) {
-	gameClient.GMap.dealOrderSkill(gameClient, order)
-}
-
-func dealOrderAction(gameClient *GameClient, order *GameOrder) {
-	gameClient.GMap.dealOrderAction(gameClient, order)
-}
-
-func pushCenterOrder(order *GameOrder) {
-	gMapMap.Range(func (key, gMap_ interface{}) bool {
-		gMap, ok := gMap_.(*GMapService)
-		if !ok {
-			models.MConfig.MLogger.Error("dataCenter() gameClientMap cast error")
-		} else {
-			gMap.orderList.PushBack(order)
-		}
-		return true
-	})
-}
-
-func goDataCenter() {
-	for {
-		gMapMap.Range(func (key, gMap_ interface{}) bool {
-			gMap, ok := gMap_.(*GMapService)
-			if !ok {
-				models.MConfig.MLogger.Error("dataCenter() gameClientMap cast error")
-			} else {
-				gMap.dataCenter()
-			}
-			return true
-		})
-		time.Sleep(time.Second * 1)
-	}
-}
-
-func resetGameData(gameData *models.GameData) {
-	gameData.GBloodAll = gameData.GBloodBase + 300000
-	gameData.GX0 = gameData.GX
-	gameData.GY0 = gameData.GY
-	gameData.GX1 = gameData.GX
-	gameData.GY1 = gameData.GY
-	gameData.GSpeed = gameData.GSpeedBase
-	gameData.GMoveTime = 0
-	gameData.GEndTime = 0
-	gameData.GMove = 0
-}
-
-func resetGameDataMove(gameData *models.GameData, orderAction *GameOrderAction) {
+/*
+ * reset the client move data
+ */
+func ResetGameDataMove(gameData *models.GameData, orderAction *GameOrderAction) {
 	curTime := helper.GetMillisecond()
-	if gameData.GMove == 1 {
-		if gameData.GEndTime < curTime {
-			gameData.GX = gameData.GX1
-			gameData.GY = gameData.GY1
-			gameData.GMove = 0
+	if gameData.Move == 1 {
+		if gameData.EndTime < curTime {
+			gameData.X = gameData.X1
+			gameData.Y = gameData.Y1
+			gameData.Move = 0
 		} else {
-			stayTime := gameData.GEndTime - curTime
-			moveRatio := float64(1) - float64(stayTime) / float64(gameData.GMoveTime)
-			gameData.GX = int(float64(gameData.GX1 - gameData.GX0) * moveRatio) + gameData.GX0
-			gameData.GY = int(float64(gameData.GY1 - gameData.GY0) * moveRatio) + gameData.GY0
+			stayTime := gameData.EndTime - curTime
+			moveRatio := float64(1) - float64(stayTime) / float64(gameData.MoveTime)
+			gameData.X = int(float64(gameData.X1 - gameData.X0) * moveRatio) + gameData.X0
+			gameData.Y = int(float64(gameData.Y1 - gameData.Y0) * moveRatio) + gameData.Y0
 		}
 	}
 	if orderAction != nil {
-		gameData.GX1 = orderAction.X
-		gameData.GY1 = orderAction.Y
-		gameData.GX0 = gameData.GX
-		gameData.GY0 = gameData.GY
-		distance := helper.GClientDistance(gameData.GX, gameData.GY, orderAction.X, orderAction.Y)
-		moveTime := distance / float64(gameData.GSpeed)
-		gameData.GMoveTime = int64(moveTime * 1000)
-		gameData.GEndTime = curTime + gameData.GMoveTime
-		gameData.GMove = 1
+		gameData.X1 = orderAction.X
+		gameData.Y1 = orderAction.Y
+		gameData.X0 = gameData.X
+		gameData.Y0 = gameData.Y
+		distance := helper.GClientDistance(gameData.X, gameData.Y, orderAction.X, orderAction.Y)
+		moveTime := distance / float64(gameData.Speed)
+		gameData.MoveTime = int64(moveTime * 1000)
+		gameData.EndTime = curTime + gameData.MoveTime
+		gameData.Move = 1
 		// fmt.Printf("distance=%v  moveTime=%v\n", distance, gameData.GMoveTime)
 	}
 	
-}
-
-func logoutAll() {
-	gMapMap.Range(func (key , gMap_ interface{}) bool{
-		gMap, ok := (gMap_).(*GMapService)
-		if !ok {
-			models.MConfig.MLogger.Error("addGameClient() gMap cast error")
-		} else {
-			gMap.logoutAll()
-		}
-		return true
-	})
-	gServerStatus = -1
-}
-
-func getUserData(id int64) *models.GameData {
-	var gameData *models.GameData
-	gMapMap.Range(func (key , gMap_ interface{}) bool{
-		gMap, ok := (gMap_).(*GMapService)
-		if !ok {
-			models.MConfig.MLogger.Error("addGameClient() gMap cast error")
-		} else {
-			gameData = gMap.getUserData(id)
-			return false
-		}
-		return true
-	})
-	return gameData
 }

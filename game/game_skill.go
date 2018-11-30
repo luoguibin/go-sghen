@@ -23,21 +23,21 @@ const (
 
 
 func getSkillSingleDamage(id int, data0 *models.GameData, data1 *models.GameData) int {
-	distance := helper.GClientDistance(data0.GX, data0.GY, data1.GX, data1.GY)
+	distance := helper.GClientDistance(data0.X, data0.Y, data1.X, data1.Y)
 	if distance > 150 {
 		return -150
 	}
-	spear0 := getSpearValue(data0.GSpear)
+	spear0 := getSpearValue(data0.Spear)
 	switch id {
 	case OT_SkillSingle0:
-		spear0 += int(0.5 * float32(data0.GSpear.SMana)) * 10
+		spear0 += int(0.5 * float32(data0.Spear.SMana)) * 10
 	case OT_SkillSingle1:
-		spear0 += int(1.3 * float32(getSpearFiveEleValue(data0.GSpear))) * 100
+		spear0 += int(1.3 * float32(getSpearFiveEleValue(data0.Spear))) * 100
 	}
-	shield1 := getShieldValue(data1.GShield)
+	shield1 := getShieldValue(data1.Shield)
 	damage := spear0 - shield1
 
-	ran := rand.Intn(data0.GSpear.SStrength / 10)
+	ran := rand.Intn(data0.Spear.SStrength / 10)
 	if rand.Intn(10) < 5 {
 		damage += ran
 	} else {
