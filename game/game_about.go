@@ -21,6 +21,8 @@ const (
     OT_Action           =   30000   // action order
     OT_ActionDrug       =   31000   // take some drug
     OT_ActionMove       =   32000   // client actions that relative to move 
+    OT_ActionMoveAdd    =   32001   
+    OT_ActionMoveRemove =   32002
 
     OT_Data             =   40000   // game data signal order
     OT_DataPerson       =   40001   // update personal game data

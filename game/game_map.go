@@ -1,5 +1,10 @@
 package game
 
+import(
+	"SghenApi/models"
+	"SghenApi/helper"
+)
+
 /* 
  * game map size define, base on pixel 
  */
@@ -89,8 +94,70 @@ func (gameMap *GameMap) GetScreenIndex2(x, y int) (int, int) {
  */
 func (gameMap *GameMap) GetScreenIndex(x, y int) int {
 	i, j := gameMap.GetScreenIndex2(x, y)
-	index := i + j * gameMap.ScreenXCount
-	return index
+	return gameMap.Index2ToIndex(i, j)
+}
+
+/*
+ * change the (i, j) to screenId
+ */
+func (gameMap *GameMap) Index2ToIndex(i, j int) int {
+	return i + j * gameMap.ScreenXCount
+}
+
+/*
+ * change the `screenId` to (i, j)
+ */
+func (gameMap *GameMap) IndexToIndex2(screenId int) (int, int) {
+	i := screenId % gameMap.ScreenXCount
+	j := screenId / gameMap.ScreenXCount
+	return i, j
+}
+
+/*
+ * get the 9 screen increased ids
+ */
+func (gameMap *GameMap) GetScreenIndexs(screenId int) []int {
+	i, _ := gameMap.IndexToIndex2(screenId)
+	screenIds := make([]int, 0)
+	
+	topId := screenId - gameMap.ScreenXCount
+	if (topId >= 0) {
+		
+		if i > 0 {
+			// left-top
+			screenIds = append(screenIds, topId - 1)
+		} 
+		screenIds = append(screenIds, topId)
+		if i < gameMap.ScreenXCount - 1 {
+			// right-top
+			screenIds = append(screenIds, topId + 1)
+		}
+	}
+	// left
+	if i > 0 {
+		screenIds = append(screenIds, screenId - 1)
+	}
+	// self
+	screenIds = append(screenIds, screenId)
+	// right
+	if i < gameMap.ScreenXCount - 1 {
+		screenIds = append(screenIds, screenId + 1)
+	}
+	 
+	bottomId := screenId + gameMap.ScreenXCount
+	if (bottomId < gameMap.ScreenCount) {
+		if i > 0 {
+			// left-bottom
+			screenIds = append(screenIds, bottomId - 1)
+		}  
+		// bottom
+		screenIds = append(screenIds, bottomId)
+		if i < gameMap.ScreenXCount - 1 {
+			// right-bottom
+			screenIds = append(screenIds, bottomId + 1)
+		}
+	}
+	return screenIds
 }
 
 /*
@@ -98,10 +165,43 @@ func (gameMap *GameMap) GetScreenIndex(x, y int) int {
  */
 func (gameMap *GameMap) ChangeScreen(gameClient *GameClient) {
 	index := gameMap.GetScreenIndex(gameClient.GameData.X, gameClient.GameData.Y)
-	if index != gameClient.GameData.ScreenId {
-		delete(gameMap.Screens[gameClient.GameData.ScreenId], gameClient.ID)
+	preIndex := gameClient.GameData.ScreenId
+	if index != preIndex {
+		delete(gameMap.Screens[preIndex], gameClient.ID)
 	}
 	gameMap.Screens[index][gameClient.ID] = gameClient
+
+	preIds := gameMap.GetScreenIndexs(preIndex)
+	ids := gameMap.GetScreenIndexs(index)
+	
+	for i := len(ids) - 1; i >= 0; i-- {
+		for j := len(preIds) - 1; j >= 0; j-- {
+			if preIds[j] == ids[i] {
+				ids = helper.GSliceRemove(ids, i)
+				preIds = helper.GSliceRemove(preIds, j)
+				break
+			}
+		}
+	}
+
+	// call the new screens clients that the client is new
+	for _, screenId := range ids {
+		gameMap.BroadCast1(screenId, GameOrder{
+			OrderType:		OT_ActionMoveAdd,
+			FromID:			IDSYSTEM,
+			FromType:		ITSystem,
+			Data:			gameClient.ID,
+		})
+	}
+	// call the old screens clients that the client is old
+	for _, screenId := range preIds {
+		gameMap.BroadCast1(screenId, GameOrder{
+			OrderType:		OT_ActionMoveRemove,
+			FromID:			IDSYSTEM,
+			FromType:		ITSystem,
+			Data:			gameClient.ID,
+		})
+	}
 }
 
 /*
@@ -109,7 +209,12 @@ func (gameMap *GameMap) ChangeScreen(gameClient *GameClient) {
  */
 func (gameMap *GameMap) RemoveScreen(gameClient *GameClient) {
 	delete(gameMap.Screens[gameClient.GameData.ScreenId], gameClient.ID)
-	gameMap.BroadCast9(gameClient, nil)
+	gameMap.BroadCast9(gameClient.GameData.ScreenId,  GameOrder{
+		OrderType:		OT_ActionMoveRemove,
+		FromID:			IDSYSTEM,
+		FromType:		ITSystem,
+		Data:			gameClient.ID,
+	})
 }
 
 /*
@@ -125,6 +230,26 @@ func (gameMap *GameMap) GetGameClient(screenId int, id int64) *GameClient {
 }
 
 /*
+ * send the 9 screen user datas to the `gameClient`
+ */
+func (gameMap *GameMap) SendGameDatas9(gameClient *GameClient) {
+	screenIds := gameMap.GetScreenIndexs(gameClient.GameData.ScreenId)
+	datas := make([]*models.GameData, 0)
+	for _, screenId := range screenIds {
+		for _, client := range gameMap.Screens[screenId] {
+			datas = append(datas, client.GameData)
+		}
+	}
+
+	gameClient.Conn.WriteJSON(GameOrder{
+		OrderType:		OT_DataAll,
+		FromID:			IDSYSTEM,
+		FromType:		ITSystem,
+		Data:			datas,
+	})
+}
+
+/*
  * broadcast the `order` to the clients of the map
  */
 func (gameMap *GameMap) BroadCast(order interface{}) {
@@ -133,41 +258,15 @@ func (gameMap *GameMap) BroadCast(order interface{}) {
 	}
 }
 
+
 /*
  * broadcast the `order` to the clients of the nine screens
  */
-func (gameMap *GameMap) BroadCast9(gameClient *GameClient, order interface{}) {
-	screenId := gameClient.GameData.ScreenId
-	i := screenId % gameMap.ScreenXCount
-
-	gameMap.BroadCast1(screenId, order)
-
-	topId := screenId - gameMap.ScreenXCount
-	if (topId >= 0) {
-		gameMap.BroadCast1(topId, order)
-		if i > 0 {
-			// left and left-top
-			gameMap.BroadCast1(screenId - 1, order)
-			gameMap.BroadCast1(topId - 1, order)
-		} else if i < (gameMap.ScreenXCount - 1) {
-			// right and right-top
-			gameMap.BroadCast1(screenId + 1, order)
-			gameMap.BroadCast1(topId + 1, order)
-		}
+func (gameMap *GameMap) BroadCast9(screenId int, order interface{}) {
+	screenIds := gameMap.GetScreenIndexs(screenId)
+	for _, screenId := range screenIds {
+		gameMap.BroadCast1(screenId, order)
 	}
-
-	bottomId := screenId + gameMap.ScreenXCount
-	if (bottomId < gameMap.ScreenCount) {
-		gameMap.BroadCast1(bottomId, order)
-		if i > 0 {
-			// left-bottom
-			gameMap.BroadCast1(bottomId - 1, order)
-		} else if i < (gameMap.ScreenXCount - 1) {
-			// right-bottom
-			gameMap.BroadCast1(bottomId + 1, order)
-		}
-	}
-	
 }
 
 /*

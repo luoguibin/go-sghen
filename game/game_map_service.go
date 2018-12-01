@@ -42,13 +42,18 @@ func (gameMapService *GameMapService) AddGameClient(gameClient *GameClient) {
 		return
 	}
 	gameMap := gameMap_.(*GameMap)
-	gameMap.ChangeScreen(gameClient)
-	gameMap.BroadCast9(gameClient, GameOrder {
+	index := gameMap.GetScreenIndex(gameClient.GameData.X, gameClient.GameData.Y)
+	gameClient.GameData.ScreenId = index
+
+	// broadcast the gameClient's data to the clients of the 9 screens
+	gameMap.BroadCast9(gameClient.GameData.ScreenId, GameOrder {
 		OrderType:		OT_DataPersonLogin,
 		FromID:			IDSYSTEM,
 		FromType:		ITSystem,
 		Data:			gameClient.GameData,
 	})
+	// send the client datas of the 9 screens to the gameClient
+	gameMap.SendGameDatas9(gameClient)
 }
 
 /*
@@ -116,7 +121,7 @@ func (gameMapService *GameMapService) DealOrderMsg(gameClient *GameClient, order
 		if gameMap == nil {
 			return
 		}
-		gameMap.BroadCast9(gameClient, order)
+		gameMap.BroadCast9(gameClient.GameData.ScreenId, order)
 	case OT_MsgAll:
 		gameMapService.GameClientMap.Range(func (key, v interface{}) bool {
 			client, ok := v.(*GameClient)
@@ -184,7 +189,7 @@ func (gameMapService *GameMapService) DealOrderSkill(gameClient *GameClient, ord
 				orderSkill.DamageCountAll = 1
 				order.Data = orderSkill
 			}
-			gameMap.BroadCast9(gameClient, order)
+			gameMap.BroadCast9(gameClient.GameData.ScreenId, order)
 		case OT_SkillSingleK:
 		case OT_SkillNear:
 			// s := make([]*GameSortItem, 0)
