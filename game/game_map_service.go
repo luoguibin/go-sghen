@@ -155,7 +155,6 @@ func (gameMapService *GameMapService) DealOrderSkill(gameClient *GameClient, ord
 	skillID := order.OrderType
 	switch skillID / 1000 * 1000 {
 		case OT_SkillSingle:
-			
 			client := gameMap.GetGameClient(gameClient.GameData.ScreenId, orderSkill.ToID)
 			if client == nil {
 				return
@@ -165,7 +164,7 @@ func (gameMapService *GameMapService) DealOrderSkill(gameClient *GameClient, ord
 			data1 := client.GameData
 			ResetGameDataMove(data0, nil)
 			ResetGameDataMove(data1, nil)
-			damage := getSkillSingleDamage(skillID, data0, data1)
+			damage := getSkillSingleDamage(skillID, data0, data1, 150)
 			
 			if damage < 0 {
 				gameClient.Conn.WriteJSON(GameOrder{
@@ -225,7 +224,7 @@ func (gameMapService *GameMapService) DealOrderSkill(gameClient *GameClient, ord
 			orderSkills := make([]GameOrderSkill, 0)
 			for _, v := range s {
 				data1 := v.GameClient.GameData
-				damage := getSkillSingleDamage(skillID, data0, data1)
+				damage := getSkillSingleDamage(skillID, data0, data1, 180)
 				if data1.Blood <= 0 {
 					continue
 				}

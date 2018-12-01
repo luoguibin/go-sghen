@@ -22,10 +22,10 @@ const (
 )
 
 
-func getSkillSingleDamage(id int, data0 *models.GameData, data1 *models.GameData) int {
+func getSkillSingleDamage(id int, data0 *models.GameData, data1 *models.GameData, limit int) int {
 	distance := helper.GClientDistance(data0.X, data0.Y, data1.X, data1.Y)
-	if distance > 150 {
-		return -150
+	if int(distance) > limit {
+		return -limit
 	}
 	spear0 := getSpearValue(data0.Spear)
 	switch id {
