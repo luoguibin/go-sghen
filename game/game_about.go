@@ -5,11 +5,12 @@ const (
     OT_Msg              =   10000   // message order
     OT_MsgPerson        =   11000   // msg from client to client
     OT_MsgPersonGroup   =   11001   // msg from client to group created by the client
+    OT_MsgPersonLogout  =   11002   // msg from client to group and logout
     OT_MsgNear          =   12000   // msg from client to group that contains near clients
     OT_MsgGroup         =   12001   // msg from client to a group create by the system
     OT_MsgAll           =   12002   // msg from client to all
-    OT_MsgSystem        =   13000   // normal msg from system to client to clients
-    OT_MsgSystemInner   =   13001   // inner msg from system to client to clients
+    OT_MsgSystem        =   13000   // normal msg from system to clients
+    OT_MsgSystemInner   =   13001   // inner msg from system to client
     OT_MsgSystemPerson  =   13002   // feedback msg from system to client
 
     OT_Skill            =   20000   // skill order
@@ -26,8 +27,8 @@ const (
 
     OT_Data             =   40000   // game data signal order
     OT_DataPerson       =   40001   // update personal game data
-    OT_DataAll          =   40002   // update clients game data
-    OT_DataPersonLogin  =   40003   // feedback to the other clients when a client login
+    OT_DataAll          =   40002   // update 9 screen clients game data
+    OT_DataPersonLogin  =   40003   // feedback to the other 9 screen clients when a client login
 )  
 
 //  id type key             value   description

@@ -53,7 +53,7 @@ func checkLogin(gameClient *GameClient) {
 	
 	if client != nil && client.GameData != nil {
 		gameClient.Conn.WriteJSON(GameOrder{
-			OrderType: 	OT_MsgSystem,
+			OrderType: 	OT_MsgSystemInner,
 			FromType:	ITSystem,
 			FromID:		IDSYSTEM,
 			Data:		GameOrderMsg {
@@ -62,6 +62,7 @@ func checkLogin(gameClient *GameClient) {
 							Msg: 		"重复登录",
 						},
 		})
+		gameClient.Conn.Close()
 	} else {
 		addGameClient(gameClient)
 	}

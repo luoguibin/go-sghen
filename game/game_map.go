@@ -161,6 +161,15 @@ func (gameMap *GameMap) GetScreenIndexs(screenId int) []int {
 }
 
 /*
+ * init the screenId when first come into the map
+ */
+ func (gameMap *GameMap) InitScreen(gameClient *GameClient) {
+	index := gameMap.GetScreenIndex(gameClient.GameData.X, gameClient.GameData.Y)
+	gameClient.GameData.ScreenId = index
+	gameMap.Screens[index][gameClient.ID] = gameClient
+ }
+
+/*
  * add a reflect between game client and the map
  */
 func (gameMap *GameMap) ChangeScreen(gameClient *GameClient) {
@@ -191,7 +200,7 @@ func (gameMap *GameMap) ChangeScreen(gameClient *GameClient) {
 			FromID:			IDSYSTEM,
 			FromType:		ITSystem,
 			Data:			gameClient.ID,
-		})
+		}, gameClient.ID)
 	}
 	// call the old screens clients that the client is old
 	for _, screenId := range preIds {
@@ -200,7 +209,7 @@ func (gameMap *GameMap) ChangeScreen(gameClient *GameClient) {
 			FromID:			IDSYSTEM,
 			FromType:		ITSystem,
 			Data:			gameClient.ID,
-		})
+		}, gameClient.ID)
 	}
 }
 
@@ -214,7 +223,7 @@ func (gameMap *GameMap) RemoveScreen(gameClient *GameClient) {
 		FromID:			IDSYSTEM,
 		FromType:		ITSystem,
 		Data:			gameClient.ID,
-	})
+	}, gameClient.ID)
 }
 
 /*
@@ -237,10 +246,15 @@ func (gameMap *GameMap) SendGameDatas9(gameClient *GameClient) {
 	datas := make([]*models.GameData, 0)
 	for _, screenId := range screenIds {
 		for _, client := range gameMap.Screens[screenId] {
+			if client.ID == gameClient.ID {
+				continue
+			}
 			datas = append(datas, client.GameData)
 		}
 	}
-
+	if len(datas) == 0 {
+		return
+	}
 	gameClient.Conn.WriteJSON(GameOrder{
 		OrderType:		OT_DataAll,
 		FromID:			IDSYSTEM,
@@ -254,7 +268,7 @@ func (gameMap *GameMap) SendGameDatas9(gameClient *GameClient) {
  */
 func (gameMap *GameMap) BroadCast(order interface{}) {
 	for i := 0; i < gameMap.ScreenCount; i++ {
-		gameMap.BroadCast1(i, order)
+		gameMap.BroadCast1(i, order, 0)
 	}
 }
 
@@ -262,18 +276,21 @@ func (gameMap *GameMap) BroadCast(order interface{}) {
 /*
  * broadcast the `order` to the clients of the nine screens
  */
-func (gameMap *GameMap) BroadCast9(screenId int, order interface{}) {
+func (gameMap *GameMap) BroadCast9(screenId int, order interface{}, exceptID int64) {
 	screenIds := gameMap.GetScreenIndexs(screenId)
 	for _, screenId := range screenIds {
-		gameMap.BroadCast1(screenId, order)
+		gameMap.BroadCast1(screenId, order, exceptID)
 	}
 }
 
 /*
  * broadcast order in a screen
  */
-func (gameMap *GameMap) BroadCast1(screenId int, order interface{}) {
+func (gameMap *GameMap) BroadCast1(screenId int, order interface{}, exceptID int64) {
 	for _, client := range gameMap.Screens[screenId] {
+		if client.ID == exceptID {
+			continue
+		}
 		client.Conn.WriteJSON(order)
 	}
 }

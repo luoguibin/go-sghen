@@ -2,9 +2,9 @@ package game
 
 import (
 	"SghenApi/models"
-	// "SghenApi/helper"
+	"SghenApi/helper"
 	"fmt"
-	// "sort"
+	"sort"
 	"sync"
 	"strconv"
 	"github.com/goinggo/mapstructure"
@@ -42,8 +42,7 @@ func (gameMapService *GameMapService) AddGameClient(gameClient *GameClient) {
 		return
 	}
 	gameMap := gameMap_.(*GameMap)
-	index := gameMap.GetScreenIndex(gameClient.GameData.X, gameClient.GameData.Y)
-	gameClient.GameData.ScreenId = index
+	gameMap.InitScreen(gameClient)
 
 	// broadcast the gameClient's data to the clients of the 9 screens
 	gameMap.BroadCast9(gameClient.GameData.ScreenId, GameOrder {
@@ -51,7 +50,7 @@ func (gameMapService *GameMapService) AddGameClient(gameClient *GameClient) {
 		FromID:			IDSYSTEM,
 		FromType:		ITSystem,
 		Data:			gameClient.GameData,
-	})
+	}, gameClient.ID)
 	// send the client datas of the 9 screens to the gameClient
 	gameMap.SendGameDatas9(gameClient)
 }
@@ -116,12 +115,15 @@ func (gameMapService *GameMapService) DealOrderMsg(gameClient *GameClient, order
 		if client != nil {
 			client.Conn.WriteJSON(order)
 		}
+	case OT_MsgPersonLogout:
+		gameClient.GameStatus = GStatusLogout
+		MGameServer.GameAuthorityService.LoginChan <- gameClient
 	case OT_MsgNear:
 		gameMap := gameMapService.GetGameMap(gameClient.GameData.MapId)
 		if gameMap == nil {
 			return
 		}
-		gameMap.BroadCast9(gameClient.GameData.ScreenId, order)
+		gameMap.BroadCast9(gameClient.GameData.ScreenId, order, 0)
 	case OT_MsgAll:
 		gameMapService.GameClientMap.Range(func (key, v interface{}) bool {
 			client, ok := v.(*GameClient)
@@ -146,14 +148,14 @@ func (gameMapService *GameMapService) DealOrderSkill(gameClient *GameClient, ord
 		models.MConfig.MLogger.Error("mapstructure.Decode error %s", err.Error())
 		return
 	}
-
+	gameMap := gameMapService.GetGameMap(gameClient.GameData.MapId)
+	if gameMap == nil {
+		return
+	}
 	skillID := order.OrderType
 	switch skillID / 1000 * 1000 {
 		case OT_SkillSingle:
-			gameMap := gameMapService.GetGameMap(gameClient.GameData.MapId)
-			if gameMap == nil {
-				return
-			}
+			
 			client := gameMap.GetGameClient(gameClient.GameData.ScreenId, orderSkill.ToID)
 			if client == nil {
 				return
@@ -188,67 +190,65 @@ func (gameMapService *GameMapService) DealOrderSkill(gameClient *GameClient, ord
 				orderSkill.DamageCount	= 1
 				orderSkill.DamageCountAll = 1
 				order.Data = orderSkill
+				gameMap.BroadCast9(gameClient.GameData.ScreenId, order, 0)
 			}
-			gameMap.BroadCast9(gameClient.GameData.ScreenId, order)
 		case OT_SkillSingleK:
 		case OT_SkillNear:
-			// s := make([]*GameSortItem, 0)
-			// data0 := gameClient.GameData
-			// ResetGameDataMove(data0, nil)
-			// gameMapService.GameClientMap.Range(func(key, client_ interface{}) bool {
-			// 	client, ok := (client_).(*GameClient)
-			// 	if !ok {
-			// 		models.MConfig.MLogger.Error("dataCenter() gameClientMap cast error")
-			// 		return true
-			// 	}
-			// 	if client.ID == gameClient.ID {
-			// 		 return true
-			// 	}
+			s := make([]*GameSortItem, 0)
+			data0 := gameClient.GameData
+			ResetGameDataMove(data0, nil)
+			gameMapService.GameClientMap.Range(func(key, client_ interface{}) bool {
+				client, ok := (client_).(*GameClient)
+				if !ok {
+					models.MConfig.MLogger.Error("dataCenter() gameClientMap cast error")
+					return true
+				}
+				if client.ID == gameClient.ID {
+					 return true
+				}
 
-			// 	data1 := client.GameData
-			// 	ResetGameDataMove(data1, nil)
-			// 	distance := helper.GClientDistance(data0.GX, data0.GY, data1.GX0, data1.GY)
-			// 	if (distance < 180) {
-			// 		s = append(s, &GameSortItem{
-			// 			Value:			distance,
-			// 			GameClient:		client,
-			// 		})
-			// 	}
+				data1 := client.GameData
+				ResetGameDataMove(data1, nil)
+				distance := helper.GClientDistance(data0.X, data0.Y, data1.X0, data1.Y)
+				if (distance < 180) {
+					s = append(s, &GameSortItem{
+						Value:			distance,
+						GameClient:		client,
+					})
+				}
 
-			// 	return true
-			// })
+				return true
+			})
 
-			// sort.Sort(GameSort(s)) 
-			// count := 0
-			// for _, v := range s {
-			// 	data1 := v.GameClient.GameData
-			// 	damage := getSkillSingleDamage(skillID, data0, data1)
-			// 	if data1.GBlood <= 0 {
-			// 		continue
-			// 	}
-			// 	if count > 6 {
-			// 		break
-			// 	}
-			// 	count++
-			// 	data1.GBlood -= damage
+			sort.Sort(GameSort(s)) 
+			count := 0
+			orderSkills := make([]GameOrderSkill, 0)
+			for _, v := range s {
+				data1 := v.GameClient.GameData
+				damage := getSkillSingleDamage(skillID, data0, data1)
+				if data1.Blood <= 0 {
+					continue
+				}
+				if count > 6 {
+					break
+				}
+				count++
+				data1.Blood -= damage
 	
-			// 	if data1.GBlood < 0 {
-			// 		damage += data1.GBlood
-			// 		data1.GBlood = 0
-			// 	}
-			// 	pushCenterOrder(&GameOrder {
-			// 		OrderType:		order.OrderType,
-			// 		FromID:			order.FromID,
-			// 		FromType:		order.FromType,
-			// 		Data:			GameOrderSkill{
-			// 							ToID:			v.GameClient.ID,
-			// 							Damage:			damage,
-			// 							DamageAll:		damage,
-			// 							DamageCount:	1,
-			// 							DamageCountAll:	1,
-			// 						},
-			// 	})
-			// }
+				if data1.Blood < 0 {
+					damage += data1.Blood
+					data1.Blood = 0
+				}
+				orderSkills = append(orderSkills, GameOrderSkill{
+					ToID:			data1.ID,
+					Damage:			damage,
+					DamageAll:		damage,
+					DamageCount:	0,
+					DamageCountAll:	0,
+				})
+			}
+			order.Data = orderSkills
+			gameMap.BroadCast9(gameClient.GameData.ScreenId, order, 0)
 		case OT_SkillNearK:
 		default:
 	}
@@ -259,14 +259,22 @@ func (gameMapService *GameMapService) DealOrderSkill(gameClient *GameClient, ord
  */
 func (gameMapService *GameMapService) DealOrderAction(gameClient *GameClient, order *GameOrder) {
 	skillID := order.OrderType
-
+	gameMap := gameMapService.GetGameMap(gameClient.GameData.MapId)
+	if gameMap == nil {
+		return
+	}
+	
 	switch skillID / 1000 * 1000 {
 		case OT_ActionDrug:
 			data := gameClient.GameData
-			data.Blood += data.BloodAll / 15
+			addBlood := data.BloodAll / 15
+			data.Blood += addBlood
 			if data.Blood > data.BloodAll {
+				addBlood -= data.Blood - data.BloodAll
 				data.Blood = data.BloodAll
 			}
+			order.Data = addBlood
+			gameMap.BroadCast9(gameClient.GameData.ScreenId, order, 0)
 		case OT_ActionMove:
 			var orderAction GameOrderAction
 			err := mapstructure.Decode(order.Data, &orderAction)
@@ -279,6 +287,7 @@ func (gameMapService *GameMapService) DealOrderAction(gameClient *GameClient, or
 			// fmt.Println(gameClient.GameData)
 			// data.GX = orderAction.X
 			// data.GY = orderAction.Y
+			gameMap.BroadCast9(gameClient.GameData.ScreenId, order, 0)
 		default:
 	}
 }
