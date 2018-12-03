@@ -14,11 +14,6 @@ type GameOrder struct {
 	Data		interface{}	`json:"data"`
 }
 
-type GameOrderData struct {
-	Orders		[]interface{}	`json:"orders"`
-	Data		[]interface{}	`json:"data"`
-}
-
 type GameOrderMsg struct {
 	ToType		int 		`json:"toType"`
 	ToID		int64		`json:"toId"`

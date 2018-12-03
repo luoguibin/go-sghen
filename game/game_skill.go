@@ -27,15 +27,36 @@ func getSkillSingleDamage(id int, data0 *models.GameData, data1 *models.GameData
 	if int(distance) > limit {
 		return -limit
 	}
-	spear0 := getSpearValue(data0.Spear)
+	var damage int
 	switch id {
 	case OT_SkillSingle0:
-		spear0 += int(0.5 * float32(data0.Spear.SMana)) * 10
+		manaAdd := int(0.5 * float32(data0.Spear.SMana))
+		data0.Spear.SMana += manaAdd
+		damage = getSpearValue(data0.Spear, data1.Shield)
+		data0.Spear.SMana -= manaAdd
 	case OT_SkillSingle1:
-		spear0 += int(1.3 * float32(getSpearFiveEleValue(data0.Spear))) * 100
+		metalAdd := int(1.5 * float32(data0.Spear.SMetal))
+		woodAdd := int(1.5 * float32(data0.Spear.SWood))
+		waterAdd := int(1.5 * float32(data0.Spear.SWater))
+		fireAdd := int(1.5 * float32(data0.Spear.SFire))
+		earthAdd := int(1.5 * float32(data0.Spear.SEarth))
+
+		data0.Spear.SMetal += metalAdd
+		data0.Spear.SWood += woodAdd
+		data0.Spear.SWater += waterAdd
+		data0.Spear.SFire += fireAdd
+		data0.Spear.SEarth += earthAdd
+		
+		damage = getSpearValue(data0.Spear, data1.Shield)
+
+		data0.Spear.SMetal -= metalAdd
+		data0.Spear.SWood -= woodAdd
+		data0.Spear.SWater -= waterAdd
+		data0.Spear.SFire -= fireAdd
+		data0.Spear.SEarth -= earthAdd
+	default:
+		damage = getSpearValue(data0.Spear, data1.Shield)
 	}
-	shield1 := getShieldValue(data1.Shield)
-	damage := spear0 - shield1
 
 	ran := rand.Intn(data0.Spear.SStrength / 10)
 	if rand.Intn(10) < 5 {
@@ -49,29 +70,21 @@ func getSkillSingleDamage(id int, data0 *models.GameData, data1 *models.GameData
 	return damage
 }
 
+func getSpearValue(spear *models.GameSpear, shield *models.GameShield) int {
+	power := helper.Max(spear.SStrength - shield.SStrength, 0);
+	power += helper.Max(spear.SMana - shield.SMana, 0) * 10;
 
-func getSpearValue(spear *models.GameSpear) int {
-	power := spear.SStrength;
-	power += spear.SMana * 10;
-
-	fiveVal := getSpearFiveEleValue(spear)
+	fiveVal := getAbsFiveEleVal(spear, shield)
 	power += fiveVal * 100
 	return power
 }
 
-func getShieldValue(shield *models.GameShield) int {
-	power := shield.SStrength;
-	power += shield.SMana * 10;
-
-	fiveVal := getShieldFiveEleValue(shield)
-	power += fiveVal * 100
-	return power
-}
-
-func getSpearFiveEleValue(spear *models.GameSpear) int {
-	return spear.SMetal + spear.SWood + spear.SWater + spear.SFire + spear.SEarth
-}
-
-func getShieldFiveEleValue(shield *models.GameShield) int {
-	return shield.SMetal + shield.SWood + shield.SWater + shield.SFire + shield.SEarth
+func getAbsFiveEleVal(spear *models.GameSpear, shield *models.GameShield) int {
+	val := 0
+	val += helper.Max(spear.SMetal - shield.SMetal, 0)
+	val += helper.Max(spear.SWood - shield.SWood, 0)
+	val += helper.Max(spear.SWater - shield.SWater, 0)
+	val += helper.Max(spear.SFire - shield.SFire, 0)
+	val += helper.Max(spear.SEarth - shield.SEarth, 0)
+	return val
 }

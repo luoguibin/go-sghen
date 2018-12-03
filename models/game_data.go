@@ -29,8 +29,6 @@ type GameData struct {
 	Y1				int				`gorm:"-" json:"-"`
 	MoveTime		int64			`gorm:"-" json:"-"`
 	EndTime		int64			`gorm:"-" json:"-"`
-
-	Orders			[]*interface{}		`gorm:"-" json:"orders"`
 }
 
 func initSystemGameData() {
