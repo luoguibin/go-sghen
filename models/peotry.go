@@ -48,7 +48,7 @@ func initSystemPeotry() {
 }
 
 func CreatePeotry(userId int64, setId int, title string, pTime string, content string, end string, images string) (int64, error){
-	curTime := time.Now().UnixNano() / 1e3
+	curTime := helper.GetMicrosecond()
 	peotry := Peotry{
 		ID:				curTime,
 		UID:			userId,

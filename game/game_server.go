@@ -105,7 +105,7 @@ func AddToServer(Ctx *context.Context, uId int64) {
  * the client order handler
  */
 func GoGameClientHandle(gameClient *GameClient) {
-	preTime := time.Now().UnixNano() / 1e6
+	preTime := helper.GetMillisecond()
 	for {
 		// 获取指令 
 		var order GameOrder
@@ -119,7 +119,7 @@ func GoGameClientHandle(gameClient *GameClient) {
 			return
 		}
 		
-		curTime := time.Now().UnixNano() / 1e6
+		curTime := helper.GetMillisecond()
 		// fmt.Printf("%v  %d\n", order, curTime - preTime)
 		if (curTime - preTime < 300) {
 			continue
