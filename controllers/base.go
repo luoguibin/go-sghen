@@ -43,6 +43,17 @@ func (c *BaseController) respToJSON(data ResponseData) {
 
 func (c *BaseController) BaseGetTest() {
 	data := c.GetResponseData()
+
+	ip := c.Ctx.Request.Header.Get("X-Forwarded-For")
+	if strings.Contains(ip, "127.0.0.1") || ip == "" {
+		ip = c.Ctx.Request.Header.Get("X-real-ip")
+	}
+
+	if ip == "" {
+		ip = "127.0.0.1"
+	}
+	data["ip"] = ip
+
 	c.respToJSON(data)
 }
 
