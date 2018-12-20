@@ -1,35 +1,35 @@
 package game
 
-
 type GameOrder struct {
 	// who makes the `order`
-	FromType	int			`json:"fromType"`
-	FromID		int64		`json:"fromId"`
+	FromType int   `json:"fromType"`
+	FromID   int64 `json:"fromId"`
 
 	// the `order` type
-	OrderType 	int			`json:"order"`
+	OrderType int `json:"order"`
 
-	// the `order` data than need to be translated and executed, 
+	// the `order` data than need to be translated and executed,
 	// use `mapstructure.Decode`, and should make the json label letter same as defined ignore uppercase
-	Data		interface{}	`json:"data"`
+	Data interface{} `json:"data"`
 }
 
 type GameOrderMsg struct {
-	ToType		int 		`json:"toType"`
-	ToID		int64		`json:"toId"`
-	Msg			string		`json:"msg"`
+	ToType int    `json:"toType"`
+	ToID   int64  `json:"toId"`
+	Msg    string `json:"msg"`
 }
 
 type GameOrderSkill struct {
-	ToID			int64 		`json:"toId"`
+	ToID int64 `json:"toId"`
 	// Targets			[]int64		`json:"targets"`
-	Damage			int 		`json:"damage"`
-	DamageAll 		int 		`json:"damageAll"`
-	DamageCount		int			`json:"damageCount,omitempty"`
-	DamageCountAll	int			`json:"damageCountAll,omitempty"`
+	Damage         int `json:"damage"`
+	DamageAll      int `json:"damageAll"`
+	DamageCount    int `json:"damageCount,omitempty"`
+	DamageCountAll int `json:"damageCountAll,omitempty"`
 }
 
 type GameOrderAction struct {
-	X				int 		`json:"x"`
-	Y				int 		`json:"y"`
+	X int `json:"x"`
+	Y int `json:"y"`
+	Z int `json:"z"`
 }
