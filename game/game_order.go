@@ -14,9 +14,10 @@ type GameOrder struct {
 }
 
 type GameOrderMsg struct {
-	ToType int    `json:"toType"`
-	ToID   int64  `json:"toId"`
-	Msg    string `json:"msg"`
+	ToType   int    `json:"toType"`
+	ToID     int64  `json:"toId"`
+	FromName string `json:"fromName,omitempty"`
+	Msg      string `json:"msg"`
 }
 
 type GameOrderSkill struct {
