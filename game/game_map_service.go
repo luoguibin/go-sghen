@@ -166,7 +166,7 @@ func (gameMapService *GameMapService) DealOrderSkill(gameClient *GameClient, ord
 		data1 := client.GameData
 		ResetGameDataMove(data0, nil)
 		ResetGameDataMove(data1, nil)
-		damage := getSkillSingleDamage(skillID, data0, data1, 150)
+		damage := getSkillSingleDamage(skillID, data0, data1, 5)
 
 		if damage < 0 {
 			gameClient.Conn.WriteJSON(GameOrder{
@@ -211,7 +211,7 @@ func (gameMapService *GameMapService) DealOrderSkill(gameClient *GameClient, ord
 			data1 := client.GameData
 			ResetGameDataMove(data1, nil)
 			distance := helper.GClientDistance(data0.X, data0.Y, data1.X0, data1.Y)
-			if distance < 180 {
+			if distance < 10 {
 				s = append(s, &GameSortItem{
 					Value:      distance,
 					GameClient: client,
@@ -226,7 +226,7 @@ func (gameMapService *GameMapService) DealOrderSkill(gameClient *GameClient, ord
 		orderSkills := make([]GameOrderSkill, 0)
 		for _, v := range s {
 			data1 := v.GameClient.GameData
-			damage := getSkillSingleDamage(skillID, data0, data1, 180)
+			damage := getSkillSingleDamage(skillID, data0, data1, 10)
 			if data1.Blood <= 0 {
 				continue
 			}
