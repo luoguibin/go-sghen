@@ -8,7 +8,7 @@
 package routers
 
 import (
-	"SghenApi/controllers"
+	"go-sghen/controllers"
 
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/context"
@@ -20,7 +20,7 @@ func init() {
 
 	// if run next line code, set config `autorender` true
 	// beego.Router("/html", &controllers.HtmlController{}, "GET:Get")
-	
+
 	beego.InsertFilter("/ws", beego.BeforeRouter, func(ctx *context.Context) {
 		controllers.GatewayAccessUser(ctx, false)
 	})

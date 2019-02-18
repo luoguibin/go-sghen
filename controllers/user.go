@@ -1,13 +1,14 @@
 package controllers
 
 import (
-	"SghenApi/models"
-	"fmt"
-	"time"
-	"strconv"
 	"errors"
+	"fmt"
+	"go-sghen/models"
+	"strconv"
 	"strings"
-	"github.com/dgrijalva/jwt-go"
+	"time"
+
+	jwt "github.com/dgrijalva/jwt-go"
 )
 
 // UserController operations for User
@@ -16,10 +17,10 @@ type UserController struct {
 }
 
 // 创建user
-func (c *UserController)CreateUser() {
+func (c *UserController) CreateUser() {
 	data := c.GetResponseData()
 	params := &getCreateUserParams{}
-	if (c.CheckPostParams(data, params)) {
+	if c.CheckPostParams(data, params) {
 		user, err := models.CreateUser(params.ID, params.Pw, params.Name)
 		if err == nil {
 			createUserToken(user, data)
@@ -33,18 +34,18 @@ func (c *UserController)CreateUser() {
 			}
 		}
 	}
-	
+
 	c.respToJSON(data)
 }
 
 // user登录
-func (c *UserController)LoginUser() {
+func (c *UserController) LoginUser() {
 	data := c.GetResponseData()
 	params := &getCreateUserParams{}
-	if (c.CheckPostParams(data, params)) {
+	if c.CheckPostParams(data, params) {
 		user, err := models.QueryUser(params.ID)
 		if err == nil {
-			if (user.UPassword == params.Pw) {
+			if user.UPassword == params.Pw {
 				createUserToken(user, data)
 			} else {
 				data[models.STR_CODE] = models.CODE_ERR
@@ -59,7 +60,7 @@ func (c *UserController)LoginUser() {
 }
 
 // 查询user，限制level等级为５以下的user
-func (c *UserController)QueryUser() {
+func (c *UserController) QueryUser() {
 	data := c.GetResponseData()
 	params := &getQueryUserParams{}
 
@@ -71,7 +72,7 @@ func (c *UserController)QueryUser() {
 			} else {
 				data[models.STR_CODE] = models.CODE_ERR
 				data[models.STR_MSG] = "未查询到对应用户"
-			}		
+			}
 		} else {
 			data[models.STR_CODE] = models.CODE_ERR
 			data[models.STR_MSG] = "用户等级低，限制查询"
@@ -81,7 +82,7 @@ func (c *UserController)QueryUser() {
 }
 
 // 更新user
-func (c *UserController)UpdateUser() {
+func (c *UserController) UpdateUser() {
 	data := c.GetResponseData()
 	params := &getUpdateUserParams{}
 
@@ -93,12 +94,12 @@ func (c *UserController)UpdateUser() {
 			data[models.STR_MSG] = "更新用户信息失败"
 		}
 	}
-	
+
 	c.respToJSON(data)
 }
 
 // 删除user
-func (c *UserController)DeleteUser() {
+func (c *UserController) DeleteUser() {
 	data := c.GetResponseData()
 	params := &getUpdateUserParams{}
 
@@ -109,28 +110,28 @@ func (c *UserController)DeleteUser() {
 			data[models.STR_MSG] = "删除用户失败"
 		}
 	}
-	
+
 	c.respToJSON(data)
 }
 
 // 创建用户token，基于json web token
 func createUserToken(user *models.User, data ResponseData) {
 	token := jwt.New(jwt.SigningMethodHS256)
-    claims := make(jwt.MapClaims)
-    claims["exp"] = time.Now().Add(time.Hour * time.Duration(24)).Unix()
+	claims := make(jwt.MapClaims)
+	claims["exp"] = time.Now().Add(time.Hour * time.Duration(24)).Unix()
 	claims["iat"] = time.Now().Unix()
 	claims["uId"] = strconv.FormatInt(user.ID, 10)
 	claims["uLevel"] = strconv.Itoa(user.ULevel)
 
-    token.Claims = claims
+	token.Claims = claims
 
-    tokenString, err := token.SignedString([]byte(models.MConfig.JwtSecretKey))
-    if err != nil {
+	tokenString, err := token.SignedString([]byte(models.MConfig.JwtSecretKey))
+	if err != nil {
 		data[models.STR_CODE] = models.CODE_ERR
 		data[models.STR_MSG] = "用户id签名失败"
 		return
 	}
-	
+
 	user.UToken = tokenString
 	data[models.STR_DATA] = user
 }
@@ -142,14 +143,14 @@ func CheckUserToken(tokenString string) (map[string]interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
 		}
-	
+
 		return []byte(models.MConfig.JwtSecretKey), nil
 	})
 
-	if (err != nil) {
+	if err != nil {
 		return nil, err
 	}
-	
+
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 		return claims, nil
 	} else {

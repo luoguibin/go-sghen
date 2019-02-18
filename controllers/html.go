@@ -1,8 +1,8 @@
 package controllers
 
-import(
-	"SghenApi/models"
+import (
 	"fmt"
+	"go-sghen/models"
 	// "encoding/json"
 )
 
@@ -11,7 +11,7 @@ type HtmlController struct {
 }
 
 type getHtmlInput struct {
-	ID		int64		`form:"id"`
+	ID int64 `form:"id"`
 }
 
 func (c *HtmlController) Get() {
@@ -26,12 +26,12 @@ func (c *HtmlController) Get() {
 		if err == nil {
 			c.Data["user"] = user
 		} else {
-			c.Data["user"] = models.User {
-				ID:			-1,
-				UName:		"游客",
+			c.Data["user"] = models.User{
+				ID:    -1,
+				UName: "游客",
 			}
 		}
 	}
-	
+
 	c.TplName = "index.html"
 }

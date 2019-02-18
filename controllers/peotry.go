@@ -1,17 +1,17 @@
 package controllers
 
 import (
-	"SghenApi/models"
-	"SghenApi/helper"
+	"go-sghen/helper"
+	"go-sghen/models"
 
 	"crypto/md5"
-	"encoding/hex"
-	"strings"
-	"errors"
-	"encoding/json"
-	"strconv"
-	"io/ioutil"
 	"encoding/base64"
+	"encoding/hex"
+	"encoding/json"
+	"errors"
+	"io/ioutil"
+	"strconv"
+	"strings"
 )
 
 // PeotryController operations for Peotry
@@ -20,7 +20,7 @@ type PeotryController struct {
 }
 
 func (c *PeotryController) QueryPeotry() {
-	data := c.GetResponseData();
+	data := c.GetResponseData()
 	params := &getQueryPeotryParams{}
 
 	if c.CheckFormParams(data, params) {
@@ -49,7 +49,6 @@ func (c *PeotryController) QueryPeotry() {
 	c.respToJSON(data)
 }
 
-
 func (c *PeotryController) CreatePeotry() {
 	data := c.GetResponseData()
 	params := &getCreatePeotryParams{}
@@ -63,18 +62,18 @@ func (c *PeotryController) CreatePeotry() {
 				errDatas := make([]string, 0)
 
 				err := json.Unmarshal(c.Ctx.Input.RequestBody, &imgDatas)
-				
+
 				if err == nil {
 					for index, imgData := range imgDatas {
 						if index > 9 {
 							data[models.STR_MSG] = "诗歌图片超过10张，只保存前10张"
-							break;
+							break
 						}
 						fileName, err := savePeotryimage(imgData)
 						if err == nil {
 							fileNames = append(fileNames, fileName)
 						} else {
-							msg := "第" + strconv.Itoa(index + 1) + "张图片保存失败：" + err.Error()
+							msg := "第" + strconv.Itoa(index+1) + "张图片保存失败：" + err.Error()
 							errDatas = append(errDatas, msg)
 						}
 					}
@@ -83,10 +82,10 @@ func (c *PeotryController) CreatePeotry() {
 				}
 
 				fileNameByte, _ := json.Marshal(fileNames)
-				
+
 				timeStr := helper.GetNowDateTime()
 				pId, err := models.CreatePeotry(params.UID, params.SID, params.Title, timeStr, params.Content, params.End, string(fileNameByte[:]))
-				
+
 				if err == nil {
 					if len(errDatas) == 0 {
 						data[models.STR_DATA] = pId
@@ -115,7 +114,7 @@ func (c *PeotryController) CreatePeotry() {
 func (c *PeotryController) UpdatePeotry() {
 	data := c.GetResponseData()
 	params := &getUpdatePeotryParams{}
-	
+
 	if c.CheckFormParams(data, params) {
 		qPeotry, err := models.QueryPeotryByID(params.PID)
 		if err == nil {
@@ -139,7 +138,7 @@ func (c *PeotryController) UpdatePeotry() {
 						return
 					}
 				}
-				qPeotry.PTitle  = params.Title
+				qPeotry.PTitle = params.Title
 				qPeotry.PContent = params.Content
 				qPeotry.PEnd = params.End
 				// 更新时需要将这些附带的结构体置空
@@ -171,7 +170,7 @@ func (c *PeotryController) DeletePeotry() {
 	data := c.GetResponseData()
 	params := &getDeletePeotryParams{}
 
-	if c.CheckFormParams(data, params) { 
+	if c.CheckFormParams(data, params) {
 		peotry, err := models.QueryPeotryByID(params.PID)
 		if err == nil {
 			if peotry.UID == params.UID {
@@ -205,9 +204,9 @@ func savePeotryimage(baseStr string) (string, error) {
 		return "", errors.New("数据错误")
 	}
 
-	format := baseStr[11:baseIndex - 1]
+	format := baseStr[11 : baseIndex-1]
 
-	data, err := base64.StdEncoding.DecodeString(baseStr[baseIndex + 7:])
+	data, err := base64.StdEncoding.DecodeString(baseStr[baseIndex+7:])
 	if err != nil {
 		return "", err
 	}
@@ -225,11 +224,10 @@ func savePeotryimage(baseStr string) (string, error) {
 	h.Write([]byte(baseStr))
 	fileRename := hex.EncodeToString(h.Sum(nil))
 	fileName := fileRename + "." + format
-	err2 := ioutil.WriteFile(path + fileName, data, 0666) 
+	err2 := ioutil.WriteFile(path+fileName, data, 0666)
 	if err2 != nil {
 		return "", err2
-	} 
+	}
 
-	
 	return fileName, nil
 }

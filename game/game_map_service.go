@@ -1,9 +1,9 @@
 package game
 
 import (
-	"SghenApi/helper"
-	"SghenApi/models"
 	"fmt"
+	"go-sghen/helper"
+	"go-sghen/models"
 	"sort"
 	"strconv"
 	"sync"

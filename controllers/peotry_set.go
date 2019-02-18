@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"SghenApi/models"
+	"go-sghen/models"
 )
 
 // PeotrysetController operations for Peotryset

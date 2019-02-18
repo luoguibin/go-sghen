@@ -1,19 +1,17 @@
 package controllers
 
 import (
+	"encoding/json"
 	"fmt"
+	"go-sghen/models"
 	"strconv"
 	"strings"
-	"encoding/json"
-	"SghenApi/models"
 
 	"github.com/astaxie/beego"
-	"github.com/astaxie/beego/validation"
-	"github.com/astaxie/beego/plugins/cors"
 	"github.com/astaxie/beego/context"
+	"github.com/astaxie/beego/plugins/cors"
+	"github.com/astaxie/beego/validation"
 )
-
-
 
 /*****************************/
 type BaseController struct {
@@ -21,24 +19,24 @@ type BaseController struct {
 }
 
 func init() {
-	fmt.Println("basecontroller init");
+	fmt.Println("basecontroller init")
 	beego.InsertFilter("*", beego.BeforeRouter, cors.Allow(&cors.Options{
-        AllowAllOrigins:  true,
-        AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-        AllowHeaders:     []string{"Origin", "Authorization", "Access-Control-Allow-Origin", "Access-Control-Allow-Headers", "Content-Type"},
-        ExposeHeaders:    []string{"Content-Length", "Access-Control-Allow-Origin", "Access-Control-Allow-Headers", "Content-Type"},
-        AllowCredentials: true,
-    }))
+		AllowAllOrigins:  true,
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Authorization", "Access-Control-Allow-Origin", "Access-Control-Allow-Headers", "Content-Type"},
+		ExposeHeaders:    []string{"Content-Length", "Access-Control-Allow-Origin", "Access-Control-Allow-Headers", "Content-Type"},
+		AllowCredentials: true,
+	}))
 }
 
 func (c *BaseController) respToJSON(data ResponseData) {
-    respMsg, ok := data[models.STR_MSG]
+	respMsg, ok := data[models.STR_MSG]
 	if !ok || (ok && len(respMsg.(string)) <= 0) {
 		data[models.STR_MSG] = models.MConfig.CodeMsgMap[data[models.STR_CODE].(int)]
 	}
 	// c.Ctx.Output.SetStatus(201)
 	c.Data["json"] = data
-    c.ServeJSON()
+	c.ServeJSON()
 }
 
 func (c *BaseController) BaseGetTest() {
@@ -71,7 +69,7 @@ func GatewayAccessUser(ctx *context.Context, setInPost bool) {
 	}
 
 	claims, err := CheckUserToken(token)
-	if  err != nil {
+	if err != nil {
 		datas[models.STR_CODE] = models.CODE_ERR_TOKEN
 		errStr := err.Error()
 		if strings.Contains(errStr, "expired") {
@@ -83,7 +81,7 @@ func GatewayAccessUser(ctx *context.Context, setInPost bool) {
 		ctx.Output.JSON(datas, false, false)
 		return
 	}
-	
+
 	if setInPost {
 		uId, _ := strconv.ParseInt(claims["uId"].(string), 10, 64)
 		ctx.Input.SetData("uId", uId)
@@ -92,10 +90,9 @@ func GatewayAccessUser(ctx *context.Context, setInPost bool) {
 		ctx.Input.Context.Request.Form.Add("uId", claims["uId"].(string))
 		ctx.Input.Context.Request.Form.Add("level", claims["uLevel"].(string))
 	}
-	
+
 	return
 }
-
 
 func (c *BaseController) CheckFormParams(data ResponseData, params interface{}) bool {
 	//验证参数是否异常
@@ -137,5 +134,5 @@ func (c *BaseController) CheckPostParams(data ResponseData, params interface{}) 
 type ResponseData map[string]interface{}
 
 func (self *BaseController) GetResponseData() ResponseData {
-	return ResponseData{ models.STR_CODE: models.CODE_OK }
+	return ResponseData{models.STR_CODE: models.CODE_OK}
 }

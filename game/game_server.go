@@ -1,33 +1,33 @@
 package game
 
-import(
-	"SghenApi/models"
-	"SghenApi/helper"
-	"net/http"
-	"strconv"
+import (
 	"fmt"
+	"go-sghen/helper"
+	"go-sghen/models"
+	"net/http"
 	"runtime"
-	"github.com/gorilla/websocket"
+	"strconv"
+
 	"github.com/astaxie/beego/context"
+	"github.com/gorilla/websocket"
 )
 
 var (
-	upgrader 		= websocket.Upgrader{
-						ReadBufferSize: 	2048,
-						WriteBufferSize: 	2048,
-						CheckOrigin: func(r *http.Request) bool {
-							return true
-						},
-					}
-	MGameServer		= &GameServer{}
+	upgrader = websocket.Upgrader{
+		ReadBufferSize:  2048,
+		WriteBufferSize: 2048,
+		CheckOrigin: func(r *http.Request) bool {
+			return true
+		},
+	}
+	MGameServer = &GameServer{}
 
-	GameServerStatus	=	1
+	GameServerStatus = 1
 )
 
-
 type GameServer struct {
-	GameMapService			*GameMapService
-	GameAuthorityService	*GameAuthorityService
+	GameMapService       *GameMapService
+	GameAuthorityService *GameAuthorityService
 }
 
 /*
@@ -36,17 +36,17 @@ type GameServer struct {
 func init() {
 	MGameServer.Start()
 
-	go func () {
+	go func() {
 		for {
 			var str string
 			fmt.Scan(&str)
-	
-			if (str == "game:finish") {
+
+			if str == "game:finish" {
 				MGameServer.GameMapService.LogoutAll()
 				GameServerStatus = -1
-			} else if (str == "game:start") {
+			} else if str == "game:start" {
 				GameServerStatus = 1
-			} else if (str == "game:getUser") {
+			} else if str == "game:getUser" {
 				fmt.Print("input id:")
 				fmt.Scan(&str)
 				id, err := strconv.ParseInt(str, 10, 64)
@@ -60,20 +60,20 @@ func init() {
 				} else {
 					fmt.Println(err)
 				}
-			} else if (str == "game:threadcount") {
+			} else if str == "game:threadcount" {
 				fmt.Printf("	threadcount=%d\n", runtime.NumGoroutine())
-			} else if (str == "exit") {
+			} else if str == "exit" {
 				break
 			}
 		}
-	} ()
+	}()
 }
 
 /*
  * game server start
  */
 func (gameServer *GameServer) Start() {
-	fmt.Println("GameServer::Start()");
+	fmt.Println("GameServer::Start()")
 
 	MGameServer.GameAuthorityService = &GameAuthorityService{}
 	go MGameServer.GameAuthorityService.Start()
@@ -86,16 +86,16 @@ func (gameServer *GameServer) Start() {
  * add the context to the server
  */
 func AddToServer(Ctx *context.Context, uId int64) {
-	ws, err := upgrader.Upgrade(Ctx.ResponseWriter, Ctx.Request, nil) 
-	if err != nil { 
+	ws, err := upgrader.Upgrade(Ctx.ResponseWriter, Ctx.Request, nil)
+	if err != nil {
 		models.MConfig.MLogger.Error("get ws error:\n%s", err)
-	} 
+	}
 	models.MConfig.MLogger.Debug("get ws: " + ws.RemoteAddr().String())
 
-	gameClient := &GameClient {
-		ID:				uId,
-		Conn:			ws,
-		GameStatus:		GStatusLogin,
+	gameClient := &GameClient{
+		ID:         uId,
+		Conn:       ws,
+		GameStatus: GStatusLogin,
 	}
 	MGameServer.GameAuthorityService.LoginChan <- gameClient
 }
@@ -106,7 +106,7 @@ func AddToServer(Ctx *context.Context, uId int64) {
 func GoGameClientHandle(gameClient *GameClient) {
 	preTime := helper.GetMillisecond()
 	for {
-		// 获取指令 
+		// 获取指令
 		var order GameOrder
 		err := gameClient.Conn.ReadJSON(&order)
 		if err != nil {
@@ -117,29 +117,29 @@ func GoGameClientHandle(gameClient *GameClient) {
 			}
 			return
 		}
-		
+
 		curTime := helper.GetMillisecond()
 		// fmt.Printf("%v  %d\n", order, curTime - preTime)
-		if (curTime - preTime < 300) {
+		if curTime-preTime < 300 {
 			continue
 		}
 		preTime = curTime
-		if (order.OrderType < 100) {
+		if order.OrderType < 100 {
 			models.MConfig.MLogger.Error("ws read msg error: order.OrderType < 1000")
 			continue
 		}
 		v := order.OrderType / 10000 * 10000
 		switch v {
-			case OT_Msg:
-				MGameServer.GameMapService.DealOrderMsg(gameClient, &order)
-			case OT_Skill:
-				MGameServer.GameMapService.DealOrderSkill(gameClient, &order)
-			case OT_Action:
-				MGameServer.GameMapService.DealOrderAction(gameClient, &order)
-			default:
-				models.MConfig.MLogger.Error(string(gameClient.ID) + " order invalid: " + string(order.OrderType))
+		case OT_Msg:
+			MGameServer.GameMapService.DealOrderMsg(gameClient, &order)
+		case OT_Skill:
+			MGameServer.GameMapService.DealOrderSkill(gameClient, &order)
+		case OT_Action:
+			MGameServer.GameMapService.DealOrderAction(gameClient, &order)
+		default:
+			models.MConfig.MLogger.Error(string(gameClient.ID) + " order invalid: " + string(order.OrderType))
 		}
-	} 
+	}
 }
 
 /*
@@ -169,9 +169,9 @@ func ResetGameDataMove(gameData *models.GameData, orderAction *GameOrderAction) 
 			gameData.Move = 0
 		} else {
 			stayTime := gameData.EndTime - curTime
-			moveRatio := float64(1) - float64(stayTime) / float64(gameData.MoveTime)
-			gameData.X = int(float64(gameData.X1 - gameData.X0) * moveRatio) + gameData.X0
-			gameData.Y = int(float64(gameData.Y1 - gameData.Y0) * moveRatio) + gameData.Y0
+			moveRatio := float64(1) - float64(stayTime)/float64(gameData.MoveTime)
+			gameData.X = int(float64(gameData.X1-gameData.X0)*moveRatio) + gameData.X0
+			gameData.Y = int(float64(gameData.Y1-gameData.Y0)*moveRatio) + gameData.Y0
 		}
 	}
 	if orderAction != nil {
@@ -186,5 +186,5 @@ func ResetGameDataMove(gameData *models.GameData, orderAction *GameOrderAction) 
 		gameData.Move = 1
 		// fmt.Printf("distance=%v  moveTime=%v\n", distance, gameData.GMoveTime)
 	}
-	
+
 }
