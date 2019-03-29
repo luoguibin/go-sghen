@@ -53,7 +53,7 @@ func (c *PeotryController) CreatePeotry() {
 	data := c.GetResponseData()
 	params := &getCreatePeotryParams{}
 
-	if c.CheckFormParams(data, params) {
+	if c.CheckPostParams(data, params) {
 		set, err := models.QueryPeotrySetByID(params.SID)
 		if err == nil {
 			if set.UID == params.UID {
@@ -115,7 +115,7 @@ func (c *PeotryController) UpdatePeotry() {
 	data := c.GetResponseData()
 	params := &getUpdatePeotryParams{}
 
-	if c.CheckFormParams(data, params) {
+	if c.CheckPostParams(data, params) {
 		qPeotry, err := models.QueryPeotryByID(params.PID)
 		if err == nil {
 			if qPeotry.UID == params.UID {

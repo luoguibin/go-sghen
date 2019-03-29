@@ -68,7 +68,7 @@ func init() {
 		beego.NSNamespace("/peotry",
 			beego.NSRouter("/query", &controllers.PeotryController{}, "get:QueryPeotry"),
 			beego.NSRouter("/create", &controllers.PeotryController{}, "post:CreatePeotry"),
-			beego.NSRouter("/update", &controllers.PeotryController{}, "get:UpdatePeotry"),
+			beego.NSRouter("/update", &controllers.PeotryController{}, "post:UpdatePeotry"),
 			beego.NSRouter("/delete", &controllers.PeotryController{}, "delete:DeletePeotry"),
 		),
 		beego.NSNamespace("/peotry-set",
