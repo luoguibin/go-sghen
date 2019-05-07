@@ -5,8 +5,11 @@ import (
 	"go-sghen/helper"
 	"go-sghen/models"
 	"net/http"
+	"os"
+	"os/signal"
 	"runtime"
 	"strconv"
+	"syscall"
 
 	"github.com/astaxie/beego/context"
 	"github.com/gorilla/websocket"
@@ -35,6 +38,19 @@ type GameServer struct {
  */
 func init() {
 	MGameServer.Start()
+
+	// listen the program died
+	signalChan := make(chan os.Signal, 1)
+	go func() {
+		<-signalChan
+		fmt.Println("programer exit")
+
+		MGameServer.GameMapService.LogoutAll()
+		GameServerStatus = -1
+
+		os.Exit(0)
+	}()
+	signal.Notify(signalChan, syscall.SIGINT, syscall.SIGTERM)
 
 	go func() {
 		for {
