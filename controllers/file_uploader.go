@@ -88,10 +88,10 @@ func (c *FileUploaderController) FileUpload() {
 		if err == nil {
 			outputFilePath := path + fileName
 			writer, err := os.OpenFile(outputFilePath, os.O_WRONLY|os.O_CREATE, 0666)
-			defer writer.Close()
+
 			if err == nil {
 				io.Copy(writer, file)
-
+				writer.Close()
 				file.Seek(0, os.SEEK_SET)
 				// 文件md5计算
 				h := md5.New()
@@ -113,6 +113,8 @@ func (c *FileUploaderController) FileUpload() {
 					return
 				}
 			} else {
+				writer.Close()
+
 				data[models.STR_CODE] = models.CODE_ERR
 				data[models.STR_MSG] = "文件创建或打开失败"
 				c.respToJSON(data)
