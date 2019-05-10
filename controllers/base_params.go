@@ -174,7 +174,7 @@ type getCreateCommentParams struct {
 }
 
 func (params *getCreateCommentParams) Valid(v *validation.Validation) {
-	if params.Type < 0 {
+	if params.Type <= 0 {
 		v.SetError("type", "不能为空")
 	} else if params.TypeID <= 0 {
 		v.SetError("typeId", "不能为空")
