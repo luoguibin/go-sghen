@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"go-sghen/helper"
 	"go-sghen/models"
 
@@ -35,6 +36,17 @@ func (c *PeotryController) QueryPeotry() {
 		} else {
 			list, err, count, totalPage, curPage, pageIsEnd := models.QueryPeotry(params.SID, params.Page, params.Limit, params.Content)
 			if err == nil {
+				fmt.Println(params.NeedComment)
+				if params.NeedComment {
+					for _, peotry := range list {
+						comments, e := models.QueryCommentByTypeID(peotry.ID)
+						if e == nil {
+							peotry.Comments = comments
+							fmt.Println(peotry.Comments)
+						}
+					}
+				}
+
 				data[models.STR_DATA] = list
 				data["totalCount"] = count
 				data["totalPage"] = totalPage

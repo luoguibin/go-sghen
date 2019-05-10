@@ -14,11 +14,11 @@ func InitGorm() {
 	db.DB().SetMaxIdleConns(MConfig.dBMaxIdle)
 	db.DB().SetMaxOpenConns(MConfig.dBMaxConn)
 
-	db.SingularTable(true)	//禁用创建表名自动添加负数形式
+	db.SingularTable(true) //禁用创建表名自动添加负数形式
 
 	dbOrmDefault = db
 
-	db.AutoMigrate(&User{}, &PeotrySet{}, &PeotryImage{}, &Peotry{}, &GameData{}, &GameSpear{}, &GameShield{})
+	db.AutoMigrate(&User{}, &PeotrySet{}, &PeotryImage{}, &Peotry{}, &Comment{}, &GameData{}, &GameSpear{}, &GameShield{})
 
 	count := 0
 	if db.Model(&User{}).Count(&count); count == 0 {
@@ -29,6 +29,9 @@ func InitGorm() {
 	}
 	if db.Model(&Peotry{}).Count(&count); count == 0 {
 		initSystemPeotry()
+	}
+	if db.Model(&Comment{}).Count(&count); count == 0 {
+		initSystemComment()
 	}
 	if db.Model(&GameData{}).Count(&count); count == 0 {
 		initSystemGameData()

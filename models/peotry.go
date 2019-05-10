@@ -9,6 +9,7 @@ import (
 	"github.com/tidwall/gjson"
 )
 
+// Peotry ...
 type Peotry struct {
 	ID int64 `gorm:"column:id;primary_key;" json:"id"`
 
@@ -24,6 +25,8 @@ type Peotry struct {
 	PEnd     string    `gorm:"column:p_end" json:"end"`
 
 	PImage *PeotryImage `gorm:"foreignkey:id" json:"image,omitempty"`
+
+	Comments []*Comment `gorm:"-" json:"comments,omitempty"`
 }
 
 func initSystemPeotry() {
@@ -84,8 +87,8 @@ func UpdatePeotry(peotry *Peotry) error {
 	}
 }
 
-func QueryPeotry(setId int, page int, limit int, content string) ([]Peotry, error, int, int, int, int) {
-	list := make([]Peotry, 0)
+func QueryPeotry(setId int, page int, limit int, content string) ([]*Peotry, error, int, int, int, int) {
+	list := make([]*Peotry, 0)
 	totalPage := 0
 	count := 0
 	curPage := page
