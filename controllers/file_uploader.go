@@ -139,10 +139,8 @@ func (c *FileUploaderController) FileUpload() {
 				return
 			}
 		}
-		data[models.STR_DATA] = list
-	} else {
-		data[models.STR_DATA] = true
 	}
+	data[models.STR_DATA] = list
 
 	c.respToJSON(data)
 }

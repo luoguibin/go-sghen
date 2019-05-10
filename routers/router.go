@@ -55,9 +55,9 @@ func init() {
 	beego.InsertFilter("/v1/upload", beego.BeforeRouter, func(ctx *context.Context) {
 		controllers.GatewayAccessUser(ctx, true)
 	})
-	// beego.InsertFilter("/v1/comment/create", beego.BeforeRouter, func(ctx *context.Context) {
-	// 	controllers.GatewayAccessUser(ctx, false)
-	// })
+	beego.InsertFilter("/v1/comment/create", beego.BeforeRouter, func(ctx *context.Context) {
+		controllers.GatewayAccessUser(ctx, false)
+	})
 
 	//详见　https://beego.me/docs/mvc/controller/router.md
 	nsv1 := beego.NewNamespace("/v1",

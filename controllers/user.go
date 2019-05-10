@@ -87,8 +87,7 @@ func (c *UserController) UpdateUser() {
 	params := &getUpdateUserParams{}
 
 	if c.CheckPostParams(data, params) {
-		fmt.Println(params)
-		_, err := models.UpdateUser(params.ID, params.Pw, params.Name)
+		_, err := models.UpdateUser(params.ID, params.Pw, params.Name, params.IconURL)
 		if err != nil {
 			data[models.STR_CODE] = models.CODE_ERR
 			data[models.STR_MSG] = "更新用户信息失败"

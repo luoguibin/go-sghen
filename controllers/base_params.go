@@ -29,9 +29,10 @@ func (params *getCreateUserParams) Valid(v *validation.Validation) {
 
 // user update和delete共用输入结构体
 type getUpdateUserParams struct {
-	ID   int64  `form:"uId" valid:"Required"`
-	Pw   string `form:"pw"`
-	Name string `form:"name"`
+	ID      int64  `form:"uId" json:"uId" valid:"Required"`
+	Pw      string `form:"pw" json:"pw"`
+	Name    string `form:"name" json:"name"`
+	IconURL string `form:"iconUrl" json:"iconUrl"`
 }
 
 func (params *getUpdateUserParams) Valid(v *validation.Validation) {

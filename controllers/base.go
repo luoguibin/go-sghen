@@ -57,7 +57,6 @@ func (c *BaseController) BaseGetTest() {
 
 func GatewayAccessUser(ctx *context.Context, setInPost bool) {
 	datas := make(map[string]interface{})
-	// userId := ctx.Input.Query("userId")
 	token := ctx.Input.Query("token")
 
 	if len(token) <= 0 {
@@ -82,6 +81,7 @@ func GatewayAccessUser(ctx *context.Context, setInPost bool) {
 		return
 	}
 
+	// todo
 	if setInPost {
 		uId, _ := strconv.ParseInt(claims["uId"].(string), 10, 64)
 		ctx.Input.SetData("uId", uId)
@@ -118,7 +118,6 @@ func (c *BaseController) CheckPostParams(data ResponseData, params interface{}) 
 		data[models.STR_MSG] = err.Error()
 		return false
 	}
-
 	//验证参数
 	valid := validation.Validation{}
 	if ok, _ := valid.Valid(params); ok {
