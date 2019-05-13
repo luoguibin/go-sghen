@@ -2,16 +2,13 @@ package helper
 
 import (
 	"crypto/hmac"
-	"crypto/sha512"
-	"encoding/hex"
+	"crypto/md5"
+	"encoding/base64"
 )
 
-// HmacSha512 ...验证
-func HmacSha512(src, key string) string {
-	m := hmac.New(sha512.New, []byte(key))
+// HmacMd5 ...验证
+func HmacMd5(src, key string) string {
+	m := hmac.New(md5.New, []byte(key))
 	m.Write([]byte(src))
-	if len(hex.EncodeToString(m.Sum(nil))) > 0 {
-		return src
-	}
-	return ""
+	return base64.StdEncoding.EncodeToString(m.Sum(nil))
 }

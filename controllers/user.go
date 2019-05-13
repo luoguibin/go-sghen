@@ -3,6 +3,7 @@ package controllers
 import (
 	"errors"
 	"fmt"
+	"go-sghen/helper"
 	"go-sghen/models"
 	"strconv"
 	"strings"
@@ -45,7 +46,8 @@ func (c *UserController) LoginUser() {
 	if c.CheckPostParams(data, params) {
 		user, err := models.QueryUser(params.ID)
 		if err == nil {
-			if user.UPassword == params.Pw {
+			compare := strings.Compare(helper.HmacMd5(user.UPassword, models.MConfig.JwtSecretKey), params.Pw)
+			if compare == 0 {
 				createUserToken(user, data)
 			} else {
 				data[models.STR_CODE] = models.CODE_ERR
