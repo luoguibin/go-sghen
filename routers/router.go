@@ -31,9 +31,9 @@ func init() {
 	beego.InsertFilter("/v1/user/delete", beego.BeforeRouter, func(ctx *context.Context) {
 		controllers.GatewayAccessUser(ctx, false)
 	})
-	beego.InsertFilter("/v1/user/query", beego.BeforeRouter, func(ctx *context.Context) {
-		controllers.GatewayAccessUser(ctx, false)
-	})
+	// beego.InsertFilter("/v1/user/query-list", beego.BeforeRouter, func(ctx *context.Context) {
+	// 	controllers.GatewayAccessUser(ctx, false)
+	// })
 	beego.InsertFilter("/v1/peotry/create", beego.BeforeRouter, func(ctx *context.Context) {
 		controllers.GatewayAccessUser(ctx, false)
 	})
@@ -67,6 +67,7 @@ func init() {
 			beego.NSRouter("/update", &controllers.UserController{}, "post:UpdateUser"),
 			beego.NSRouter("/delete", &controllers.UserController{}, "delete:DeleteUser"),
 			beego.NSRouter("/query", &controllers.UserController{}, "get:QueryUser"),
+			beego.NSRouter("/query-list", &controllers.UserController{}, "get:QueryUsers"),
 		),
 		beego.NSNamespace("/peotry",
 			beego.NSRouter("/query", &controllers.PeotryController{}, "get:QueryPeotry"),

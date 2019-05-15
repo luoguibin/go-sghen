@@ -61,7 +61,7 @@ func (c *UserController) LoginUser() {
 	c.respToJSON(data)
 }
 
-// 查询user，限制level等级为５以下的user
+// 查询user，限制level等级为5以下的user
 func (c *UserController) QueryUser() {
 	data := c.GetResponseData()
 	params := &getQueryUserParams{}
@@ -78,6 +78,40 @@ func (c *UserController) QueryUser() {
 		} else {
 			data[models.STR_CODE] = models.CODE_ERR
 			data[models.STR_MSG] = "用户等级低，限制查询"
+		}
+	}
+	c.respToJSON(data)
+}
+
+// QueryUsers 查询users，输入ids的json
+func (c *UserController) QueryUsers() {
+	data := c.GetResponseData()
+	params := &getQueryUsersParams{}
+
+	if c.CheckFormParams(data, params) {
+		IDStrs := strings.Split(params.IDStrs, ",")
+		if len(IDStrs) > 0 && len(IDStrs) < 100 {
+			ids := make([]int64, 0)
+			for _, IDStr := range IDStrs {
+				id, err := strconv.ParseInt(IDStr, 10, 64)
+				if err == nil {
+					ids = append(ids, id)
+				}
+			}
+			users, err := models.QueryUsers(ids)
+			if err == nil {
+				data[models.STR_DATA] = users
+			} else {
+				data[models.STR_CODE] = models.CODE_ERR
+				data[models.STR_MSG] = "未查询到对应用户列表"
+			}
+		} else {
+			data[models.STR_CODE] = models.CODE_ERR
+			if len(IDStrs) > 100 {
+				data[models.STR_MSG] = "查询用户个数不能超过100个"
+			} else {
+				data[models.STR_MSG] = "请输入用户id列表"
+			}
 		}
 	}
 	c.respToJSON(data)

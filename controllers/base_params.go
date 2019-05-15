@@ -58,6 +58,17 @@ func (params *getQueryUserParams) Valid(v *validation.Validation) {
 	}
 }
 
+// users query输入结构体
+type getQueryUsersParams struct {
+	IDStrs string `form:"idStrs" valid:"Required"`
+}
+
+func (params *getQueryUsersParams) Valid(v *validation.Validation) {
+	if len(params.IDStrs) == 0 {
+		v.SetError("user ids", "不能为空")
+	}
+}
+
 // peotry query输入结构体
 type getQueryPeotryParams struct {
 	ID          int64  `form:"pId"`

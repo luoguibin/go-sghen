@@ -86,6 +86,16 @@ func QueryUser(id int64) (*User, error) {
 	}
 }
 
+// QueryUsers ...
+func QueryUsers(ids []int64) ([]*User, error) {
+	list := make([]*User, 0)
+	err := dbOrmDefault.Model(&User{}).Select("id, u_name, u_icon_url").Where("id in (?)", ids).Find(&list).Error
+	if err == nil {
+		return list, nil
+	}
+	return nil, err
+}
+
 func UpdateUser(id int64, password string, name string, iconURL string) (*User, error) {
 	user := &User{
 		ID: id,
