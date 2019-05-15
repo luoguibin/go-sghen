@@ -39,4 +39,31 @@ func (c *CommentController) QueryComments() {
 			data[models.STR_MSG] = "评论提交失败"
 		}
 	}
+	c.respToJSON(data)
+}
+
+// DeleteComment ...
+func (c *CommentController) DeleteComment() {
+	data := c.GetResponseData()
+	params := &getDeleteCommentParams{}
+	if c.CheckFormParams(data, params) {
+		comment, err := models.QueryComment(params.ID)
+		userID := c.Ctx.Input.GetData("uId").(int64)
+		if err == nil {
+			if userID == comment.FromID {
+				err := models.DeleteComemnt(comment.ID)
+				if err != nil {
+					data[models.STR_CODE] = models.CODE_ERR
+					data[models.STR_MSG] = "删除评论失败"
+				}
+			} else {
+				data[models.STR_CODE] = models.CODE_ERR
+				data[models.STR_MSG] = "只能删除自己的评论"
+			}
+		} else {
+			data[models.STR_CODE] = models.CODE_ERR
+			data[models.STR_MSG] = "评论查询失败"
+		}
+	}
+	c.respToJSON(data)
 }

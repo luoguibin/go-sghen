@@ -58,6 +58,9 @@ func init() {
 	beego.InsertFilter("/v1/comment/create", beego.BeforeRouter, func(ctx *context.Context) {
 		controllers.GatewayAccessUser(ctx, false)
 	})
+	beego.InsertFilter("/v1/comment/delete", beego.BeforeRouter, func(ctx *context.Context) {
+		controllers.GatewayAccessUser(ctx, true)
+	})
 
 	//详见　https://beego.me/docs/mvc/controller/router.md
 	nsv1 := beego.NewNamespace("/v1",
@@ -83,6 +86,7 @@ func init() {
 		beego.NSNamespace("/comment",
 			beego.NSRouter("/query", &controllers.CommentController{}, "get:QueryComments"),
 			beego.NSRouter("/create", &controllers.CommentController{}, "post:CreateComment"),
+			beego.NSRouter("/delete", &controllers.CommentController{}, "delete:DeleteComment"),
 		),
 		beego.NSRouter("/upload", &controllers.FileUploaderController{}, "post:FileUpload"),
 	)

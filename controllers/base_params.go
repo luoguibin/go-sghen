@@ -197,7 +197,7 @@ func (params *getCreateCommentParams) Valid(v *validation.Validation) {
 	}
 }
 
-// comment query输入结构体
+// comment query,delete输入结构体
 type getQueryCommentParams struct {
 	Type   int   `form:"type" json:"type" valid:"Required"`
 	TypeID int64 `form:"typeId" json:"typeId" valid:"Required"`
@@ -208,5 +208,19 @@ func (params *getQueryCommentParams) Valid(v *validation.Validation) {
 		v.SetError("type", "不能为空")
 	} else if params.TypeID <= 0 {
 		v.SetError("typeId", "不能为空")
+	}
+}
+
+// comment query,delete输入结构体
+type getDeleteCommentParams struct {
+	ID     int64 `form:"id" json:"id" valid:"Required"`
+	FromID int64 `form:"fromId" json:"fromId" valid:"Required"`
+}
+
+func (params *getDeleteCommentParams) Valid(v *validation.Validation) {
+	if params.ID <= 0 {
+		v.SetError("id", "不能为空")
+	} else if params.FromID <= 0 {
+		v.SetError("fromId", "不能为空")
 	}
 }
