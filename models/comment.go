@@ -68,6 +68,20 @@ func QueryComment(ID int64) (*Comment, error) {
 	return nil, err
 }
 
+// QueryCommentByTypeIDFromID ...
+func QueryCommentByTypeIDFromID(typeID int64, fromID int64, toID int64) (*Comment, error) {
+	comment := &Comment{
+		TypeID: typeID,
+		FromID: fromID,
+		ToID:   toID,
+	}
+	err := dbOrmDefault.Model(&Comment{}).Where(comment).Find(comment).Error
+	if err == nil {
+		return comment, nil
+	}
+	return nil, err
+}
+
 // QueryCommentByTypeID ...
 func QueryCommentByTypeID(typeID int64) ([]*Comment, error) {
 	list := make([]*Comment, 0)
@@ -79,6 +93,15 @@ func QueryCommentByTypeID(typeID int64) ([]*Comment, error) {
 		return list, nil
 	}
 	return nil, err
+}
+
+// SaveComment ...
+func SaveComment(comment *Comment) error {
+	err := dbOrmDefault.Model(&Comment{}).Save(comment).Error
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // DeleteComemnt ...

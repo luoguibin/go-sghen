@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"go-sghen/models"
 )
 
@@ -14,12 +15,41 @@ func (c *CommentController) CreateComment() {
 	data := c.GetResponseData()
 	params := &getCreateCommentParams{}
 	if c.CheckPostParams(data, params) {
-		comment, err := models.CreateComment(params.Type, params.TypeID, params.FromID, params.ToID, params.Comment)
-		if err == nil {
-			data[models.STR_DATA] = comment.ID
+		if params.ToID < 0 {
+			fmt.Println(params)
+			comment, _ := models.QueryCommentByTypeIDFromID(params.TypeID, params.FromID, params.ToID)
+			fmt.Println(comment)
+			if comment == nil {
+				comment = &models.Comment{
+					Type:    params.Type,
+					TypeID:  params.TypeID,
+					FromID:  params.FromID,
+					ToID:    params.ToID,
+					Content: params.Comment,
+				}
+				comment, err := models.CreateComment(params.Type, params.TypeID, params.FromID, params.ToID, params.Comment)
+				if err == nil {
+					data[models.STR_DATA] = comment.ID
+				} else {
+					data[models.STR_CODE] = models.CODE_ERR
+					data[models.STR_MSG] = "操作失败"
+				}
+			} else {
+				comment.Content = params.Comment
+				err := models.SaveComment(comment)
+				if err != nil {
+					data[models.STR_CODE] = models.CODE_ERR
+					data[models.STR_MSG] = "操作失败"
+				}
+			}
 		} else {
-			data[models.STR_CODE] = models.CODE_ERR
-			data[models.STR_MSG] = "评论提交失败"
+			comment, err := models.CreateComment(params.Type, params.TypeID, params.FromID, params.ToID, params.Comment)
+			if err == nil {
+				data[models.STR_DATA] = comment.ID
+			} else {
+				data[models.STR_CODE] = models.CODE_ERR
+				data[models.STR_MSG] = "评论提交失败"
+			}
 		}
 	}
 
