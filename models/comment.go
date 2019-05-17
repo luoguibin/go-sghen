@@ -97,6 +97,7 @@ func QueryCommentByTypeID(typeID int64) ([]*Comment, error) {
 
 // SaveComment ...
 func SaveComment(comment *Comment) error {
+	comment.CreateTime = time.Now()
 	err := dbOrmDefault.Model(&Comment{}).Save(comment).Error
 	if err != nil {
 		return err

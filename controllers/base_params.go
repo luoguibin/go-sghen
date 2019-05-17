@@ -182,7 +182,7 @@ type getCreateCommentParams struct {
 	TypeID  int64  `form:"typeId" json:"typeId" valid:"Required"`
 	FromID  int64  `form:"fromId" json:"fromId" valid:"Required"`
 	ToID    int64  `form:"toId" json:"toId" valid:"Required"`
-	Comment string `form:"comment" json:"comment" valid:"Required"`
+	Content string `form:"Content" json:"Content" valid:"Required"`
 }
 
 func (params *getCreateCommentParams) Valid(v *validation.Validation) {
@@ -192,7 +192,7 @@ func (params *getCreateCommentParams) Valid(v *validation.Validation) {
 		v.SetError("typeId", "不能为空")
 	} else if params.FromID <= 0 {
 		v.SetError("fromId", "不能为空")
-	} else if len(strings.TrimSpace(params.Comment)) == 0 {
+	} else if len(strings.TrimSpace(params.Content)) == 0 {
 		v.SetError("comment", "不能为空")
 	}
 }

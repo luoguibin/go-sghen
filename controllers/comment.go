@@ -25,9 +25,9 @@ func (c *CommentController) CreateComment() {
 					TypeID:  params.TypeID,
 					FromID:  params.FromID,
 					ToID:    params.ToID,
-					Content: params.Comment,
+					Content: params.Content,
 				}
-				comment, err := models.CreateComment(params.Type, params.TypeID, params.FromID, params.ToID, params.Comment)
+				comment, err := models.CreateComment(params.Type, params.TypeID, params.FromID, params.ToID, params.Content)
 				if err == nil {
 					data[models.STR_DATA] = comment.ID
 				} else {
@@ -35,15 +35,17 @@ func (c *CommentController) CreateComment() {
 					data[models.STR_MSG] = "操作失败"
 				}
 			} else {
-				comment.Content = params.Comment
+				comment.Content = params.Content
 				err := models.SaveComment(comment)
 				if err != nil {
 					data[models.STR_CODE] = models.CODE_ERR
 					data[models.STR_MSG] = "操作失败"
+				} else {
+					data[models.STR_DATA] = comment.ID
 				}
 			}
 		} else {
-			comment, err := models.CreateComment(params.Type, params.TypeID, params.FromID, params.ToID, params.Comment)
+			comment, err := models.CreateComment(params.Type, params.TypeID, params.FromID, params.ToID, params.Content)
 			if err == nil {
 				data[models.STR_DATA] = comment.ID
 			} else {
