@@ -183,7 +183,10 @@ func (c *PeotryController) DeletePeotry() {
 		peotry, err := models.QueryPeotryByID(params.PID)
 		if err == nil {
 			if peotry.UID == params.UID {
-				err := models.DeletePeotry(params.PID)
+				// err := models.DeletePeotry(params.PID)
+				// do not delete peotry in reality, just make it unselectable
+				peotry.Flag = -1
+				err := models.UpdatePeotry(peotry)
 				if err == nil {
 					data[models.STR_DATA] = true
 				} else {

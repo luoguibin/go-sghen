@@ -27,6 +27,8 @@ type Peotry struct {
 	PImage *PeotryImage `gorm:"foreignkey:id" json:"image,omitempty"`
 
 	Comments []*Comment `gorm:"-" json:"comments,omitempty"`
+
+	Flag int `gorm:"flag" json:"-"`
 }
 
 func initSystemPeotry() {
@@ -61,6 +63,7 @@ func CreatePeotry(userId int64, setId int, title string, pTime string, content s
 		PTime:    helper.StrToTimeStamp(pTime),
 		PContent: content,
 		PEnd:     end,
+		Flag:     1,
 	}
 
 	err := dbOrmDefault.Model(&Peotry{}).Save(peotry).Error
@@ -101,14 +104,17 @@ func QueryPeotry(setId int, page int, limit int, content string) ([]*Peotry, err
 	db := dbOrmDefault.Model(&Peotry{})
 	if setId > 0 {
 		query := &Peotry{
-			SID: setId,
+			SID:  setId,
+			Flag: 1,
 		}
 		db = db.Where(query)
 	}
 
 	if len(content) > 1 {
+		// todo
 		db = db.Where("p_content LIKE ?", "%"+content+"%")
 	}
+	db = db.Where("flag = ?", 1)
 
 	db.Count(&count)
 	db = db.Preload("UUser").Preload("SSet").Preload("PImage")
@@ -125,7 +131,8 @@ func QueryPeotry(setId int, page int, limit int, content string) ([]*Peotry, err
 
 func QueryPeotryByID(id int64) (*Peotry, error) {
 	peotry := &Peotry{
-		ID: id,
+		ID:   id,
+		Flag: 1,
 	}
 
 	err := dbOrmDefault.Model(&Peotry{}).Preload("UUser").Preload("SSet").Preload("PImage").Find(peotry).Error
