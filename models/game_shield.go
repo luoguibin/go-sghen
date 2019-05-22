@@ -15,9 +15,10 @@ type GameShield struct {
 }
 
 func initSystemGameShield() {
-	CreateGameShield(15625045984, 800, 10, 0, 0, 2, 0, 0)
-	CreateGameShield(66666666, 780, 13, 0, 0, 1, 0, 0)
-	CreateGameShield(88888888, 810, 12, 0, 0, 0, 0, 1)
+	CreateGameShield(15625045984, 8000, 100, 0, 0, 20, 0, 0)
+	CreateGameShield(15622222222, 780, 13, 0, 0, 1, 0, 0)
+	CreateGameShield(15666666666, 780, 13, 0, 0, 1, 0, 0)
+	CreateGameShield(15688888888, 810, 12, 0, 0, 0, 0, 1)
 }
 
 func CreateGameShield(id int64, sStrength int, sMana int, sMetal int, sWood int, sWater int, sFire int, sEarth int) {

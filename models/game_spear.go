@@ -15,9 +15,10 @@ type GameSpear struct {
 }
 
 func initSystemGameSpear() {
-	CreateGameSpear(15625045984, 900, 90, 1, 2, 5, 1, 2)
-	CreateGameSpear(66666666, 880, 93, 1, 2, 3, 1, 2)
-	CreateGameSpear(88888888, 910, 92, 2, 2, 2, 1, 3)
+	CreateGameSpear(15625045984, 9000, 900, 10, 20, 50, 10, 20)
+	CreateGameSpear(15622222222, 900, 90, 1, 2, 5, 1, 2)
+	CreateGameSpear(15666666666, 880, 93, 1, 2, 3, 1, 2)
+	CreateGameSpear(15688888888, 910, 92, 2, 2, 2, 1, 3)
 }
 
 func CreateGameSpear(id int64, sStrength int, sMana int, sMetal int, sWood int, sWater int, sFire int, sEarth int) {
