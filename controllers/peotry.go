@@ -61,6 +61,7 @@ func (c *PeotryController) QueryPeotry() {
 func (c *PeotryController) CreatePeotry() {
 	data := c.GetResponseData()
 	params := &getCreatePeotryParams{}
+	uLevel, _ := strconv.Atoi(c.Ctx.Input.Context.Request.Form.Get("level"))
 
 	if c.CheckPostParams(data, params) {
 		set, err := models.QueryPeotrySetByID(params.SID)
@@ -93,7 +94,13 @@ func (c *PeotryController) CreatePeotry() {
 				fileNameByte, _ := json.Marshal(fileNames)
 
 				timeStr := helper.GetNowDateTime()
-				pId, err := models.CreatePeotry(params.UID, params.SID, params.Title, timeStr, params.Content, params.End, string(fileNameByte[:]))
+				var flag int
+				if uLevel < 5 {
+					flag = 2
+				} else {
+					flag = 1
+				}
+				pId, err := models.CreatePeotry(params.UID, params.SID, params.Title, timeStr, params.Content, params.End, string(fileNameByte[:]), flag)
 
 				if err == nil {
 					if len(errDatas) == 0 {

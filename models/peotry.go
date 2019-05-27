@@ -48,12 +48,12 @@ func initSystemPeotry() {
 		pContent := value.Get("p_content").String()
 		pEnd := value.Get("p_end").String()
 		pImages := value.Get("p_images").String()
-		CreatePeotry(uId, int(sId), pTitle, pTime, pContent, pEnd, pImages)
+		CreatePeotry(uId, int(sId), pTitle, pTime, pContent, pEnd, pImages, 1)
 		return true
 	})
 }
 
-func CreatePeotry(userId int64, setId int, title string, pTime string, content string, end string, images string) (int64, error) {
+func CreatePeotry(userId int64, setId int, title string, pTime string, content string, end string, images string, flag int) (int64, error) {
 	curTime := helper.GetMicrosecond()
 	peotry := Peotry{
 		ID:       curTime,
@@ -63,7 +63,7 @@ func CreatePeotry(userId int64, setId int, title string, pTime string, content s
 		PTime:    helper.StrToTimeStamp(pTime),
 		PContent: content,
 		PEnd:     end,
-		Flag:     1,
+		Flag:     flag,
 	}
 
 	err := dbOrmDefault.Model(&Peotry{}).Save(peotry).Error
