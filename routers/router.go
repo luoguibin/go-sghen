@@ -17,6 +17,7 @@ import (
 func init() {
 	beego.Router("/", &controllers.BaseController{}, "GET:BaseGetTest")
 	beego.Router("/ws", &controllers.GameController{})
+	beego.Router("/api-center/*", &controllers.APIController{}, "Get:APICenter")
 
 	// if run next line code, set config `autorender` true
 	// beego.Router("/html", &controllers.HtmlController{}, "GET:Get")
