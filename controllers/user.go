@@ -24,6 +24,11 @@ func (c *UserController) CreateUser() {
 	if c.CheckPostParams(data, params) {
 		user, err := models.CreateUser(params.ID, params.Pw, params.Name)
 		if err == nil {
+			if params.Type == "game" {
+				models.CreateGameData(params.ID, params.Name, 10, 10000, 5000, 0, 50, 0, 0)
+				models.CreateGameSpear(params.ID, 100, 10, 0, 0, 0, 0, 0)
+				models.CreateGameShield(params.ID, 100, 10, 0, 0, 0, 0, 0)
+			}
 			createUserToken(user, data)
 		} else {
 			data[models.STR_CODE] = models.CODE_ERR

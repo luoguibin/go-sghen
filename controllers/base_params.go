@@ -17,6 +17,7 @@ type getCreateUserParams struct {
 	ID   int64  `form:"uId" json:"uId" valid:"Required"`
 	Pw   string `form:"pw" json:"pw" valid:"Required"`
 	Name string `form:"name"`
+	Type string `form:"type"`
 }
 
 func (params *getCreateUserParams) Valid(v *validation.Validation) {
