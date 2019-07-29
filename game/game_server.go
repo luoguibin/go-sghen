@@ -123,7 +123,7 @@ func GoGameClientHandle(gameClient *GameClient) {
 	preTime := helper.GetMillisecond()
 	for {
 		// 获取指令
-		var order GameOrder
+		var order models.GameOrder
 		err := gameClient.Conn.ReadJSON(&order)
 		if err != nil {
 			models.MConfig.MLogger.Error("ws read msg error: " + err.Error())
@@ -163,44 +163,12 @@ func GoGameClientHandle(gameClient *GameClient) {
  */
 func ResetGameData(gameData *models.GameData) {
 	gameData.BloodAll = gameData.BloodBase + 300000
-	gameData.X0 = gameData.X
-	gameData.Y0 = gameData.Y
-	gameData.X1 = gameData.X
-	gameData.Y1 = gameData.Y
 	gameData.Speed = gameData.SpeedBase
-	gameData.MoveTime = 0
-	gameData.EndTime = 0
-	gameData.Move = 0
 }
 
 /*
  * reset the client move data
  */
-func ResetGameDataMove(gameData *models.GameData, orderAction *GameOrderAction) {
-	curTime := helper.GetMillisecond()
-	if gameData.Move == 1 {
-		if gameData.EndTime < curTime {
-			gameData.X = gameData.X1
-			gameData.Y = gameData.Y1
-			gameData.Move = 0
-		} else {
-			stayTime := gameData.EndTime - curTime
-			moveRatio := float64(1) - float64(stayTime)/float64(gameData.MoveTime)
-			gameData.X = int(float64(gameData.X1-gameData.X0)*moveRatio) + gameData.X0
-			gameData.Y = int(float64(gameData.Y1-gameData.Y0)*moveRatio) + gameData.Y0
-		}
-	}
-	if orderAction != nil {
-		gameData.X1 = orderAction.X
-		gameData.Y1 = orderAction.Y
-		gameData.X0 = gameData.X
-		gameData.Y0 = gameData.Y
-		distance := helper.GClientDistance(gameData.X, gameData.Y, orderAction.X, orderAction.Y)
-		moveTime := distance / float64(gameData.Speed)
-		gameData.MoveTime = int64(moveTime * 1000)
-		gameData.EndTime = curTime + gameData.MoveTime
-		gameData.Move = 1
-		// fmt.Printf("distance=%v  moveTime=%v\n", distance, gameData.GMoveTime)
-	}
-
+func ResetGameDataMove(gameData *models.GameData, orderAction []models.GameOrderAction) {
+	gameData.MoveOrder = orderAction
 }

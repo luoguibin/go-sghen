@@ -1,4 +1,4 @@
-package game
+package models
 
 type GameOrder struct {
 	// who makes the `order`
@@ -30,7 +30,7 @@ type GameOrderSkill struct {
 }
 
 type GameOrderAction struct {
-	X int `json:"x"`
-	Y int `json:"y"`
-	Z int `json:"z"`
+	X float64 `json:"x"`
+	Y float64 `json:"y"`
+	Z float64 `json:"z"`
 }

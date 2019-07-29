@@ -1,8 +1,11 @@
 package game
 
 import (
+	"fmt"
 	"go-sghen/helper"
 	"go-sghen/models"
+	"math"
+	"time"
 )
 
 /*
@@ -14,7 +17,7 @@ const (
 	GMapMaxHeight = 12000
 
 	// csreen size unit, which is used to sort a map into many screens
-	GMapSreenUnit = 1200
+	GMapSreenUnit = 20
 
 	// min map size
 	GMapMinWidth  = GMapSreenUnit
@@ -27,8 +30,8 @@ const (
 
 type GameMap struct {
 	Name   string
-	Width  int
-	Height int
+	Width  float64
+	Height float64
 
 	ScreenXCount int
 	ScreenYCount int
@@ -36,8 +39,7 @@ type GameMap struct {
 
 	Screens []map[int64]*GameClient
 
-	// will use to store the obstruction and empty place
-	// Data				[][]int
+	StatusRun bool
 }
 
 /*
@@ -65,12 +67,50 @@ func (gameMap *GameMap) Init() {
 	for i := gameMap.ScreenCount - 1; i >= 0; i-- {
 		gameMap.Screens[i] = make(map[int64]*GameClient, 0)
 	}
+
+	gameMap.StatusRun = true
+	go gameMap.gamePositionRun()
+}
+
+func (gameMap *GameMap) gamePositionRun() {
+	for gameMap.StatusRun {
+		for _, screen := range gameMap.Screens {
+			for _, client := range screen {
+				gameData := client.GameData
+				moveOrder := gameData.MoveOrder
+				if moveOrder != nil {
+					tempX := moveOrder[0].X - gameData.X
+					tempZ := moveOrder[0].Z - gameData.Z
+
+					tempVal := math.Sqrt(math.Pow(tempX, 2) + math.Pow(tempZ, 2))
+					if tempVal <= gameData.Speed {
+						gameData.MoveOrder = nil
+					} else {
+						ratio := gameData.Speed / tempVal / 3
+						tempX = tempX * ratio
+						tempZ = tempZ * ratio
+					}
+
+					gameData.X = gameData.X + tempX
+					gameData.Z = gameData.Z + tempZ
+					tempIndex := gameMap.GetScreenIndex(gameData.X, gameData.Z)
+
+					if tempIndex != gameData.ScreenId {
+						fmt.Print("change screen", tempIndex, gameData.ScreenId)
+						gameMap.ChangeScreen(client)
+					}
+					fmt.Println(gameData.X, gameData.Z, gameData.ScreenId, tempIndex)
+				}
+			}
+		}
+		time.Sleep(time.Second)
+	}
 }
 
 /*
  * get the sreen index point(i, j) of the point(x, y)
  */
-func (gameMap *GameMap) GetScreenIndex2(x, y int) (int, int) {
+func (gameMap *GameMap) GetScreenIndex2(x, y float64) (int, int) {
 	if x < 0 {
 		x = 0
 	} else if x >= gameMap.Width {
@@ -83,8 +123,8 @@ func (gameMap *GameMap) GetScreenIndex2(x, y int) (int, int) {
 		y = gameMap.Height - 1
 	}
 
-	i := x / GMapSreenUnit
-	j := y / GMapSreenUnit
+	i := int(x / GMapSreenUnit)
+	j := int(y / GMapSreenUnit)
 
 	return i, j
 }
@@ -92,7 +132,7 @@ func (gameMap *GameMap) GetScreenIndex2(x, y int) (int, int) {
 /*
  * get the sreen index of the point(x, y)
  */
-func (gameMap *GameMap) GetScreenIndex(x, y int) int {
+func (gameMap *GameMap) GetScreenIndex(x, y float64) int {
 	i, j := gameMap.GetScreenIndex2(x, y)
 	return gameMap.Index2ToIndex(i, j)
 }
@@ -195,7 +235,7 @@ func (gameMap *GameMap) ChangeScreen(gameClient *GameClient) {
 
 	// call the new screens clients that the client is new
 	for _, screenId := range ids {
-		gameMap.BroadCast1(screenId, GameOrder{
+		gameMap.BroadCast1(screenId, models.GameOrder{
 			OrderType: OT_ActionMoveAdd,
 			FromID:    IDSYSTEM,
 			FromType:  ITSystem,
@@ -204,7 +244,7 @@ func (gameMap *GameMap) ChangeScreen(gameClient *GameClient) {
 	}
 	// call the old screens clients that the client is old
 	for _, screenId := range preIds {
-		gameMap.BroadCast1(screenId, GameOrder{
+		gameMap.BroadCast1(screenId, models.GameOrder{
 			OrderType: OT_ActionMoveRemove,
 			FromID:    IDSYSTEM,
 			FromType:  ITSystem,
@@ -218,7 +258,7 @@ func (gameMap *GameMap) ChangeScreen(gameClient *GameClient) {
  */
 func (gameMap *GameMap) RemoveScreen(gameClient *GameClient) {
 	delete(gameMap.Screens[gameClient.GameData.ScreenId], gameClient.ID)
-	gameMap.BroadCast9(gameClient.GameData.ScreenId, GameOrder{
+	gameMap.BroadCast9(gameClient.GameData.ScreenId, models.GameOrder{
 		OrderType: OT_ActionMoveRemove,
 		FromID:    IDSYSTEM,
 		FromType:  ITSystem,
@@ -255,7 +295,7 @@ func (gameMap *GameMap) SendGameDatas9(gameClient *GameClient) {
 	if len(datas) == 0 {
 		return
 	}
-	gameClient.Conn.WriteJSON(GameOrder{
+	gameClient.Conn.WriteJSON(models.GameOrder{
 		OrderType: OT_DataAll,
 		FromID:    IDSYSTEM,
 		FromType:  ITSystem,

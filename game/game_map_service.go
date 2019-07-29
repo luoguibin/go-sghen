@@ -46,7 +46,7 @@ func (gameMapService *GameMapService) AddGameClient(gameClient *GameClient) {
 	gameMap.InitScreen(gameClient)
 
 	// broadcast the gameClient's data to the clients of the 9 screens
-	gameMap.BroadCast9(gameClient.GameData.ScreenId, GameOrder{
+	gameMap.BroadCast9(gameClient.GameData.ScreenId, models.GameOrder{
 		OrderType: OT_DataPersonLogin,
 		FromID:    IDSYSTEM,
 		FromType:  ITSystem,
@@ -101,8 +101,8 @@ func (gameMapService *GameMapService) GetUserData(id int64) *GameClient {
 /*
  * deal the msg order
  */
-func (gameMapService *GameMapService) DealOrderMsg(gameClient *GameClient, order *GameOrder) {
-	var orderMsg GameOrderMsg
+func (gameMapService *GameMapService) DealOrderMsg(gameClient *GameClient, order *models.GameOrder) {
+	var orderMsg models.GameOrderMsg
 	err := mapstructure.Decode(order.Data, &orderMsg)
 	if err != nil {
 		models.MConfig.MLogger.Error("DealOrderMsg() mapstructure.Decode error %s", err.Error())
@@ -143,8 +143,8 @@ func (gameMapService *GameMapService) DealOrderMsg(gameClient *GameClient, order
 /*
  * deal the skill order
  */
-func (gameMapService *GameMapService) DealOrderSkill(gameClient *GameClient, order *GameOrder) {
-	var orderSkill GameOrderSkill
+func (gameMapService *GameMapService) DealOrderSkill(gameClient *GameClient, order *models.GameOrder) {
+	var orderSkill models.GameOrderSkill
 	err := mapstructure.Decode(order.Data, &orderSkill)
 	if err != nil {
 		models.MConfig.MLogger.Error("mapstructure.Decode error %s", err.Error())
@@ -169,11 +169,11 @@ func (gameMapService *GameMapService) DealOrderSkill(gameClient *GameClient, ord
 		damage := getSkillSingleDamage(skillID, data0, data1, 5)
 
 		if damage < 0 {
-			gameClient.Conn.WriteJSON(GameOrder{
+			gameClient.Conn.WriteJSON(models.GameOrder{
 				OrderType: OT_MsgSystemPerson,
 				FromType:  ITSystem,
 				FromID:    IDSYSTEM,
-				Data: GameOrderMsg{
+				Data: models.GameOrderMsg{
 					ToType: ITPerson,
 					ToID:   gameClient.ID,
 					Msg:    "距离超过" + strconv.Itoa(-damage),
@@ -210,7 +210,7 @@ func (gameMapService *GameMapService) DealOrderSkill(gameClient *GameClient, ord
 
 			data1 := client.GameData
 			ResetGameDataMove(data1, nil)
-			distance := helper.GClientDistance(data0.X, data0.Y, data1.X0, data1.Y)
+			distance := helper.GClientDistance(data0.X, data0.Y, data1.X, data1.Y)
 			if distance < 10 {
 				s = append(s, &GameSortItem{
 					Value:      distance,
@@ -223,7 +223,7 @@ func (gameMapService *GameMapService) DealOrderSkill(gameClient *GameClient, ord
 
 		sort.Sort(GameSort(s))
 		count := 0
-		orderSkills := make([]GameOrderSkill, 0)
+		orderSkills := make([]models.GameOrderSkill, 0)
 		for _, v := range s {
 			data1 := v.GameClient.GameData
 			damage := getSkillSingleDamage(skillID, data0, data1, 10)
@@ -240,7 +240,7 @@ func (gameMapService *GameMapService) DealOrderSkill(gameClient *GameClient, ord
 				damage += data1.Blood
 				data1.Blood = 0
 			}
-			orderSkills = append(orderSkills, GameOrderSkill{
+			orderSkills = append(orderSkills, models.GameOrderSkill{
 				ToID:           data1.ID,
 				Damage:         damage,
 				DamageAll:      damage,
@@ -258,7 +258,7 @@ func (gameMapService *GameMapService) DealOrderSkill(gameClient *GameClient, ord
 /*
  * deal the action order
  */
-func (gameMapService *GameMapService) DealOrderAction(gameClient *GameClient, order *GameOrder) {
+func (gameMapService *GameMapService) DealOrderAction(gameClient *GameClient, order *models.GameOrder) {
 	skillID := order.OrderType
 	gameMap := gameMapService.GetGameMap(gameClient.GameData.MapId)
 	if gameMap == nil {
@@ -277,17 +277,13 @@ func (gameMapService *GameMapService) DealOrderAction(gameClient *GameClient, or
 		order.Data = addBlood
 		gameMap.BroadCast9(gameClient.GameData.ScreenId, order, 0)
 	case OT_ActionMove:
-		var orderAction GameOrderAction
+		var orderAction []models.GameOrderAction
 		err := mapstructure.Decode(order.Data, &orderAction)
 		if err != nil {
 			models.MConfig.MLogger.Error("mapstructure.Decode error %s", err.Error())
 			return
 		}
-		order.Data = orderAction
-		ResetGameDataMove(gameClient.GameData, &orderAction)
-		// fmt.Println(gameClient.GameData)
-		// data.GX = orderAction.X
-		// data.GY = orderAction.Y
+		ResetGameDataMove(gameClient.GameData, orderAction)
 		gameMap.BroadCast9(gameClient.GameData.ScreenId, order, 0)
 	default:
 	}
@@ -320,11 +316,11 @@ func (gameMapService *GameMapService) LogoutAll() {
 			models.MConfig.MLogger.Error("LogoutAll() GameClient cast error: key=%v", key)
 			return true
 		}
-		client.Conn.WriteJSON(GameOrder{
+		client.Conn.WriteJSON(models.GameOrder{
 			OrderType: OT_MsgSystem,
 			FromType:  ITSystem,
 			FromID:    IDSYSTEM,
-			Data: GameOrderMsg{
+			Data: models.GameOrderMsg{
 				ToType: ITPerson,
 				ToID:   client.ID,
 				Msg:    "系统强制离线",

@@ -14,21 +14,14 @@ type GameData struct {
 	Spear  *GameSpear  `gorm:"foreignkey:id" json:"spear"`
 	Shield *GameShield `gorm:"foreignkey:id" json:"shield"`
 
-	MapId     int `gorm:"column:g_map_id" json:"mapId"`
-	ScreenId  int `gorm:"-" json:"screenId"`
-	SpeedBase int `gorm:"column:g_speed_base" json:"speedBase"`
-	Speed     int `gorm:"-" json:"speed"`
-	X         int `gorm:"column:g_x" json:"x"`
-	Y         int `gorm:"column:g_y" json:"y"`
-	Z         int `gorm:"column:g_z" json:"z"`
-
-	Move     int   `gorm:"-" json:"-"`
-	X0       int   `gorm:"-" json:"-"`
-	Y0       int   `gorm:"-" json:"-"`
-	X1       int   `gorm:"-" json:"-"`
-	Y1       int   `gorm:"-" json:"-"`
-	MoveTime int64 `gorm:"-" json:"-"`
-	EndTime  int64 `gorm:"-" json:"-"`
+	MapId     int               `gorm:"column:g_map_id" json:"mapId"`
+	ScreenId  int               `gorm:"-" json:"screenId"`
+	SpeedBase float64           `gorm:"column:g_speed_base" json:"speedBase"`
+	Speed     float64           `gorm:"-" json:"speed"`
+	X         float64           `gorm:"column:g_x" json:"x"`
+	Y         float64           `gorm:"column:g_y" json:"y"`
+	Z         float64           `gorm:"column:g_z" json:"z"`
+	MoveOrder []GameOrderAction `gorm:"-" json:"-"`
 }
 
 func initSystemGameData() {
@@ -46,7 +39,7 @@ func initSystemGameData() {
 	CreateGameData(15688888888, "SghenMorge", 105, 110000, 11000, 0, 50, 0, 0)
 }
 
-func CreateGameData(id int64, name string, level int, bloodBase int, blood int, mapId int, speedBase int, x int, y int) {
+func CreateGameData(id int64, name string, level int, bloodBase int, blood int, mapId int, speedBase float64, x float64, y float64) {
 	gameData := GameData{
 		ID:        id,
 		Name:      name,
