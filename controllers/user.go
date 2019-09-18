@@ -51,7 +51,7 @@ func (c *UserController) LoginUser() {
 	if c.CheckPostParams(data, params) {
 		user, err := models.QueryUser(params.ID)
 		if err == nil {
-			compare := strings.Compare(helper.HmacMd5(user.UPassword, models.MConfig.JwtSecretKey), params.Pw)
+			compare := strings.Compare(helper.HmacMd5(user.Password, models.MConfig.JwtSecretKey), params.Pw)
 			if compare == 0 {
 				createUserToken(user, data)
 			} else {
@@ -161,7 +161,7 @@ func createUserToken(user *models.User, data ResponseData) {
 	claims["exp"] = time.Now().Add(time.Hour * time.Duration(24)).Unix()
 	claims["iat"] = time.Now().Unix()
 	claims["uId"] = strconv.FormatInt(user.ID, 10)
-	claims["uLevel"] = strconv.Itoa(user.ULevel)
+	claims["uLevel"] = strconv.Itoa(user.Level)
 
 	token.Claims = claims
 
@@ -172,7 +172,7 @@ func createUserToken(user *models.User, data ResponseData) {
 		return
 	}
 
-	user.UToken = tokenString
+	user.Token = tokenString
 	data[models.STR_DATA] = user
 }
 
