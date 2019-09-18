@@ -14,14 +14,13 @@ type GameData struct {
 	Spear  *GameSpear  `gorm:"foreignkey:id" json:"spear"`
 	Shield *GameShield `gorm:"foreignkey:id" json:"shield"`
 
-	MapId     int               `gorm:"column:g_map_id" json:"mapId"`
-	ScreenId  int               `gorm:"-" json:"screenId"`
-	SpeedBase float64           `gorm:"column:g_speed_base" json:"speedBase"`
-	Speed     float64           `gorm:"-" json:"speed"`
-	X         float64           `gorm:"column:g_x" json:"x"`
-	Y         float64           `gorm:"column:g_y" json:"y"`
-	Z         float64           `gorm:"column:g_z" json:"z"`
-	MoveOrder []GameOrderAction `gorm:"-" json:"-"`
+	MapId     int     `gorm:"column:g_map_id" json:"mapId"`
+	ScreenId  int     `gorm:"-" json:"screenId"`
+	SpeedBase float64 `gorm:"column:g_speed_base" json:"speedBase"`
+	Speed     float64 `gorm:"-" json:"speed"`
+	X         float64 `gorm:"column:g_x" json:"x"`
+	Y         float64 `gorm:"column:g_y" json:"y"`
+	Z         float64 `gorm:"column:g_z" json:"z"`
 }
 
 func initSystemGameData() {
