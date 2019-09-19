@@ -13,6 +13,7 @@ RUN mkdir conf && touch ./conf/app.conf
 RUN mkdir -p ./data/
 COPY --from=builder ${APP_ROOT}/main .
 COPY --from=builder ${APP_ROOT}/conf/app.conf ./conf/app.conf
+COPY --from=builder ${APP_ROOT}/data ./data
 EXPOSE 8085
 ENV SGHENENV prod
 ENTRYPOINT ["/app/main"]
