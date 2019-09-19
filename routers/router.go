@@ -9,6 +9,7 @@ package routers
 
 import (
 	"go-sghen/controllers"
+	"strings"
 
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/context"
@@ -19,7 +20,7 @@ func init() {
 	beego.Router("/", &controllers.BaseController{}, "GET:BaseGetTest")
 
 	beego.InsertFilter("*", beego.BeforeRouter, func(ctx *context.Context) {
-		if ctx.Request.Method == "POST" {
+		if ctx.Request.Method == "POST" && strings.Index(ctx.Request.URL, "login") > 0 {
 			controllers.GatewayAccessUser(ctx)
 		}
 	})
