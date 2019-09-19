@@ -14,15 +14,14 @@ import (
 
 // user create和login共用输入结构体
 type getCreateUserParams struct {
-	ID   int64  `form:"uId" json:"uId" valid:"Required"`
-	Pw   string `form:"pw" json:"pw" valid:"Required"`
+	ID   int64  `form:"id" valid:"Required"`
+	Pw   string `form:"pw" valid:"Required"`
 	Name string `form:"name"`
-	Type string `form:"type"`
 }
 
 func (params *getCreateUserParams) Valid(v *validation.Validation) {
 	if params.ID <= 0 {
-		v.SetError("uId", "不能为空")
+		v.SetError("id", "不能为空")
 	} else if len(strings.TrimSpace(params.Pw)) == 0 {
 		v.SetError("pw", "不能为空")
 	}
@@ -30,7 +29,7 @@ func (params *getCreateUserParams) Valid(v *validation.Validation) {
 
 // user update和delete共用输入结构体
 type getUpdateUserParams struct {
-	ID      int64  `form:"uId" json:"uId" valid:"Required"`
+	ID      int64  `form:"id" json:"id" valid:"Required"`
 	Pw      string `form:"pw" json:"pw"`
 	Name    string `form:"name" json:"name"`
 	IconURL string `form:"iconUrl" json:"iconUrl"`
@@ -44,8 +43,8 @@ func (params *getUpdateUserParams) Valid(v *validation.Validation) {
 
 // user query输入结构体
 type getQueryUserParams struct {
-	ID       int64 `form:"uId" valid:"Required"`
-	QueryUID int64 `form:"queryUId" valid:"Required"`
+	ID       int64 `form:"id" valid:"Required"`
+	QueryUID int64 `form:"queryId" valid:"Required"`
 	Level    int   `form:"level" valid:"Required"`
 }
 
@@ -72,11 +71,11 @@ func (params *getQueryUsersParams) Valid(v *validation.Validation) {
 
 // peotry query输入结构体
 type getQueryPeotryParams struct {
-	ID          int64  `form:"pId"`
-	SID         int    `form:"setId"`
+	ID          int64  `form:"id"`
+	SetID       int    `form:"setId"`
 	Page        int    `form:"page"`
 	Limit       int    `form:"limit"`
-	Content     string `form:"qContent"`
+	Content     string `form:"content"`
 	NeedComment bool   `form:"needComment"`
 }
 
@@ -85,17 +84,17 @@ func (params *getQueryPeotryParams) Valid(v *validation.Validation) {
 
 // peotry create输入结构体
 type getCreatePeotryParams struct {
-	UID     int64  `form:"uId" valid:"Required"`
-	SID     int    `form:"sId" valid:"Required"`
+	UserID  int64  `form:"id" valid:"Required"`
+	SetID   int    `form:"setId" valid:"Required"`
 	Title   string `form:"title"`
 	Content string `form:"content" valid:"Required"`
 	End     string `form:"end"`
 }
 
 func (params *getCreatePeotryParams) Valid(v *validation.Validation) {
-	if params.UID <= 0 {
+	if params.UserID <= 0 {
 		v.SetError("user id", "不能为空")
-	} else if params.SID < 0 {
+	} else if params.SetID < 0 {
 		v.SetError("set id", "不能为空")
 	} else if len(strings.TrimSpace(params.Content)) < 5 {
 		v.SetError("peotry content", "不能少于5个字符")
@@ -104,20 +103,20 @@ func (params *getCreatePeotryParams) Valid(v *validation.Validation) {
 
 // peotry update输入结构体
 type getUpdatePeotryParams struct {
-	PID     int64  `form:"pId" valid:"Required"`
-	UID     int64  `form:"uId" valid:"Required"`
-	SID     int    `form:"sId" valid:"Required"`
+	ID      int64  `form:"id" valid:"Required"`
+	UserID  int64  `form:"userId" valid:"Required"`
+	SetID   int    `form:"setId" valid:"Required"`
 	Title   string `form:"title"`
 	Content string `form:"content" valid:"Required"`
 	End     string `form:"end"`
 }
 
 func (params *getUpdatePeotryParams) Valid(v *validation.Validation) {
-	if params.PID <= 0 {
+	if params.ID <= 0 {
 		v.SetError("peotry id", "不能为空")
-	} else if params.UID <= 0 {
+	} else if params.UserID <= 0 {
 		v.SetError("user id", "不能为空")
-	} else if params.SID < 0 {
+	} else if params.SetID < 0 {
 		v.SetError("set id", "不能为空")
 	} else if len(strings.TrimSpace(params.Content)) < 5 {
 		v.SetError("peotry content", "不能少于5个字符")
@@ -126,37 +125,37 @@ func (params *getUpdatePeotryParams) Valid(v *validation.Validation) {
 
 // peotry delete输入结构体
 type getDeletePeotryParams struct {
-	UID int64 `form:"uId" valid:"Required"`
-	PID int64 `form:"pId" valid:"Required"`
+	UserID int64 `form:"userId" valid:"Required"`
+	ID     int64 `form:"id" valid:"Required"`
 }
 
 func (params *getDeletePeotryParams) Valid(v *validation.Validation) {
-	if params.UID <= 0 {
+	if params.UserID <= 0 {
 		v.SetError("user id", "不能为空")
-	} else if params.PID <= 0 {
+	} else if params.ID <= 0 {
 		v.SetError("peotry id", "不能为空")
 	}
 }
 
 // peotryset query输入结构体
 type getQueryPoetrySetParams struct {
-	UID int64 `form:"uId" valid:"Required"`
+	UserID int64 `form:"userId" valid:"Required"`
 }
 
 func (params *getQueryPoetrySetParams) Valid(v *validation.Validation) {
-	if params.UID == 0 {
+	if params.UserID == 0 {
 		v.SetError("set id", "不能为空")
 	}
 }
 
 // peotryset create
 type getCreatePoetrySetParams struct {
-	UID  int64  `form:"uId" valid:"Required"`
-	Name string `form:"name" valid:"Required"`
+	UserID int64  `form:"userId" valid:"Required"`
+	Name   string `form:"name" valid:"Required"`
 }
 
 func (params *getCreatePoetrySetParams) Valid(v *validation.Validation) {
-	if params.UID <= 0 {
+	if params.UserID <= 0 {
 		v.SetError("user id", "不能为空")
 	} else if len(strings.TrimSpace(params.Name)) == 0 {
 		v.SetError("set name", "不能为空")
@@ -165,14 +164,14 @@ func (params *getCreatePoetrySetParams) Valid(v *validation.Validation) {
 
 // peotryset delete
 type getDeletePoetrySetParams struct {
-	UID int64 `form:"uId" valid:"Required"`
-	SID int   `form:"sId" valid:"Required"`
+	UserID int64 `form:"userId" valid:"Required"`
+	SetID  int   `form:"setId" valid:"Required"`
 }
 
 func (params *getDeletePoetrySetParams) Valid(v *validation.Validation) {
-	if params.UID <= 0 {
+	if params.UserID <= 0 {
 		v.SetError("user id", "不能为空")
-	} else if params.SID <= 0 {
+	} else if params.SetID <= 0 {
 		v.SetError("set id", "不能为空")
 	}
 }
@@ -183,7 +182,7 @@ type getCreateCommentParams struct {
 	TypeID  int64  `form:"typeId" json:"typeId" valid:"Required"`
 	FromID  int64  `form:"fromId" json:"fromId" valid:"Required"`
 	ToID    int64  `form:"toId" json:"toId" valid:"Required"`
-	Content string `form:"Content" json:"Content" valid:"Required"`
+	Content string `form:"content" json:"content" valid:"Required"`
 }
 
 func (params *getCreateCommentParams) Valid(v *validation.Validation) {

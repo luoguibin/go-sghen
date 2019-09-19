@@ -15,46 +15,13 @@ import (
 )
 
 func init() {
+	// only GET, POST method
 	beego.Router("/", &controllers.BaseController{}, "GET:BaseGetTest")
 
-	// if run next line code, set config `autorender` true
-	// beego.Router("/html", &controllers.HtmlController{}, "GET:Get")
-
-	beego.InsertFilter("/v1/user/update", beego.BeforeRouter, func(ctx *context.Context) {
-		controllers.GatewayAccessUser(ctx, true)
-	})
-	beego.InsertFilter("/v1/user/delete", beego.BeforeRouter, func(ctx *context.Context) {
-		controllers.GatewayAccessUser(ctx, false)
-	})
-	// beego.InsertFilter("/v1/user/query-list", beego.BeforeRouter, func(ctx *context.Context) {
-	// 	controllers.GatewayAccessUser(ctx, false)
-	// })
-	beego.InsertFilter("/v1/peotry/create", beego.BeforeRouter, func(ctx *context.Context) {
-		controllers.GatewayAccessUser(ctx, false)
-	})
-	beego.InsertFilter("/v1/peotry/update", beego.BeforeRouter, func(ctx *context.Context) {
-		controllers.GatewayAccessUser(ctx, false)
-	})
-	beego.InsertFilter("/v1/peotry/delete", beego.BeforeRouter, func(ctx *context.Context) {
-		controllers.GatewayAccessUser(ctx, false)
-	})
-	beego.InsertFilter("/v1/peotry-set/query", beego.BeforeRouter, func(ctx *context.Context) {
-		controllers.GatewayAccessUser(ctx, false)
-	})
-	beego.InsertFilter("/v1/peotry-set/create", beego.BeforeRouter, func(ctx *context.Context) {
-		controllers.GatewayAccessUser(ctx, false)
-	})
-	beego.InsertFilter("/v1/peotry-set/delete", beego.BeforeRouter, func(ctx *context.Context) {
-		controllers.GatewayAccessUser(ctx, false)
-	})
-	beego.InsertFilter("/v1/upload", beego.BeforeRouter, func(ctx *context.Context) {
-		controllers.GatewayAccessUser(ctx, true)
-	})
-	beego.InsertFilter("/v1/comment/create", beego.BeforeRouter, func(ctx *context.Context) {
-		controllers.GatewayAccessUser(ctx, false)
-	})
-	beego.InsertFilter("/v1/comment/delete", beego.BeforeRouter, func(ctx *context.Context) {
-		controllers.GatewayAccessUser(ctx, true)
+	beego.InsertFilter("*", beego.BeforeRouter, func(ctx *context.Context) {
+		if ctx.Request.Method == "POST" {
+			controllers.GatewayAccessUser(ctx)
+		}
 	})
 
 	//详见　https://beego.me/docs/mvc/controller/router.md
@@ -63,7 +30,7 @@ func init() {
 			beego.NSRouter("/create", &controllers.UserController{}, "post:CreateUser"),
 			beego.NSRouter("/login", &controllers.UserController{}, "post:LoginUser"),
 			beego.NSRouter("/update", &controllers.UserController{}, "post:UpdateUser"),
-			beego.NSRouter("/delete", &controllers.UserController{}, "delete:DeleteUser"),
+			beego.NSRouter("/delete", &controllers.UserController{}, "post:DeleteUser"),
 			beego.NSRouter("/query", &controllers.UserController{}, "get:QueryUser"),
 			beego.NSRouter("/query-list", &controllers.UserController{}, "get:QueryUsers"),
 		),
@@ -71,17 +38,17 @@ func init() {
 			beego.NSRouter("/query", &controllers.PeotryController{}, "get:QueryPeotry"),
 			beego.NSRouter("/create", &controllers.PeotryController{}, "post:CreatePeotry"),
 			beego.NSRouter("/update", &controllers.PeotryController{}, "post:UpdatePeotry"),
-			beego.NSRouter("/delete", &controllers.PeotryController{}, "delete:DeletePeotry"),
+			beego.NSRouter("/delete", &controllers.PeotryController{}, "post:DeletePeotry"),
 		),
 		beego.NSNamespace("/peotry-set",
 			beego.NSRouter("/query", &controllers.PeotrySetController{}, "get:QueryPeotrySet"),
 			beego.NSRouter("/create", &controllers.PeotrySetController{}, "get:CreatePeotrySet"),
-			beego.NSRouter("/delete", &controllers.PeotrySetController{}, "delete:DeletePeotrySet"),
+			beego.NSRouter("/delete", &controllers.PeotrySetController{}, "post:DeletePeotrySet"),
 		),
 		beego.NSNamespace("/comment",
 			beego.NSRouter("/query", &controllers.CommentController{}, "get:QueryComments"),
 			beego.NSRouter("/create", &controllers.CommentController{}, "post:CreateComment"),
-			beego.NSRouter("/delete", &controllers.CommentController{}, "delete:DeleteComment"),
+			beego.NSRouter("/delete", &controllers.CommentController{}, "post:DeleteComment"),
 		),
 		beego.NSRouter("/upload", &controllers.FileUploaderController{}, "post:FileUpload"),
 	)

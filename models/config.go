@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/astaxie/beego/config"
@@ -62,6 +63,7 @@ func initConfParams() {
 	if err != nil {
 		return
 	}
+	fmt.Println("initConfParams::" + SGHENENV)
 
 	MConfig = Config{}
 	if appConf != nil {
