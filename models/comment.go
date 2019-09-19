@@ -8,7 +8,7 @@ import (
 // Comment ...
 type Comment struct {
 	ID         int64     `gorm:"primary_key,id" json:"id,omitempty"`
-	Type       int       `gorm:"column:type" json:"type"`
+	Type       int       `gorm:"column:type" json:"type"` // 1为诗歌
 	TypeID     int64     `gorm:"column:type_id" json:"typeId"`
 	FromID     int64     `gorm:"column:from_id" json:"fromId"`
 	ToID       int64     `gorm:"column:to_id" json:"toId"`

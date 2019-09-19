@@ -14,7 +14,8 @@ func (c *PeotrySetController) QueryPeotrySet() {
 	params := &getQueryPoetrySetParams{}
 
 	if c.CheckFormParams(data, params) {
-		list, err := models.QueryPeotrySetByUID(params.UID)
+		list, err := models.QueryPeotrySetByUID(params.UserID)
+
 		if err == nil {
 			data[models.STR_DATA] = list
 		} else {
@@ -31,7 +32,8 @@ func (c *PeotrySetController) CreatePeotrySet() {
 	params := &getCreatePoetrySetParams{}
 
 	if c.CheckFormParams(data, params) {
-		err := models.CreatePeotrySet(params.UID, params.Name)
+		err := models.CreatePeotrySet(params.UserID, params.Name)
+
 		if err == nil {
 			data[models.STR_DATA] = true
 		} else {
@@ -48,10 +50,12 @@ func (c *PeotrySetController) DeletePeotrySet() {
 	params := &getDeletePoetrySetParams{}
 
 	if c.CheckFormParams(data, params) {
-		set, err := models.QueryPeotrySetByID(params.SID)
+		set, err := models.QueryPeotrySetByID(params.SetID)
+
 		if err == nil {
-			if set.UID == params.UID {
-				err := models.DeletePeotrySet(params.SID)
+			if set.UserID == params.UserID {
+				err := models.DeletePeotrySet(params.SetID)
+
 				if err == nil {
 					data[models.STR_DATA] = true
 				} else {

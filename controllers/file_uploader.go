@@ -13,16 +13,25 @@ import (
 	"strings"
 )
 
+// FileUploaderController ...
 type FileUploaderController struct {
 	BaseController
 }
 
+// FileUpload ...
 func (c *FileUploaderController) FileUpload() {
 	data := c.GetResponseData()
 
 	// 上传的文件存储在maxMemory大小的内存里面，如果文件大小超过了maxMemory，那么剩下的部分将存储在系统的临时文件中
 	c.Ctx.Request.ParseMultipartForm(32 << 20)
 	// c.GetFile("file")	// 单文件
+	// contentType := c.Ctx.Request.Header.Get("Content-Type")
+	// "multipart/form-data"
+	if c.Ctx.Request.MultipartForm == nil {
+		data[models.STR_CODE] = models.CODE_ERR
+		data[models.STR_MSG] = "获取上传文件列表失败"
+		c.respToJSON(data)
+	}
 	fileHeaders, err := c.GetFiles("file") // 多文件
 
 	if err != nil {
@@ -39,10 +48,12 @@ func (c *FileUploaderController) FileUpload() {
 	if len(pathType) == 0 {
 		pathType = "normal"
 	}
+
 	path, ok := models.MConfig.PathTypeMap[pathType]
 	if !ok {
 		path = models.MConfig.PathTypeMap["peotry"]
 	}
+
 	isExist, _ := helper.PathExists(path)
 	if !isExist {
 		isMade := helper.MkdirAll(path)
@@ -127,11 +138,12 @@ func (c *FileUploaderController) FileUpload() {
 			return
 		}
 	}
+
 	if pathType == "peotry" {
-		pId, err := c.GetInt64("pId")
-		uId := c.Ctx.Input.GetData("uId").(int64)
-		if err == nil && uId > 0 {
-			err := checkSavePeotryImage(pId, uId, list)
+		id, err := c.GetInt64("id")
+		userId := c.Ctx.Input.GetData("userId").(int64)
+		if err == nil && userId > 0 {
+			err := checkSavePeotryImage(id, userId, list)
 			if err != nil {
 				data[models.STR_CODE] = models.CODE_ERR
 				data[models.STR_MSG] = err.Error()
@@ -145,17 +157,18 @@ func (c *FileUploaderController) FileUpload() {
 	c.respToJSON(data)
 }
 
-func checkSavePeotryImage(pId int64, uId int64, imgList []string) error {
-	peotry, err := models.QueryPeotryByID(pId)
+// checkSavePeotryImage ...
+func checkSavePeotryImage(id int64, userId int64, imgList []string) error {
+	peotry, err := models.QueryPeotryByID(id)
 	if err == nil {
-		if peotry.UID == uId {
+		if peotry.UserID == userId {
 			l := len(imgList)
 			imgsByte, err := json.Marshal(imgList)
 			if err != nil {
 				return err
 			}
 
-			err = models.SavePeotryImage(pId, string(imgsByte[:]), l)
+			err = models.SavePeotryImage(id, string(imgsByte[:]), l)
 			if err != nil {
 				return errors.New("更新诗歌的图片失败")
 			} else {

@@ -3,7 +3,6 @@ package controllers
 import (
 	"errors"
 	"fmt"
-	"go-sghen/helper"
 	"go-sghen/models"
 	"strconv"
 	"strings"
@@ -17,22 +16,20 @@ type UserController struct {
 	BaseController
 }
 
-// 创建user
+// CreateUser 创建user
 func (c *UserController) CreateUser() {
 	data := c.GetResponseData()
 	params := &getCreateUserParams{}
-	if c.CheckPostParams(data, params) {
-		user, err := models.CreateUser(params.ID, params.Pw, params.Name)
+
+	if c.CheckFormParams(data, params) {
+		user, err := models.CreateUser(params.ID, params.Pw, params.Name, 1)
+
 		if err == nil {
-			if params.Type == "game" {
-				models.CreateGameData(params.ID, params.Name, 10, 10000, 5000, 0, 50, 0, 0)
-				models.CreateGameSpear(params.ID, 100, 10, 0, 0, 0, 0, 0)
-				models.CreateGameShield(params.ID, 100, 10, 0, 0, 0, 0, 0)
-			}
 			createUserToken(user, data)
 		} else {
 			data[models.STR_CODE] = models.CODE_ERR
 			errStr := err.Error()
+
 			if strings.Contains(errStr, "PRIMARY") {
 				data[models.STR_MSG] = "已存在该用户"
 			} else {
@@ -44,14 +41,17 @@ func (c *UserController) CreateUser() {
 	c.respToJSON(data)
 }
 
-// user登录
+// LoginUser 登录
 func (c *UserController) LoginUser() {
 	data := c.GetResponseData()
 	params := &getCreateUserParams{}
-	if c.CheckPostParams(data, params) {
+
+	if c.CheckFormParams(data, params) {
 		user, err := models.QueryUser(params.ID)
+
 		if err == nil {
-			compare := strings.Compare(helper.HmacMd5(user.Password, models.MConfig.JwtSecretKey), params.Pw)
+			compare := strings.Compare(user.Password, params.Pw)
+
 			if compare == 0 {
 				createUserToken(user, data)
 			} else {
@@ -66,7 +66,7 @@ func (c *UserController) LoginUser() {
 	c.respToJSON(data)
 }
 
-// 查询user，限制level等级为5以下的user
+// QueryUser 查询user，限制level等级为5以下的user
 func (c *UserController) QueryUser() {
 	data := c.GetResponseData()
 	params := &getQueryUserParams{}
@@ -122,12 +122,12 @@ func (c *UserController) QueryUsers() {
 	c.respToJSON(data)
 }
 
-// 更新user
+// UpdateUser 更新user
 func (c *UserController) UpdateUser() {
 	data := c.GetResponseData()
 	params := &getUpdateUserParams{}
 
-	if c.CheckPostParams(data, params) {
+	if c.CheckFormParams(data, params) {
 		_, err := models.UpdateUser(params.ID, params.Pw, params.Name, params.IconURL)
 		if err != nil {
 			data[models.STR_CODE] = models.CODE_ERR
@@ -138,7 +138,7 @@ func (c *UserController) UpdateUser() {
 	c.respToJSON(data)
 }
 
-// 删除user
+// DeleteUser 删除user
 func (c *UserController) DeleteUser() {
 	data := c.GetResponseData()
 	params := &getUpdateUserParams{}
@@ -154,13 +154,13 @@ func (c *UserController) DeleteUser() {
 	c.respToJSON(data)
 }
 
-// 创建用户token，基于json web token
+// createUserToken 创建用户token，基于json web token
 func createUserToken(user *models.User, data ResponseData) {
 	token := jwt.New(jwt.SigningMethodHS256)
 	claims := make(jwt.MapClaims)
 	claims["exp"] = time.Now().Add(time.Hour * time.Duration(24)).Unix()
 	claims["iat"] = time.Now().Unix()
-	claims["uId"] = strconv.FormatInt(user.ID, 10)
+	claims["userId"] = strconv.FormatInt(user.ID, 10)
 	claims["uLevel"] = strconv.Itoa(user.Level)
 
 	token.Claims = claims
@@ -176,7 +176,7 @@ func createUserToken(user *models.User, data ResponseData) {
 	data[models.STR_DATA] = user
 }
 
-// 检测解析token
+// CheckUserToken 检测解析token
 func CheckUserToken(tokenString string) (map[string]interface{}, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		// Don't forget to validate the alg is what you expect:
