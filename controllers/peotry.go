@@ -60,6 +60,7 @@ func (c *PeotryController) QueryPeotry() {
 	c.respToJSON(data)
 }
 
+// CreatePeotry ...
 func (c *PeotryController) CreatePeotry() {
 	data := c.GetResponseData()
 	params := &getCreatePeotryParams{}
@@ -124,6 +125,7 @@ func (c *PeotryController) CreatePeotry() {
 	c.respToJSON(data)
 }
 
+// UpdatePeotry ...
 func (c *PeotryController) UpdatePeotry() {
 	data := c.GetResponseData()
 	params := &getUpdatePeotryParams{}
@@ -180,16 +182,19 @@ func (c *PeotryController) UpdatePeotry() {
 	c.respToJSON(data)
 }
 
+// DeletePeotry ...
 func (c *PeotryController) DeletePeotry() {
 	data := c.GetResponseData()
 	params := &getDeletePeotryParams{}
 
 	if c.CheckFormParams(data, params) {
 		peotry, err := models.QueryPeotryByID(params.ID)
+		userID := c.Ctx.Input.GetData("userId").(int64)
 
 		if err == nil {
-			if peotry.UserID == params.UserID {
-				err := models.UpdatePeotry(peotry)
+			if peotry.UserID == userID {
+				err := models.DeletePeotry(peotry.ID)
+				models.DeleteComments(peotry.ID)
 
 				if err == nil {
 					data[models.STR_DATA] = true
@@ -210,6 +215,7 @@ func (c *PeotryController) DeletePeotry() {
 	c.respToJSON(data)
 }
 
+// savePeotryimage ...
 func savePeotryimage(baseStr string) (string, error) {
 	if len(baseStr) == 0 {
 		return "", errors.New("空数据")

@@ -89,7 +89,7 @@ func (c *CommentController) DeleteComment() {
 
 		if err == nil {
 			if userID == comment.FromID {
-				err := models.DeleteComemnt(comment.ID)
+				err := models.DeleteComment(comment.ID)
 
 				if err != nil {
 					data[models.STR_CODE] = models.CODE_ERR

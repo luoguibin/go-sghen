@@ -105,10 +105,19 @@ func SaveComment(comment *Comment) error {
 	return nil
 }
 
-// DeleteComemnt ...
-func DeleteComemnt(ID int64) error {
+// DeleteComment ...
+func DeleteComment(ID int64) error {
 	comment := &Comment{
 		ID: ID,
+	}
+	err := dbOrmDefault.Model(&Comment{}).Delete(comment).Error
+	return err
+}
+
+// DeleteComments ...
+func DeleteComments(typeId int64) error {
+	comment := &Comment{
+		TypeID: typeId,
 	}
 	err := dbOrmDefault.Model(&Comment{}).Delete(comment).Error
 	return err
