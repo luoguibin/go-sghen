@@ -129,10 +129,17 @@ func (c *UserController) UpdateUser() {
 	params := &getUpdateUserParams{}
 
 	if c.CheckFormParams(data, params) {
-		_, err := models.UpdateUser(params.ID, params.Pw, params.Name, params.IconURL)
-		if err != nil {
+		userID := c.Ctx.Input.GetData("userId").(int64)
+
+		if params.ID == userID {
+			_, err := models.UpdateUser(params.ID, params.Pw, params.Name, params.IconURL)
+			if err != nil {
+				data[models.STR_CODE] = models.CODE_ERR
+				data[models.STR_MSG] = "更新用户信息失败"
+			}
+		} else {
 			data[models.STR_CODE] = models.CODE_ERR
-			data[models.STR_MSG] = "更新用户信息失败"
+			data[models.STR_MSG] = "禁止更新他人用户信息"
 		}
 	}
 
