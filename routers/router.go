@@ -20,7 +20,10 @@ func init() {
 	beego.Router("/", &controllers.BaseController{}, "GET:BaseGetTest")
 
 	beego.InsertFilter("*", beego.BeforeRouter, func(ctx *context.Context) {
-		if ctx.Request.Method == "POST" && strings.Index(ctx.Request.URL.Path, "login") == -1 {
+		flag := ctx.Request.Method == "POST"
+		flag = flag && strings.Index(ctx.Request.URL.Path, "login") == -1
+		flag = flag && strings.Index(ctx.Request.URL.Path, "/user/create") == -1
+		if flag {
 			controllers.GatewayAccessUser(ctx)
 		}
 	})
