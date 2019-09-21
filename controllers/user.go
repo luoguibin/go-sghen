@@ -3,6 +3,7 @@ package controllers
 import (
 	"errors"
 	"fmt"
+	"go-sghen/helper"
 	"go-sghen/models"
 	"strconv"
 	"strings"
@@ -22,7 +23,7 @@ func (c *UserController) CreateUser() {
 	params := &getCreateUserParams{}
 
 	if c.CheckFormParams(data, params) {
-		user, err := models.CreateUser(params.ID, params.Pw, params.Name, 1)
+		user, err := models.CreateUser(params.ID, helper.MD5(params.Pw), params.Name, 1)
 
 		if err == nil {
 			createUserToken(user, data)
