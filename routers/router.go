@@ -46,7 +46,7 @@ func init() {
 		),
 		beego.NSNamespace("/peotry-set",
 			beego.NSRouter("/query", &controllers.PeotrySetController{}, "get:QueryPeotrySet"),
-			beego.NSRouter("/create", &controllers.PeotrySetController{}, "get:CreatePeotrySet"),
+			beego.NSRouter("/create", &controllers.PeotrySetController{}, "post:CreatePeotrySet"),
 			beego.NSRouter("/delete", &controllers.PeotrySetController{}, "post:DeletePeotrySet"),
 		),
 		beego.NSNamespace("/comment",
