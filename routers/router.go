@@ -40,6 +40,7 @@ func init() {
 		),
 		beego.NSNamespace("/peotry",
 			beego.NSRouter("/query", &controllers.PeotryController{}, "get:QueryPeotry"),
+			beego.NSRouter("/query-popular", &controllers.PeotryController{}, "get:QueryPopularPeotry"),
 			beego.NSRouter("/create", &controllers.PeotryController{}, "post:CreatePeotry"),
 			beego.NSRouter("/update", &controllers.PeotryController{}, "post:UpdatePeotry"),
 			beego.NSRouter("/delete", &controllers.PeotryController{}, "post:DeletePeotry"),

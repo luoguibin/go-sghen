@@ -118,9 +118,35 @@ func QueryPeotry(setId int, page int, limit int, content string) ([]*Peotry, int
 	if err == nil {
 		totalPage, pageIsEnd = helper.PageTotal(limit, page, int64(count))
 		return list, count, totalPage, curPage, pageIsEnd, nil
-	} else {
-		return nil, 0, 0, 0, 0, err
 	}
+	return nil, 0, 0, 0, 0, err
+}
+
+// QueryPopularPeotry ...
+func QueryPopularPeotry() ([]*Peotry, error) {
+	comments := make([]*Comment, 0)
+	limit := 10
+
+	db := dbOrmDefault.Model(&Comment{})
+	db = db.Select("type_id, count(*) as repeat_count")
+	db = db.Group("type_id").Order("repeat_count DESC")
+	err := db.Limit(limit).Find(&comments).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	var ids []int64
+	for _, comment := range comments {
+		ids = append(ids, comment.TypeID)
+	}
+
+	peotrys := make([]*Peotry, 0)
+	db = dbOrmDefault.Model(&Peotry{})
+	db = db.Preload("User").Preload("Set").Preload("Image")
+	err = db.Where("id in (?)", ids).Find(&peotrys).Error
+
+	return peotrys, err
 }
 
 // QueryPeotryByID ...

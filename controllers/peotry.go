@@ -60,6 +60,15 @@ func (c *PeotryController) QueryPeotry() {
 	c.respToJSON(data)
 }
 
+func (c *PeotryController) QueryPopularPeotry() {
+	data := c.GetResponseData()
+	list, err := models.QueryPopularPeotry()
+	if err == nil {
+		data[models.STR_DATA] = list
+	}
+	c.respToJSON(data)
+}
+
 // CreatePeotry ...
 func (c *PeotryController) CreatePeotry() {
 	data := c.GetResponseData()
