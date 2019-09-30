@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"go-sghen/helper"
 	"io/ioutil"
+	"sort"
 	"time"
 
 	"github.com/tidwall/gjson"
@@ -137,14 +138,22 @@ func QueryPopularPeotry() ([]*Peotry, error) {
 	}
 
 	var ids []int64
-	for _, comment := range comments {
+	idMap := make(map[int64]int)
+	for i, comment := range comments {
 		ids = append(ids, comment.TypeID)
+		idMap[comment.TypeID] = i
 	}
 
 	peotrys := make([]*Peotry, 0)
 	db = dbOrmDefault.Model(&Peotry{})
 	db = db.Preload("User").Preload("Set").Preload("Image")
 	err = db.Where("id in (?)", ids).Find(&peotrys).Error
+
+	if err == nil {
+		sort.Slice(peotrys, func(i, j int) bool {
+			return idMap[peotrys[i].ID] < idMap[peotrys[j].ID]
+		})
+	}
 
 	return peotrys, err
 }
