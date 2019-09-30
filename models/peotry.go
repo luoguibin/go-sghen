@@ -130,6 +130,7 @@ func QueryPopularPeotry() ([]*Peotry, error) {
 
 	db := dbOrmDefault.Model(&Comment{})
 	db = db.Select("type_id, count(*) as repeat_count")
+	db = db.Where("to_id=? AND content=?", -1, "praise")
 	db = db.Group("type_id").Order("repeat_count DESC")
 	err := db.Limit(limit).Find(&comments).Error
 
