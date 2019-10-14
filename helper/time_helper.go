@@ -1,6 +1,10 @@
 package helper
 
-import "time"
+import (
+	"fmt"
+	"math/rand"
+	"time"
+)
 
 // StrToTimeStamp 把一个时间字符串转为unix时间戳
 func StrToTimeStamp(timeStr string) time.Time {
@@ -28,4 +32,9 @@ func GetMicrosecond() int64 {
 // GetNanosecond ...
 func GetNanosecond() int64 {
 	return time.Now().UnixNano()
+}
+
+// RandomNum4 ...
+func RandomNum4() string {
+	return fmt.Sprintf("%04v", rand.New(rand.NewSource(time.Now().UnixNano())).Int31n(10000))
 }

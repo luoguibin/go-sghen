@@ -28,18 +28,23 @@ func (c *CommonController) SendSmsCode() {
 	params := &getSmsSendParams{}
 
 	if c.CheckFormParams(data, params) {
+		sdkAppID := models.MConfig.SmsSdkAppID
+		appKey := models.MConfig.SmsAppKey
+		if sdkAppID == 0 || len(appKey) == 0 {
+			data[models.STR_CODE] = models.CODE_ERR
+			data[models.STR_MSG] = "验证码服务尚未运行"
+			c.respToJSON(data)
+			return
+		}
+
 		random := helper.GetMicrosecond()
-		sdkAppID := 0 // todo
-		appKey := ""  // todo
 		time := time.Now().Unix()
-
-		text := "appKey=" + appKey + "&random=" + strconv.FormatInt(random, 10) + "&time=" + strconv.FormatInt(time, 10) + "&mobile=" + strconv.FormatInt(params.Phone, 10)
-
+		text := "appkey=" + appKey + "&random=" + strconv.FormatInt(random, 10) + "&time=" + strconv.FormatInt(time, 10) + "&mobile=" + strconv.FormatInt(params.Phone, 10)
 		url := "https://yun.tim.qq.com/v5/tlssmssvr/sendsms?sdkappid=" + strconv.Itoa(sdkAppID) + "&random=" + strconv.FormatInt(random, 10)
 
 		requestbody := make(map[string]interface{})
 		tel := make(map[string]interface{})
-		requestbody["params"] = []string{"8080"}
+		requestbody["params"] = []string{helper.RandomNum4()}
 		requestbody["sig"] = helper.Sha256(text)
 		requestbody["sign"] = "Sghen三行"
 		tel["mobile"] = strconv.FormatInt(params.Phone, 10)
@@ -65,7 +70,13 @@ func (c *CommonController) SendSmsCode() {
 			data[models.STR_CODE] = models.CODE_ERR
 			data[models.STR_MSG] = err.Error()
 		} else {
-			data[models.STR_DATA] = string(body)
+			var smsResult models.SmsResult
+			json.Unmarshal(body, &smsResult)
+
+			if smsResult.Result != 0 {
+				data[models.STR_CODE] = models.CODE_ERR
+				data[models.STR_MSG] = smsResult.Errmsg
+			}
 		}
 	}
 	c.respToJSON(data)

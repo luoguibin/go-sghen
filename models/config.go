@@ -25,6 +25,9 @@ type Config struct {
 	dBMaxIdle  int
 	dBMaxConn  int
 
+	SmsAppKey   string
+	SmsSdkAppID int
+
 	CodeMsgMap map[int]string
 
 	MLogger *logs.BeeLogger
@@ -78,8 +81,10 @@ func initConfParams() {
 		MConfig.dBPassword = appConf.String(SGHENENV + "::dbPassword")
 		MConfig.dBMaxIdle, _ = appConf.Int(SGHENENV + "::dbMaxIdle")
 		MConfig.dBMaxConn, _ = appConf.Int(SGHENENV + "::dbMaxConn")
-	}
 
+		MConfig.SmsAppKey = appConf.String(SGHENENV + "::smsAppKey")
+		MConfig.SmsSdkAppID, _ = appConf.Int(SGHENENV + "::smsSdkAppID")
+	}
 }
 
 func initCodeMsgMap() {
