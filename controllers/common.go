@@ -37,14 +37,33 @@ func (c *CommonController) SendSmsCode() {
 			return
 		}
 
+		smsCode, err := models.QuerySmsCode(params.Phone)
+		if err != nil {
+			data[models.STR_CODE] = models.CODE_ERR
+			data[models.STR_MSG] = "验证码服务错误"
+			c.respToJSON(data)
+			return
+		}
+
+		if smsCode != nil {
+			timeVal := helper.GetMillisecond() - smsCode.TimeCreate
+			if timeVal > 0 && timeVal < 60*1000 {
+				data[models.STR_CODE] = models.CODE_ERR
+				data[models.STR_MSG] = "稍后再发送验证码"
+				c.respToJSON(data)
+				return
+			}
+		}
+
 		random := helper.GetMicrosecond()
 		time := time.Now().Unix()
+		codeStr := helper.RandomNum4()
 		text := "appkey=" + appKey + "&random=" + strconv.FormatInt(random, 10) + "&time=" + strconv.FormatInt(time, 10) + "&mobile=" + strconv.FormatInt(params.Phone, 10)
 		url := "https://yun.tim.qq.com/v5/tlssmssvr/sendsms?sdkappid=" + strconv.Itoa(sdkAppID) + "&random=" + strconv.FormatInt(random, 10)
 
 		requestbody := make(map[string]interface{})
 		tel := make(map[string]interface{})
-		requestbody["params"] = []string{helper.RandomNum4()}
+		requestbody["params"] = []string{codeStr}
 		requestbody["sig"] = helper.Sha256(text)
 		requestbody["sign"] = "Sghen三行"
 		tel["mobile"] = strconv.FormatInt(params.Phone, 10)
@@ -76,6 +95,12 @@ func (c *CommonController) SendSmsCode() {
 			if smsResult.Result != 0 {
 				data[models.STR_CODE] = models.CODE_ERR
 				data[models.STR_MSG] = smsResult.Errmsg
+			} else {
+				_, err := models.SaveSmsCode(params.Phone, codeStr, 2*60*1000)
+				if err != nil {
+					data[models.STR_CODE] = models.CODE_ERR
+					data[models.STR_MSG] = "验证码服务错误"
+				}
 			}
 		}
 	}

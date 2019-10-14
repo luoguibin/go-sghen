@@ -22,7 +22,7 @@ func InitGorm() {
 
 	dbOrmDefault = db
 
-	db.AutoMigrate(&User{}, &Peotry{}, &PeotrySet{}, PeotryImage{}, Comment{})
+	db.AutoMigrate(&User{}, &Peotry{}, &PeotrySet{}, PeotryImage{}, Comment{}, SmsCode{})
 
 	count := 0
 	if db.Model(&User{}).Count(&count); count == 0 {
