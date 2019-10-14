@@ -10,6 +10,11 @@ type SmsCode struct {
 	TimeCreate int64  `gorm:"column:time_create" json:"timeCreate"`
 }
 
+// TableName ...
+func (u SmsCode) TableName() string {
+	return "sms_code"
+}
+
 // SaveSmsCode ...
 func SaveSmsCode(id int64, code string, timeLife int64) (*SmsCode, error) {
 	smsCode := &SmsCode{

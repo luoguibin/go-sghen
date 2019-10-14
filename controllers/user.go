@@ -24,26 +24,27 @@ func (c *UserController) CreateUser() {
 
 	if c.CheckFormParams(data, params) {
 		smsCode, err := models.QuerySmsCode(params.ID)
-		if err != nil {
+		if err != nil && !strings.Contains(err.Error(), "record not found") {
 			data[models.STR_CODE] = models.CODE_ERR
 			data[models.STR_MSG] = "验证码服务错误"
 			return
 		}
-		if smsCode.Code != params.Code {
-			data[models.STR_CODE] = models.CODE_ERR
-			data[models.STR_MSG] = "验证码错误"
-			return
+		if smsCode != nil {
+			if smsCode.Code != params.Code {
+				data[models.STR_CODE] = models.CODE_ERR
+				data[models.STR_MSG] = "验证码错误"
+				return
+			}
+			timeVal := helper.GetMillisecond() - smsCode.TimeCreate
+			if timeVal < 0 || timeVal > smsCode.TimeLife {
+				data[models.STR_CODE] = models.CODE_ERR
+				data[models.STR_MSG] = "验证码已过有效期"
+				return
+			}
+			models.DeleteSmsCode(params.ID)
 		}
-		timeVal := helper.GetMillisecond() - smsCode.TimeCreate
-		if timeVal < 0 || timeVal > smsCode.TimeLife {
-			data[models.STR_CODE] = models.CODE_ERR
-			data[models.STR_MSG] = "验证码已过有效期"
-			return
-		}
-		models.DeleteSmsCode(params.ID)
 
 		user, err := models.CreateUser(params.ID, helper.MD5(params.Pw), params.Name, 1)
-
 		if err == nil {
 			createUserToken(user, data)
 		} else {
