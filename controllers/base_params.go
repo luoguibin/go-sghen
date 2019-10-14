@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"strconv"
 	"strings"
 
 	"github.com/astaxie/beego/validation"
@@ -11,6 +12,17 @@ import (
 // 跳转路由前，在路由InsertFilter中，手动设置解析token中信息，
 // 并写入对应的输入结构体中。
 //
+
+// getSmsSendParams sms验证码
+type getSmsSendParams struct {
+	Phone int64 `form:"phone" valid:"Required"`
+}
+
+func (params *getSmsSendParams) Valid(v *validation.Validation) {
+	if len(strconv.FormatInt(params.Phone, 10)) != 11 {
+		v.SetError("phone", "手机号码不正确")
+	}
+}
 
 // user create和login共用输入结构体
 type getCreateUserParams struct {

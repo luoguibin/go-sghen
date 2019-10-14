@@ -23,6 +23,7 @@ func init() {
 		flag := ctx.Request.Method == "POST"
 		flag = flag && strings.Index(ctx.Request.URL.Path, "login") == -1
 		flag = flag && strings.Index(ctx.Request.URL.Path, "/user/create") == -1
+		flag = flag && strings.Index(ctx.Request.URL.Path, "/sms/send") == -1
 		if flag {
 			controllers.GatewayAccessUser(ctx)
 		}
@@ -30,6 +31,10 @@ func init() {
 
 	//详见　https://beego.me/docs/mvc/controller/router.md
 	nsv1 := beego.NewNamespace("/v1",
+		beego.NSNamespace("/common/",
+			beego.NSRouter("/flag", &controllers.CommonController{}, "get:GetFlag"),
+			beego.NSRouter("/sms/send", &controllers.CommonController{}, "post:SendSmsCode"),
+		),
 		beego.NSNamespace("/user",
 			beego.NSRouter("/create", &controllers.UserController{}, "post:CreateUser"),
 			beego.NSRouter("/login", &controllers.UserController{}, "post:LoginUser"),
