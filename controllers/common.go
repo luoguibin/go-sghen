@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -38,7 +39,7 @@ func (c *CommonController) SendSmsCode() {
 		}
 
 		smsCode, err := models.QuerySmsCode(params.Phone)
-		if err != nil {
+		if err != nil && !strings.Contains(err.Error(), "record not found") {
 			data[models.STR_CODE] = models.CODE_ERR
 			data[models.STR_MSG] = "验证码服务错误"
 			c.respToJSON(data)
