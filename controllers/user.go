@@ -38,7 +38,14 @@ func (c *UserController) CreateUser() {
 		}
 		if smsCode.Code != params.Code {
 			data[models.STR_CODE] = models.CODE_ERR
-			data[models.STR_MSG] = "验证码错误"
+			if smsCode.CountRead >= 2 {
+				data[models.STR_MSG] = "验证码错误，请重新发送"
+				models.DeleteSmsCode(smsCode.ID)
+			} else {
+				data[models.STR_MSG] = "验证码错误"
+				smsCode.CountRead = smsCode.CountRead + 1
+				models.SaveSmsCode(smsCode.ID, smsCode.Code, smsCode.CountRead, smsCode.TimeLife)
+			}
 			c.respToJSON(data)
 			return
 		}

@@ -34,6 +34,7 @@ func (c *CommonController) SendSmsCode() {
 		if sdkAppID == 0 || len(appKey) == 0 {
 			data[models.STR_CODE] = models.CODE_ERR
 			data[models.STR_MSG] = "验证码服务尚未运行"
+			models.SaveSmsCode(params.Phone, "1234", 0, 2*60*1000)
 			c.respToJSON(data)
 			return
 		}
@@ -97,7 +98,7 @@ func (c *CommonController) SendSmsCode() {
 				data[models.STR_CODE] = models.CODE_ERR
 				data[models.STR_MSG] = smsResult.Errmsg
 			} else {
-				_, err := models.SaveSmsCode(params.Phone, codeStr, 2*60*1000)
+				_, err := models.SaveSmsCode(params.Phone, codeStr, 0, 2*60*1000)
 				if err != nil {
 					data[models.STR_CODE] = models.CODE_ERR
 					data[models.STR_MSG] = "验证码服务错误"

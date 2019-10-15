@@ -6,6 +6,7 @@ import "go-sghen/helper"
 type SmsCode struct {
 	ID         int64  `gorm:"primary_key" json:"id,omitempty"`
 	Code       string `gorm:"code" json:"code"`
+	CountRead  int    `gorm:"count_read" json:"countRead"`
 	TimeLife   int64  `gorm:"time_life" json:"timeLife"`
 	TimeCreate int64  `gorm:"column:time_create" json:"timeCreate"`
 }
@@ -16,10 +17,11 @@ func (u SmsCode) TableName() string {
 }
 
 // SaveSmsCode ...
-func SaveSmsCode(id int64, code string, timeLife int64) (*SmsCode, error) {
+func SaveSmsCode(id int64, code string, countRead int, timeLife int64) (*SmsCode, error) {
 	smsCode := &SmsCode{
 		ID:         id,
 		Code:       code,
+		CountRead:  countRead,
 		TimeLife:   timeLife,
 		TimeCreate: helper.GetMillisecond(),
 	}
