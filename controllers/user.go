@@ -203,6 +203,7 @@ func createUserToken(user *models.User, data ResponseData) {
 	claims["exp"] = time.Now().Add(time.Hour * time.Duration(24)).Unix()
 	claims["iat"] = time.Now().Unix()
 	claims["userId"] = strconv.FormatInt(user.ID, 10)
+	claims["userName"] = user.Name
 	claims["uLevel"] = strconv.Itoa(user.Level)
 
 	token.Claims = claims
@@ -235,7 +236,6 @@ func CheckUserToken(tokenString string) (map[string]interface{}, error) {
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 		return claims, nil
-	} else {
-		return nil, errors.New("token get mapcliams err")
 	}
+	return nil, errors.New("token get mapcliams err")
 }
