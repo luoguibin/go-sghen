@@ -23,40 +23,42 @@ func (c *UserController) CreateUser() {
 	params := &getCreateUserParams{}
 
 	if c.CheckFormParams(data, params) {
-		smsCode, err := models.QuerySmsCode(params.ID)
-		if err != nil && !strings.Contains(err.Error(), "record not found") {
-			data[models.STR_CODE] = models.CODE_ERR
-			data[models.STR_MSG] = "验证码服务错误"
-			c.respToJSON(data)
-			return
-		}
-		if smsCode == nil {
-			data[models.STR_CODE] = models.CODE_ERR
-			data[models.STR_MSG] = "请重新发送验证码"
-			c.respToJSON(data)
-			return
-		}
-		if smsCode.Code != params.Code {
-			data[models.STR_CODE] = models.CODE_ERR
-			if smsCode.CountRead >= 2 {
-				data[models.STR_MSG] = "验证码错误，请重新发送"
-				models.DeleteSmsCode(smsCode.ID)
-			} else {
-				data[models.STR_MSG] = "验证码错误"
-				smsCode.CountRead = smsCode.CountRead + 1
-				models.SaveSmsCode(smsCode.ID, smsCode.Code, smsCode.CountRead, smsCode.TimeLife)
+		if models.MConfig.SGHENENV == "prod" {
+			smsCode, err := models.QuerySmsCode(params.ID)
+			if err != nil && !strings.Contains(err.Error(), "record not found") {
+				data[models.STR_CODE] = models.CODE_ERR
+				data[models.STR_MSG] = "验证码服务错误"
+				c.respToJSON(data)
+				return
 			}
-			c.respToJSON(data)
-			return
+			if smsCode == nil {
+				data[models.STR_CODE] = models.CODE_ERR
+				data[models.STR_MSG] = "请重新发送验证码"
+				c.respToJSON(data)
+				return
+			}
+			if smsCode.Code != params.Code {
+				data[models.STR_CODE] = models.CODE_ERR
+				if smsCode.CountRead >= 2 {
+					data[models.STR_MSG] = "验证码错误，请重新发送"
+					models.DeleteSmsCode(smsCode.ID)
+				} else {
+					data[models.STR_MSG] = "验证码错误"
+					smsCode.CountRead = smsCode.CountRead + 1
+					models.SaveSmsCode(smsCode.ID, smsCode.Code, smsCode.CountRead, smsCode.TimeLife)
+				}
+				c.respToJSON(data)
+				return
+			}
+			timeVal := helper.GetMillisecond() - smsCode.TimeCreate
+			if timeVal < 0 || timeVal > smsCode.TimeLife {
+				data[models.STR_CODE] = models.CODE_ERR
+				data[models.STR_MSG] = "验证码已过有效期"
+				c.respToJSON(data)
+				return
+			}
+			models.DeleteSmsCode(params.ID)
 		}
-		timeVal := helper.GetMillisecond() - smsCode.TimeCreate
-		if timeVal < 0 || timeVal > smsCode.TimeLife {
-			data[models.STR_CODE] = models.CODE_ERR
-			data[models.STR_MSG] = "验证码已过有效期"
-			c.respToJSON(data)
-			return
-		}
-		models.DeleteSmsCode(params.ID)
 
 		user, err := models.CreateUser(params.ID, helper.MD5(params.Pw), params.Name, 1)
 		if err == nil {

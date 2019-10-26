@@ -115,10 +115,7 @@ func DeleteComment(ID int64) error {
 }
 
 // DeleteComments ...
-func DeleteComments(typeId int64) error {
-	comment := &Comment{
-		TypeID: typeId,
-	}
-	err := dbOrmDefault.Model(&Comment{}).Delete(comment).Error
+func DeleteComments(typeID int64) error {
+	err := dbOrmDefault.Delete(&Comment{}, "type_id = ?", typeID).Error
 	return err
 }

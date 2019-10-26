@@ -85,6 +85,7 @@ func (params *getQueryUsersParams) Valid(v *validation.Validation) {
 // peotry query输入结构体
 type getQueryPeotryParams struct {
 	ID          int64  `form:"id"`
+	UserID      int64  `form:"userId"`
 	SetID       int    `form:"setId"`
 	Page        int    `form:"page"`
 	Limit       int    `form:"limit"`

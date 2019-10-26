@@ -34,7 +34,7 @@ func (c *PeotryController) QueryPeotry() {
 				data[models.STR_MSG] = "未查询到对应id的诗歌"
 			}
 		} else {
-			list, count, totalPage, curPage, pageIsEnd, err := models.QueryPeotry(params.SetID, params.Page, params.Limit, params.Content)
+			list, count, totalPage, curPage, pageIsEnd, err := models.QueryPeotry(params.UserID, params.SetID, params.Page, params.Limit, params.Content)
 
 			if err == nil {
 				if params.NeedComment {

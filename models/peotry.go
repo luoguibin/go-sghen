@@ -88,7 +88,7 @@ func UpdatePeotry(peotry *Peotry) error {
 }
 
 // QueryPeotry ...
-func QueryPeotry(setId int, page int, limit int, content string) ([]*Peotry, int, int, int, int, error) {
+func QueryPeotry(userID int64, setId int, page int, limit int, content string) ([]*Peotry, int, int, int, int, error) {
 	list := make([]*Peotry, 0)
 	totalPage := 0
 	count := 0
@@ -100,6 +100,12 @@ func QueryPeotry(setId int, page int, limit int, content string) ([]*Peotry, int
 	}
 
 	db := dbOrmDefault.Model(&Peotry{})
+	if userID > 0 {
+		query := &Peotry{
+			UserID: userID,
+		}
+		db = db.Where(query)
+	}
 	if setId > 0 {
 		query := &Peotry{
 			SetID: setId,
@@ -111,6 +117,7 @@ func QueryPeotry(setId int, page int, limit int, content string) ([]*Peotry, int
 		// todo
 		db = db.Where("content LIKE ?", "%"+content+"%")
 	}
+	db = db.Order("time_create desc")
 
 	db.Count(&count)
 	db = db.Preload("User").Preload("Set").Preload("Image")
@@ -171,10 +178,10 @@ func QueryPeotryByID(id int64) (*Peotry, error) {
 
 // DeletePeotry ...
 func DeletePeotry(id int64) error {
-	set := &Peotry{
+	peotry := &Peotry{
 		ID: id,
 	}
 
-	err := dbOrmDefault.Model(&Peotry{}).Delete(&set).Error
+	err := dbOrmDefault.Model(&Peotry{}).Delete(&peotry).Error
 	return err
 }

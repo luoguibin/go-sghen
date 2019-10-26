@@ -70,7 +70,7 @@ func (c *PeotrySetController) DeletePeotrySet() {
 			return
 		}
 
-		_, count, _, _, _, err := models.QueryPeotry(set.ID, 1, 10, "")
+		_, count, _, _, _, err := models.QueryPeotry(0, set.ID, 1, 10, "")
 		if err != nil {
 			data[models.STR_CODE] = models.CODE_ERR
 			data[models.STR_MSG] = "尝试查询该选集下的诗词失败"
