@@ -64,6 +64,12 @@ func (c *PeotryController) QueryPopularPeotry() {
 	data := c.GetResponseData()
 	list, err := models.QueryPopularPeotry()
 	if err == nil {
+		for _, peotry := range list {
+			comments, e := models.QueryCommentByTypeID(peotry.ID)
+			if e == nil {
+				peotry.Comments = comments
+			}
+		}
 		data[models.STR_DATA] = list
 	}
 	c.respToJSON(data)
