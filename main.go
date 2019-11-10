@@ -16,5 +16,8 @@ func main() {
 	db := models.GetDb()
 	defer db.Close()
 
+	db0 := models.GetDb0()
+	defer db0.Close()
+
 	beego.Run()
 }

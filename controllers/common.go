@@ -108,3 +108,59 @@ func (c *CommonController) SendSmsCode() {
 	}
 	c.respToJSON(data)
 }
+
+// GetCommon ...
+func (c *CommonController) GetCommon() {
+	data := c.GetResponseData()
+	params := &getCommonParams{}
+
+	if c.CheckFormParams(data, params) {
+		switch params.MType {
+		case "table":
+			list, err := models.GetTables()
+			if err != nil {
+				data[models.STR_CODE] = models.CODE_ERR
+				data[models.STR_MSG] = "操作失败"
+				data[models.STR_DETAIL] = err
+			} else {
+				data[models.STR_DATA] = list
+			}
+		case "table-data":
+			if len(strings.TrimSpace(params.TableName)) == 0 {
+				data[models.STR_CODE] = models.CODE_ERR
+				data[models.STR_MSG] = "参数表名不能为空"
+				break
+			}
+
+			if params.Field {
+				columns, err := models.GetFieldData(params.TableName)
+				if err != nil {
+					data[models.STR_CODE] = models.CODE_ERR
+					data[models.STR_MSG] = "操作失败"
+					data[models.STR_DETAIL] = err
+					break
+				} else {
+					data["columns"] = columns
+				}
+			}
+
+			list, err := models.GetTableData(params.TableName)
+			if err != nil {
+				data[models.STR_CODE] = models.CODE_ERR
+				data[models.STR_MSG] = "操作失败"
+				data[models.STR_DETAIL] = err
+				break
+			} else {
+				data[models.STR_DATA] = list
+			}
+		}
+	}
+	c.respToJSON(data)
+}
+
+// PostCommon ...
+func (c *CommonController) PostCommon() {
+	data := c.GetResponseData()
+
+	c.respToJSON(data)
+}

@@ -24,6 +24,19 @@ func (params *getSmsSendParams) Valid(v *validation.Validation) {
 	}
 }
 
+// getCommonParams ...
+type getCommonParams struct {
+	MType     string `form:"type" valid:"Required"`
+	TableName string `form:"tableName"`
+	Field     bool   `form:"field"`
+}
+
+func (params *getCommonParams) Valid(v *validation.Validation) {
+	if len(strings.TrimSpace(params.MType)) == 0 {
+		v.SetError("type", "type类型错误")
+	}
+}
+
 // user create和login共用输入结构体
 type getCreateUserParams struct {
 	ID   int64  `form:"id" valid:"Required"`

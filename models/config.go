@@ -20,6 +20,7 @@ type Config struct {
 
 	dBHost     string
 	dBName     string
+	dBName0    string
 	dBUsername string
 	dBPassword string
 	dBMaxIdle  int
@@ -37,13 +38,15 @@ var (
 	MConfig Config
 
 	dbOrmDefault *gorm.DB
+	dbOrmDynamic *gorm.DB
 )
 
 var (
-	STR_CODE  = "code"
-	STR_MSG   = "msg"
-	STR_DATA  = "data"
-	STR_TOKEN = "token"
+	STR_CODE   = "code"
+	STR_MSG    = "msg"
+	STR_DETAIL = "detail"
+	STR_DATA   = "data"
+	STR_TOKEN  = "token"
 
 	CODE_OK        = 1000
 	CODE_ERR       = 1001
@@ -77,6 +80,7 @@ func initConfParams() {
 
 		MConfig.dBHost = appConf.String(SGHENENV + "::dbHost")
 		MConfig.dBName = appConf.String(SGHENENV + "::dbName")
+		MConfig.dBName0 = appConf.String(SGHENENV + "::dbName0")
 		MConfig.dBUsername = appConf.String(SGHENENV + "::dbUsername")
 		MConfig.dBPassword = appConf.String(SGHENENV + "::dbPassword")
 		MConfig.dBMaxIdle, _ = appConf.Int(SGHENENV + "::dbMaxIdle")
@@ -110,4 +114,8 @@ func initLog() {
 
 func GetDb() *gorm.DB {
 	return dbOrmDefault
+}
+
+func GetDb0() *gorm.DB {
+	return dbOrmDynamic
 }

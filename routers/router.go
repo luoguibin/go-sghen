@@ -34,6 +34,8 @@ func init() {
 		beego.NSNamespace("/common/",
 			beego.NSRouter("/flag", &controllers.CommonController{}, "get:GetFlag"),
 			beego.NSRouter("/sms/send", &controllers.CommonController{}, "post:SendSmsCode"),
+			beego.NSRouter("/get", &controllers.CommonController{}, "get:GetCommon"),
+			beego.NSRouter("/post", &controllers.CommonController{}, "post:PostCommon"),
 		),
 		beego.NSNamespace("/user",
 			beego.NSRouter("/create", &controllers.UserController{}, "post:CreateUser"),
