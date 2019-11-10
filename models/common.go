@@ -47,7 +47,8 @@ func GetTables() ([]TableDesc, error) {
 
 // GetFieldData ...
 func GetFieldData(tableName string) ([]FieldDesc, error) {
-	rows, err := dbOrmDynamic.Raw("SELECT * FROM information_schema.COLUMNS WHERE TABLE_NAME=?", tableName).Rows()
+	sqlStr := "SELECT * FROM information_schema.COLUMNS WHERE TABLE_NAME=? AND TABLE_SCHEMA=?"
+	rows, err := dbOrmDynamic.Raw(sqlStr, tableName, MConfig.dBName0).Rows()
 	if err != nil {
 		return nil, err
 	}
