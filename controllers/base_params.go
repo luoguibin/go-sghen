@@ -26,9 +26,9 @@ func (params *getSmsSendParams) Valid(v *validation.Validation) {
 
 // getCommonParams ...
 type getCommonParams struct {
-	MType     string `form:"type" valid:"Required"`
-	TableName string `form:"tableName"`
-	Field     bool   `form:"field"`
+	MType string `form:"type" valid:"Required"`
+	Data  string `form:"data"`
+	Field bool   `form:"field"`
 }
 
 func (params *getCommonParams) Valid(v *validation.Validation) {

@@ -126,14 +126,14 @@ func (c *CommonController) GetCommon() {
 				data[models.STR_DATA] = list
 			}
 		case "table-data":
-			if len(strings.TrimSpace(params.TableName)) == 0 {
+			if len(strings.TrimSpace(params.Data)) == 0 {
 				data[models.STR_CODE] = models.CODE_ERR
 				data[models.STR_MSG] = "参数表名不能为空"
 				break
 			}
 
 			if params.Field {
-				columns, err := models.GetFieldData(params.TableName)
+				columns, err := models.GetFieldData(params.Data)
 				if err != nil {
 					data[models.STR_CODE] = models.CODE_ERR
 					data[models.STR_MSG] = "操作失败"
@@ -144,7 +144,23 @@ func (c *CommonController) GetCommon() {
 				}
 			}
 
-			list, err := models.GetTableData(params.TableName)
+			list, err := models.GetTableData(params.Data)
+			if err != nil {
+				data[models.STR_CODE] = models.CODE_ERR
+				data[models.STR_MSG] = "操作失败"
+				data[models.STR_DETAIL] = err
+				break
+			} else {
+				data[models.STR_DATA] = list
+			}
+		case "sql-data":
+			if len(strings.TrimSpace(params.Data)) == 0 {
+				data[models.STR_CODE] = models.CODE_ERR
+				data[models.STR_MSG] = "参数data不能为空"
+				break
+			}
+
+			list, err := models.GetSQLData(params.Data)
 			if err != nil {
 				data[models.STR_CODE] = models.CODE_ERR
 				data[models.STR_MSG] = "操作失败"
