@@ -29,7 +29,7 @@ func InitGorm() {
 	if db.Model(&Peotry{}).Count(&count); count == 0 {
 		initSystemPeotry(true)
 	}
-	initSystemPeotry(false)
+	// initSystemPeotry(false)
 	if db.Model(&PeotrySet{}).Count(&count); count == 0 {
 		initSystemPeotrySet()
 	}
