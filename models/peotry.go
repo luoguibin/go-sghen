@@ -31,8 +31,14 @@ type Peotry struct {
 }
 
 // initSystemPeotry 初始化诗词
-func initSystemPeotry() {
-	peotriesJson, err := ioutil.ReadFile("data/sys-peotry.json")
+func initSystemPeotry(isDefault bool) {
+	var name string
+	if isDefault {
+		name = "data/sys-peotry.json"
+	} else {
+		name = "data/sys-peotry_temp.json"
+	}
+	peotriesJson, err := ioutil.ReadFile(name)
 	if err != nil {
 		fmt.Println("read sys-peotry.json err")
 		fmt.Println(err)
