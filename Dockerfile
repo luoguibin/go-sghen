@@ -14,6 +14,8 @@ RUN mkdir -p ./data/
 COPY --from=builder ${APP_ROOT}/main .
 COPY --from=builder ${APP_ROOT}/conf/app.conf ./conf/app.conf
 COPY --from=builder ${APP_ROOT}/data ./data
+# 拷贝时区配置
+COPY /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 EXPOSE 8085
 ENV SGHENENV prod
 ENTRYPOINT ["/app/main"]
