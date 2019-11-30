@@ -15,7 +15,8 @@ COPY --from=builder ${APP_ROOT}/main .
 COPY --from=builder ${APP_ROOT}/conf/app.conf ./conf/app.conf
 COPY --from=builder ${APP_ROOT}/data ./data
 # 拷贝时区配置
-COPY /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+RUN apk add --no-cache tzdata
+ENV TZ Asia/Shanghai
 EXPOSE 8085
 ENV SGHENENV prod
 ENTRYPOINT ["/app/main"]
