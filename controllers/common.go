@@ -29,6 +29,21 @@ func (c *CommonController) SendSmsCode() {
 	params := &getSmsSendParams{}
 
 	if c.CheckFormParams(data, params) {
+		if models.MConfig.SGHENENV != "prod" {
+			data[models.STR_CODE] = models.CODE_ERR
+			data[models.STR_MSG] = "非正式环境中已暂停验证码服务"
+			c.respToJSON(data)
+			return
+		}
+
+		user, _ := models.QueryUser(params.Phone)
+		if user != nil {
+			data[models.STR_CODE] = models.CODE_ERR
+			data[models.STR_MSG] = "该账号已注册"
+			c.respToJSON(data)
+			return
+		}
+
 		sdkAppID := models.MConfig.SmsSdkAppID
 		appKey := models.MConfig.SmsAppKey
 		if sdkAppID == 0 || len(appKey) == 0 {
@@ -56,6 +71,7 @@ func (c *CommonController) SendSmsCode() {
 				return
 			}
 		}
+		models.SaveSmsCode(params.Phone, "", 0, 2*60*1000)
 
 		random := helper.GetMicrosecond()
 		time := time.Now().Unix()
@@ -83,6 +99,7 @@ func (c *CommonController) SendSmsCode() {
 			data[models.STR_CODE] = models.CODE_ERR
 			data[models.STR_MSG] = "验证码服务掉线"
 			c.respToJSON(data)
+			models.DeleteSmsCode(params.Phone)
 			return
 		}
 		defer resp.Body.Close()
