@@ -23,7 +23,6 @@ func init() {
 		flag := ctx.Request.Method == "POST"
 		flag = flag && strings.Index(ctx.Request.URL.Path, "login") == -1
 		flag = flag && strings.Index(ctx.Request.URL.Path, "/user/create") == -1
-		flag = flag && strings.Index(ctx.Request.URL.Path, "/sms/send") == -1
 		if flag {
 			controllers.GatewayAccessUser(ctx)
 		}
@@ -54,6 +53,7 @@ func init() {
 		),
 		beego.NSNamespace("/peotry-set",
 			beego.NSRouter("/query", &controllers.PeotrySetController{}, "get:QueryPeotrySet"),
+			beego.NSRouter("/query-popular", &controllers.PeotrySetController{}, "get:QueryPopularPeotrySet"),
 			beego.NSRouter("/create", &controllers.PeotrySetController{}, "post:CreatePeotrySet"),
 			beego.NSRouter("/delete", &controllers.PeotrySetController{}, "post:DeletePeotrySet"),
 		),
@@ -61,6 +61,12 @@ func init() {
 			beego.NSRouter("/query", &controllers.CommentController{}, "get:QueryComments"),
 			beego.NSRouter("/create", &controllers.CommentController{}, "post:CreateComment"),
 			beego.NSRouter("/delete", &controllers.CommentController{}, "post:DeleteComment"),
+		),
+		beego.NSNamespace("/api",
+			beego.NSRouter("/create", &controllers.DynamicAPIController{}, "post:CreateDynamicAPI"),
+			beego.NSRouter("/update", &controllers.DynamicAPIController{}, "post:UpdateDynamicAPI"),
+			beego.NSRouter("/query", &controllers.DynamicAPIController{}, "get:QueryDynamicAPI"),
+			beego.NSRouter("/delete", &controllers.DynamicAPIController{}, "post:DeleteDynamicAPI"),
 		),
 		beego.NSRouter("/upload", &controllers.FileUploaderController{}, "post:FileUpload"),
 	)

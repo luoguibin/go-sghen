@@ -86,8 +86,9 @@ func GatewayAccessUser(ctx *context.Context) {
 	}
 
 	userId, _ := strconv.ParseInt(claims["userId"].(string), 10, 64)
+	userLevel, _ := strconv.Atoi(claims["uLevel"].(string))
 	ctx.Input.SetData("userId", userId)
-	ctx.Input.SetData("level", claims["uLevel"])
+	ctx.Input.SetData("level", userLevel)
 	// ctx.Input.Context.Request.Form.Add("userId", claims["userId"].(string))
 	return
 }

@@ -245,3 +245,45 @@ func (params *getDeleteCommentParams) Valid(v *validation.Validation) {
 		v.SetError("fromId", "不能为空")
 	}
 }
+
+// DynamicAPI create
+type getCreateDynamicAPIParams struct {
+	Name    string `form:"name" valid:"Required"`
+	Comment string `form:"comment"`
+	Content string `form:"content" valid:"Required"`
+	Status  int    `form:"status"`
+}
+
+func (params *getCreateDynamicAPIParams) Valid(v *validation.Validation) {
+	if len(strings.TrimSpace(params.Name)) == 0 {
+		v.SetError("set name", "不能为空")
+	}
+	if len(strings.TrimSpace(params.Content)) == 0 {
+		v.SetError("set content", "不能为空")
+	}
+}
+
+// getQueryDynamicAPIParams qeury
+type getQueryDynamicAPIParams struct {
+	ID      int64  `form:"id"`
+	Name    string `form:"name"`
+	Comment string `form:"comment"`
+	Status  int    `form:"status"`
+	UserID  int64  `form:"userId"`
+	Page    int    `form:"page"`
+	Limit   int    `form:"limit"`
+}
+
+func (params *getQueryDynamicAPIParams) Valid(v *validation.Validation) {
+}
+
+// getDeleteDynamicAPIParams delete
+type getDeleteDynamicAPIParams struct {
+	ID int64 `form:"id" valid:"Required"`
+}
+
+func (params *getDeleteDynamicAPIParams) Valid(v *validation.Validation) {
+	if params.ID <= 0 {
+		v.SetError("set id", "不能为空")
+	}
+}

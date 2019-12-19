@@ -188,6 +188,6 @@ func DeletePeotry(id int64) error {
 		ID: id,
 	}
 
-	err := dbOrmDefault.Model(&Peotry{}).Delete(&peotry).Error
+	err := dbOrmDefault.Model(&Peotry{}).Delete(peotry).Error
 	return err
 }
