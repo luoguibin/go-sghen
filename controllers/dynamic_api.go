@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	"go-sghen/models"
 )
 
@@ -32,15 +31,33 @@ func (c *DynamicAPIController) CreateDynamicAPI() {
 			}
 		}
 	}
-	fmt.Println(params)
+
 	c.respToJSON(data)
 }
 
 // UpdateDynamicAPI 更新
 func (c *DynamicAPIController) UpdateDynamicAPI() {
 	data := c.GetResponseData()
-	data[models.STR_CODE] = models.CODE_ERR
-	data[models.STR_MSG] = "接口更新服务正在维护"
+	params := &getUpdateDynamicAPIParams{}
+
+	if c.CheckFormParams(data, params) {
+		// userID := c.Ctx.Input.GetData("userId").(int64)
+		userLevel := c.Ctx.Input.GetData("level").(int)
+
+		if userLevel < 9 {
+			data[models.STR_CODE] = models.CODE_ERR
+			data[models.STR_MSG] = "用户权限不够，禁止更新接口"
+		} else {
+			dynamicAPI, err := models.UpdateDynamicAPI(params.ID, params.Name, params.Comment, params.Content, params.Status)
+			if err != nil {
+				data[models.STR_CODE] = models.CODE_ERR
+				data[models.STR_MSG] = "更新接口失败"
+			} else {
+				data[models.STR_DATA] = dynamicAPI
+			}
+		}
+	}
+
 	c.respToJSON(data)
 }
 

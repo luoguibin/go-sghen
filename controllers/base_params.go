@@ -263,6 +263,24 @@ func (params *getCreateDynamicAPIParams) Valid(v *validation.Validation) {
 	}
 }
 
+// DynamicAPI create
+type getUpdateDynamicAPIParams struct {
+	ID      int64  `form:"id" valid:"Required"`
+	Name    string `form:"name" valid:"Required"`
+	Comment string `form:"comment"`
+	Content string `form:"content" valid:"Required"`
+	Status  int    `form:"status"`
+}
+
+func (params *getUpdateDynamicAPIParams) Valid(v *validation.Validation) {
+	if params.ID <= 0 {
+		v.SetError("set id", "不能为空")
+	}
+	if len(strings.TrimSpace(params.Content)) == 0 {
+		v.SetError("set content", "不能为空")
+	}
+}
+
 // getQueryDynamicAPIParams qeury
 type getQueryDynamicAPIParams struct {
 	ID      int64  `form:"id"`
