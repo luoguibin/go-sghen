@@ -94,11 +94,17 @@ func (c *DynamicAPIController) DeleteDynamicAPI() {
 	if c.CheckFormParams(data, params) {
 		// userID := c.Ctx.Input.GetData("userId").(int64)
 		// userLevel := c.Ctx.Input.GetData("level").(int)
+		userLevel := c.Ctx.Input.GetData("level").(int)
 
-		err := models.DeleteDynamicAPI(params.ID)
-		if err != nil {
+		if userLevel < 9 {
 			data[models.STR_CODE] = models.CODE_ERR
-			data[models.STR_MSG] = "删除接口失败"
+			data[models.STR_MSG] = "用户权限不够，禁止更新接口"
+		} else {
+			err := models.DeleteDynamicAPI(params.ID)
+			if err != nil {
+				data[models.STR_CODE] = models.CODE_ERR
+				data[models.STR_MSG] = "删除接口失败"
+			}
 		}
 	}
 
