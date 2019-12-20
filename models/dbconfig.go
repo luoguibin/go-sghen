@@ -46,4 +46,6 @@ func InitGorm() {
 	db0.SingularTable(true) //禁用创建表名自动添加负数形式
 	db0.AutoMigrate()
 	dbOrmDynamic = db0
+
+	initDynamicAPIMap()
 }

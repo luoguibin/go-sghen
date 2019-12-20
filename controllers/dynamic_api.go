@@ -22,6 +22,9 @@ func (c *DynamicAPIController) CreateDynamicAPI() {
 			data[models.STR_CODE] = models.CODE_ERR
 			data[models.STR_MSG] = "用户权限不够，禁止创建接口"
 		} else {
+			if params.Status == 0 {
+				params.Status = -1
+			}
 			dynamicAPI, err := models.CreateDynamicAPI(params.Name, params.Comment, params.Content, params.Status, userID)
 			if err != nil {
 				data[models.STR_CODE] = models.CODE_ERR
@@ -98,6 +101,43 @@ func (c *DynamicAPIController) DeleteDynamicAPI() {
 			data[models.STR_MSG] = "删除接口失败"
 		}
 	}
+
+	c.respToJSON(data)
+}
+
+// GetDynamicData 获取数据
+func (c *DynamicAPIController) GetDynamicData() {
+	data := c.GetResponseData()
+	params := &getDeleteDynamicAPIParams{}
+
+	if c.CheckFormParams(data, params) {
+		dynamicAPI, ok := models.MConfig.DynamicAPIMap[params.ID]
+		if ok {
+			if dynamicAPI.Status == 1 {
+				list, err := models.GetDynamicData(dynamicAPI.Content)
+				if err != nil {
+					data[models.STR_CODE] = models.CODE_ERR
+					data[models.STR_MSG] = "操作失败"
+					data[models.STR_DETAIL] = err
+				} else {
+					data[models.STR_DATA] = list
+				}
+			} else {
+				data[models.STR_CODE] = models.CODE_ERR
+				data[models.STR_MSG] = "接口未加载"
+			}
+		} else {
+			data[models.STR_CODE] = models.CODE_ERR
+			data[models.STR_MSG] = "接口未加载或未定义"
+		}
+	}
+
+	c.respToJSON(data)
+}
+
+// PostDynamicData 更改数据
+func (c *DynamicAPIController) PostDynamicData() {
+	data := c.GetResponseData()
 
 	c.respToJSON(data)
 }
