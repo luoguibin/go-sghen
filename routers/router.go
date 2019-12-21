@@ -68,6 +68,7 @@ func init() {
 			beego.NSRouter("/query", &controllers.DynamicAPIController{}, "get:QueryDynamicAPI"),
 			beego.NSRouter("/delete", &controllers.DynamicAPIController{}, "post:DeleteDynamicAPI"),
 			beego.NSRouter("/get", &controllers.DynamicAPIController{}, "get:GetDynamicData"),
+			beego.NSRouter("/get/*", &controllers.DynamicAPIController{}, "get:GetDynamicDataByPath"),
 			beego.NSRouter("/post", &controllers.DynamicAPIController{}, "post:PostDynamicData"),
 		),
 		beego.NSRouter("/upload", &controllers.FileUploaderController{}, "post:FileUpload"),

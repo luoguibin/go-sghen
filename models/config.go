@@ -30,7 +30,7 @@ type Config struct {
 	SmsSdkAppID int
 
 	CodeMsgMap    map[int]string
-	DynamicAPIMap map[int64]*DynamicAPI
+	DynamicAPIMap map[string]*DynamicAPI
 
 	MLogger *logs.BeeLogger
 }
@@ -106,11 +106,11 @@ func initPathTypeMap() {
 }
 
 func initDynamicAPIMap() {
-	MConfig.DynamicAPIMap = make(map[int64]*DynamicAPI, 0)
-	dynamicAPIs, _, _, _, _, err := QueryDynamicAPI(0, "", "", 1, 0, 100, 1)
+	MConfig.DynamicAPIMap = make(map[string]*DynamicAPI, 0)
+	dynamicAPIs, _, _, _, _, err := QueryDynamicAPI(0, "", "", "", 1, 0, 100, 1)
 	if err == nil {
 		for _, dynamicAPI := range dynamicAPIs {
-			MConfig.DynamicAPIMap[dynamicAPI.ID] = dynamicAPI
+			MConfig.DynamicAPIMap[dynamicAPI.SuffixPath] = dynamicAPI
 		}
 	} else {
 		fmt.Println("init DynamicAPIMap error", err)

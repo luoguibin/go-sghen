@@ -8,9 +8,10 @@ import (
 
 // DynamicAPI 自定义脚本制作接口
 type DynamicAPI struct {
-	ID int64 `gorm:"primary_key" json:"id,omitempty"`
+	ID         int64  `gorm:"primary_key" json:"id,omitempty"`
+	SuffixPath string `gorm:"column:suffix_path;type:varchar(100);not null;unique" json:"suffixPath"`
 
-	Name    string `gorm:"column:name;type:varchar(200)" json:"name,omitempty"`
+	Name    string `gorm:"column:name;type:varchar(50)" json:"name,omitempty"`
 	Comment string `gorm:"column:comment;type:varchar(200)" json:"comment,omitempty"`
 	Content string `gorm:"column:content;type:mediumtext" json:"content"`
 
@@ -29,12 +30,13 @@ func (u DynamicAPI) TableName() string {
 }
 
 // CreateDynamicAPI 创建一个接口
-func CreateDynamicAPI(name string, comment string, content string, status int, userID int64) (*DynamicAPI, error) {
+func CreateDynamicAPI(suffixPath string, name string, comment string, content string, status int, userID int64) (*DynamicAPI, error) {
 	id := helper.GetMicrosecond()
 	timeNow := time.Now()
 
 	dynamicAPI := &DynamicAPI{
 		ID:         id,
+		SuffixPath: suffixPath,
 		Name:       name,
 		Comment:    comment,
 		Content:    content,
@@ -48,18 +50,17 @@ func CreateDynamicAPI(name string, comment string, content string, status int, u
 	if err != nil {
 		fmt.Println(err)
 		return nil, err
-	} else {
-		if status == 1 {
-			initDynamicAPIMap()
-		}
+	} else if status == 1 {
+		initDynamicAPIMap()
 	}
 	return dynamicAPI, nil
 }
 
 // UpdateDynamicAPI 更新一个接口
-func UpdateDynamicAPI(id int64, name string, comment string, content string, status int) (*DynamicAPI, error) {
+func UpdateDynamicAPI(id int64, suffixPath string, name string, comment string, content string, status int) (*DynamicAPI, error) {
 	dynamicAPI := &DynamicAPI{
 		ID:         id,
+		SuffixPath: suffixPath,
 		Name:       name,
 		Comment:    comment,
 		Content:    content,
@@ -78,7 +79,7 @@ func UpdateDynamicAPI(id int64, name string, comment string, content string, sta
 }
 
 // QueryDynamicAPI 查询接口列表
-func QueryDynamicAPI(id int64, name string, comment string, status int, userID int64, limit int, page int) ([]*DynamicAPI, int, int, int, int, error) {
+func QueryDynamicAPI(id int64, suffixPath string, name string, comment string, status int, userID int64, limit int, page int) ([]*DynamicAPI, int, int, int, int, error) {
 	list := make([]*DynamicAPI, 0)
 	totalPage := 0
 	count := 0
@@ -102,6 +103,9 @@ func QueryDynamicAPI(id int64, name string, comment string, status int, userID i
 	}
 	db = db.Where(query)
 
+	if len(suffixPath) > 1 {
+		db = db.Where("suffixPath LIKE ?", "%"+suffixPath+"%")
+	}
 	if len(name) > 1 {
 		db = db.Where("name LIKE ?", "%"+name+"%")
 	}
