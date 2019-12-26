@@ -11,7 +11,7 @@ import (
 	"github.com/tidwall/gjson"
 )
 
-// User ...
+// User 用户信息
 type User struct {
 	ID         int64     `gorm:"primary_key" json:"id,omitempty"`
 	Password   string    `gorm:"column:password;type:varchar(300)" json:"-"`
@@ -22,27 +22,27 @@ type User struct {
 	Level      int       `gorm:"column:level" json:"-"`
 }
 
-// TableName ...
+// TableName 数据库用户表名
 func (u User) TableName() string {
 	return "user"
 }
 
+// 初始化系统用户列表
 func initSystemUser() {
-	usersJson, err := ioutil.ReadFile("data/sys-account.json")
+	usersJSON, err := ioutil.ReadFile("data/sys-account.json")
 	if err != nil {
-		fmt.Println("read sys-account.json err")
-		fmt.Println(err)
+		fmt.Println("read sys-account.json err", err)
 		return
 	}
 
-	re := gjson.ParseBytes(usersJson)
+	re := gjson.ParseBytes(usersJSON)
 	re.ForEach(func(key, value gjson.Result) bool {
 		id := value.Get("id").Int()
 		password := value.Get("password").String()
 		name := value.Get("name").String()
 		level := value.Get("level").Int()
 
-		CreateUser(id, helper.MD5(password), name, int(level))
+		CreateUser(id, password, name, int(level))
 		return true
 	})
 }
@@ -51,7 +51,7 @@ func initSystemUser() {
 func CreateUser(id int64, password string, name string, level int) (*User, error) {
 	user := &User{
 		ID:         id,
-		Password:   password,
+		Password:   helper.MD5(password),
 		Name:       name,
 		TimeCreate: time.Now(),
 		Level:      level,

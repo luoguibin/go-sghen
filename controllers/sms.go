@@ -12,19 +12,22 @@ import (
 	"time"
 )
 
-// CommonController ...
-type CommonController struct {
+// SmsController 短信控制器
+type SmsController struct {
 	BaseController
 }
 
-// GetFlag ...
-func (c *CommonController) GetFlag() {
-	data := c.GetResponseData()
-	c.respToJSON(data)
+// SmsResult 短信返回信息结构体
+type SmsResult struct {
+	Result int    `json:"result"`
+	Errmsg string `json:"errmsg"`
+	Ext    string `json:"ext"`
+	Fee    int    `json:"fee"`
+	Sid    string `json:"sid"`
 }
 
-// SendSmsCode ...
-func (c *CommonController) SendSmsCode() {
+// SendSmsCode 发送短信验证码
+func (c *SmsController) SendSmsCode() {
 	data := c.GetResponseData()
 	params := &getSmsSendParams{}
 
@@ -123,77 +126,5 @@ func (c *CommonController) SendSmsCode() {
 			}
 		}
 	}
-	c.respToJSON(data)
-}
-
-// GetCommon ...
-func (c *CommonController) GetCommon() {
-	data := c.GetResponseData()
-	params := &getCommonParams{}
-
-	if c.CheckFormParams(data, params) {
-		switch params.MType {
-		case "table":
-			list, err := models.GetTables()
-			if err != nil {
-				data[models.STR_CODE] = models.CODE_ERR
-				data[models.STR_MSG] = "操作失败"
-				data[models.STR_DETAIL] = err
-			} else {
-				data[models.STR_DATA] = list
-			}
-		case "table-data":
-			if len(strings.TrimSpace(params.Data)) == 0 {
-				data[models.STR_CODE] = models.CODE_ERR
-				data[models.STR_MSG] = "参数表名不能为空"
-				break
-			}
-
-			if params.Field {
-				columns, err := models.GetFieldData(params.Data)
-				if err != nil {
-					data[models.STR_CODE] = models.CODE_ERR
-					data[models.STR_MSG] = "操作失败"
-					data[models.STR_DETAIL] = err
-					break
-				} else {
-					data["columns"] = columns
-				}
-			}
-
-			list, err := models.GetTableData(params.Data)
-			if err != nil {
-				data[models.STR_CODE] = models.CODE_ERR
-				data[models.STR_MSG] = "操作失败"
-				data[models.STR_DETAIL] = err
-				break
-			} else {
-				data[models.STR_DATA] = list
-			}
-		case "sql-data":
-			if len(strings.TrimSpace(params.Data)) == 0 {
-				data[models.STR_CODE] = models.CODE_ERR
-				data[models.STR_MSG] = "参数data不能为空"
-				break
-			}
-
-			list, err := models.GetSQLData(params.Data)
-			if err != nil {
-				data[models.STR_CODE] = models.CODE_ERR
-				data[models.STR_MSG] = "操作失败"
-				data[models.STR_DETAIL] = err
-				break
-			} else {
-				data[models.STR_DATA] = list
-			}
-		}
-	}
-	c.respToJSON(data)
-}
-
-// PostCommon ...
-func (c *CommonController) PostCommon() {
-	data := c.GetResponseData()
-
 	c.respToJSON(data)
 }

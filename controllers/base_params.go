@@ -1,26 +1,22 @@
 package controllers
 
 import (
+	"go-sghen/helper"
 	"strconv"
 	"strings"
 
 	"github.com/astaxie/beego/validation"
 )
 
-//
-// 有token验证的，均采用query传递该参数；
-// 跳转路由前，在路由InsertFilter中，手动设置解析token中信息，
-// 并写入对应的输入结构体中。
-//
-
-// getSmsSendParams sms验证码
+// getSmsSendParams 短信验证码
 type getSmsSendParams struct {
 	Phone int64 `form:"phone" valid:"Required"`
 }
 
 func (params *getSmsSendParams) Valid(v *validation.Validation) {
-	if len(strconv.FormatInt(params.Phone, 10)) != 11 {
-		v.SetError("phone", "手机号码不正确")
+	phoneStr := strconv.FormatInt(params.Phone, 10)
+	if helper.IsPhone(phoneStr) == false {
+		v.SetError("phone", "请输入正确的手机号码")
 	}
 }
 

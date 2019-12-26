@@ -16,7 +16,6 @@ import (
 )
 
 func init() {
-	// only GET, POST method
 	beego.Router("/", &controllers.BaseController{}, "GET:BaseGetTest")
 
 	beego.InsertFilter("*", beego.BeforeRouter, func(ctx *context.Context) {
@@ -28,14 +27,7 @@ func init() {
 		}
 	})
 
-	//详见　https://beego.me/docs/mvc/controller/router.md
 	nsv1 := beego.NewNamespace("/v1",
-		beego.NSNamespace("/common/",
-			beego.NSRouter("/flag", &controllers.CommonController{}, "get:GetFlag"),
-			beego.NSRouter("/sms/send", &controllers.CommonController{}, "post:SendSmsCode"),
-			beego.NSRouter("/get", &controllers.CommonController{}, "get:GetCommon"),
-			beego.NSRouter("/post", &controllers.CommonController{}, "post:PostCommon"),
-		),
 		beego.NSNamespace("/user",
 			beego.NSRouter("/create", &controllers.UserController{}, "post:CreateUser"),
 			beego.NSRouter("/login", &controllers.UserController{}, "post:LoginUser"),
@@ -70,6 +62,9 @@ func init() {
 			beego.NSRouter("/get", &controllers.DynamicAPIController{}, "get:GetDynamicData"),
 			beego.NSRouter("/get/*", &controllers.DynamicAPIController{}, "get:GetDynamicDataByPath"),
 			beego.NSRouter("/post", &controllers.DynamicAPIController{}, "post:PostDynamicData"),
+		),
+		beego.NSNamespace("/sms/",
+			beego.NSRouter("/send", &controllers.SmsController{}, "post:SendSmsCode"),
 		),
 		beego.NSRouter("/upload", &controllers.FileUploaderController{}, "post:FileUpload"),
 	)
