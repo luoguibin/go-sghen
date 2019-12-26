@@ -59,7 +59,7 @@ func (c *BaseController) BaseGetTest() {
 // GatewayAccessUser ...
 func GatewayAccessUser(ctx *context.Context) {
 	datas := ResponseData{}
-	token := ctx.Input.Query("token")
+	token := ctx.Request.Header.Get("Authorization")
 
 	if len(token) <= 0 {
 		datas[models.STR_CODE] = models.CODE_ERR

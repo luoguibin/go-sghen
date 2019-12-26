@@ -12,12 +12,12 @@ import (
 	jwt "github.com/dgrijalva/jwt-go"
 )
 
-// UserController operations for User
+// UserController 用户控制器
 type UserController struct {
 	BaseController
 }
 
-// CreateUser 创建user
+// CreateUser 创建用户
 func (c *UserController) CreateUser() {
 	data := c.GetResponseData()
 	params := &getCreateUserParams{}
