@@ -22,6 +22,7 @@ func init() {
 		flag := ctx.Request.Method == "POST"
 		flag = flag && strings.Index(ctx.Request.URL.Path, "login") == -1
 		flag = flag && strings.Index(ctx.Request.URL.Path, "/user/create") == -1
+		flag = flag && strings.Index(ctx.Request.URL.Path, "/sms/send") == -1
 		if flag {
 			controllers.GatewayAccessUser(ctx)
 		}
