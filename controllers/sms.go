@@ -111,7 +111,7 @@ func (c *SmsController) SendSmsCode() {
 			data[models.STR_CODE] = models.CODE_ERR
 			data[models.STR_MSG] = err.Error()
 		} else {
-			var smsResult models.SmsResult
+			var smsResult SmsResult
 			json.Unmarshal(body, &smsResult)
 
 			if smsResult.Result != 0 {
