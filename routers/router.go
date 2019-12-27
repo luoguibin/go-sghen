@@ -16,18 +16,20 @@ import (
 )
 
 func init() {
-	beego.Router("/", &controllers.BaseController{}, "GET:BaseGetTest")
+	beego.Router("/", &controllers.BaseController{}, "GET:TestGet")
 
+	// 设置路由过滤器，校验身份
 	beego.InsertFilter("*", beego.BeforeRouter, func(ctx *context.Context) {
 		flag := ctx.Request.Method == "POST"
 		flag = flag && strings.Index(ctx.Request.URL.Path, "login") == -1
 		flag = flag && strings.Index(ctx.Request.URL.Path, "/user/create") == -1
 		flag = flag && strings.Index(ctx.Request.URL.Path, "/sms/send") == -1
 		if flag {
-			controllers.GatewayAccessUser(ctx)
+			controllers.CheckAccessToken(ctx)
 		}
 	})
 
+	// 路由定义
 	nsv1 := beego.NewNamespace("/v1",
 		beego.NSNamespace("/user",
 			beego.NSRouter("/create", &controllers.UserController{}, "post:CreateUser"),
