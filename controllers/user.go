@@ -60,7 +60,7 @@ func (c *UserController) CreateUser() {
 			models.DeleteSmsCode(params.ID)
 		}
 
-		user, err := models.CreateUser(params.ID, helper.MD5(params.Pw), params.Name, 1)
+		user, err := models.CreateUser(params.ID, params.Pw, params.Name, 1)
 		if err == nil {
 			createUserToken(user, data)
 		} else {
