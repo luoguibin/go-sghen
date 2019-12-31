@@ -11,7 +11,7 @@ import (
 type PeotrySet struct {
 	ID int `gorm:"column:id;primary_key;auto_increment" json:"id"`
 
-	UserID int64 `gorm:"column:user_id" json:"-"`
+	UserID int64 `gorm:"column:user_id" json:"userId"`
 	User   *User `gorm:"foreignkey:user_id" json:"user,omitempty"`
 
 	Name string `gorm:"column:name;size:100" json:"name"`
