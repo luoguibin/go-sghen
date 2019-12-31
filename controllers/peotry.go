@@ -84,7 +84,7 @@ func (c *PeotryController) CreatePeotry() {
 		set, err := models.QueryPeotrySetByID(params.SetID)
 
 		if err == nil {
-			if set.UserID == params.UserID {
+			if set.UserID == 0 || set.UserID == params.UserID {
 				imgDatas := make([]string, 0)
 				fileNames := make([]string, 0)
 				errDatas := make([]string, 0)
@@ -154,7 +154,7 @@ func (c *PeotryController) UpdatePeotry() {
 				if qPeotry.SetID != params.SetID {
 					set, err := models.QueryPeotrySetByID(params.SetID)
 					if err == nil {
-						if set.UserID == params.UserID {
+						if set.UserID == 0 || set.UserID == params.UserID {
 							qPeotry.SetID = params.SetID
 						} else {
 							data[models.STR_CODE] = models.CODE_ERR

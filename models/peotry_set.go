@@ -7,14 +7,14 @@ import (
 	"github.com/tidwall/gjson"
 )
 
-// PeotrySet ...
+// PeotrySet 诗词选集
 type PeotrySet struct {
 	ID int `gorm:"column:id;primary_key;auto_increment" json:"id"`
 
 	UserID int64 `gorm:"column:user_id" json:"-"`
 	User   *User `gorm:"foreignkey:user_id" json:"user,omitempty"`
 
-	Name string `gorm:"column(name);size(100)" json:"name"`
+	Name string `gorm:"column:name;size:100" json:"name"`
 }
 
 // initSystemPeotrySet ...
@@ -72,11 +72,7 @@ func QueryPeotrySetByID(id int) (*PeotrySet, error) {
 // QueryPeotrySetByUID ...
 func QueryPeotrySetByUID(userId int64) ([]PeotrySet, error) {
 	list := make([]PeotrySet, 0)
-	set := &PeotrySet{
-		UserID: userId,
-	}
-
-	err := dbOrmDefault.Model(&PeotrySet{}).Where(set).Find(&list).Error
+	err := dbOrmDefault.Model(&PeotrySet{}).Where("user_id = ? or user_id = 0", userId).Find(&list).Error
 	return list, err
 }
 
