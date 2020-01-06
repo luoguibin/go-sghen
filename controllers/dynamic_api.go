@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	"go-sghen/models"
 	"regexp"
 	"strings"
