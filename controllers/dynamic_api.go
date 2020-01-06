@@ -1,7 +1,10 @@
 package controllers
 
 import (
+	"fmt"
 	"go-sghen/models"
+	"regexp"
+	"strings"
 )
 
 // DynamicAPIController 自定义接口控制器
@@ -121,7 +124,45 @@ func (c *DynamicAPIController) GetDynamicDataByPath() {
 	// fmt.Println("DynamicAPI", suffixPath, ok, dynamicAPI, c.Ctx.Request.URL)
 	if ok {
 		if dynamicAPI.Status == 1 {
-			list, err := models.GetDynamicData(dynamicAPI.Content)
+			sqlStr := dynamicAPI.Content
+			r, _ := regexp.Compile("\\$\\{[0-9a-zA-Z_]{1,}\\}")
+			keyNames := r.FindAllStringSubmatch(sqlStr, -1)
+			if len(keyNames) > 0 {
+				for _, keyName0 := range keyNames {
+					keyName := keyName0[0]
+					orderName := keyName[2 : len(keyName)-1]
+
+					switch orderName {
+					case "limit":
+						limit := c.GetString("limit", "20")
+						sqlStr = strings.Replace(sqlStr, "${limit}", limit, -1)
+					case "offset":
+						offset := c.GetString("offset", "0")
+						sqlStr = strings.Replace(sqlStr, "${offset}", offset, -1)
+					case "id":
+						id := c.GetString("id", "0")
+						if id != "0" {
+							sqlStr = strings.Replace(sqlStr, "${id}", id, -1)
+						}
+					case "datas":
+						datas := c.GetString("datas", "")
+						r, _ := regexp.Compile("[0-9,]+")
+						if len(datas) > 0 && r.MatchString(datas) {
+							// datasStr := strings.Join(datas,  ",")
+							sqlStr = strings.Replace(sqlStr, "${datas}", datas, -1)
+						} else {
+							data[models.STR_CODE] = models.CODE_ERR
+							data[models.STR_MSG] = "操作失败"
+							c.respToJSON(data)
+							return
+						}
+					}
+				}
+			}
+
+			// fmt.Println(sqlStr)
+
+			list, err := models.GetDynamicData(sqlStr)
 			if err != nil {
 				data[models.STR_CODE] = models.CODE_ERR
 				data[models.STR_MSG] = "操作失败"
