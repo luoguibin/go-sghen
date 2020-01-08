@@ -4,8 +4,6 @@ import (
 	"go-sghen/models"
 	"regexp"
 	"strings"
-
-	"fmt"
 )
 
 // DynamicAPIController 自定义接口控制器
