@@ -53,7 +53,7 @@ func (c *DynamicAPIController) UpdateDynamicAPI() {
 			data[models.STR_CODE] = models.CODE_ERR
 			data[models.STR_MSG] = "用户权限不够，禁止更新接口"
 		} else {
-			dynamicAPI, err := models.UpdateDynamicAPI(params.ID, params.SuffixPath, params.Name, params.Comment, params.Content, params.Status)
+			dynamicAPI, err := models.UpdateDynamicAPI(params.ID, params.SuffixPath, params.Name, params.Comment, params.Content, params.Status, 0)
 			if err != nil {
 				data[models.STR_CODE] = models.CODE_ERR
 				data[models.STR_MSG] = "更新接口失败"
@@ -186,6 +186,8 @@ func (c *DynamicAPIController) GetDynamicDataByPath() {
 			// fmt.Println(sqlStr)
 
 			list, err := models.GetDynamicData(sqlStr)
+			dynamicAPI.Count = dynamicAPI.Count + 1
+			models.UpdateDynamicAPI(dynamicAPI.ID, dynamicAPI.SuffixPath, dynamicAPI.Name, dynamicAPI.Comment, dynamicAPI.Content, dynamicAPI.Status, dynamicAPI.Count)
 			if err != nil {
 				data[models.STR_CODE] = models.CODE_ERR
 				data[models.STR_MSG] = "操作失败"

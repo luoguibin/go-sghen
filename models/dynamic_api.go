@@ -16,6 +16,7 @@ type DynamicAPI struct {
 	Content string `gorm:"column:content;type:mediumtext" json:"content"`
 
 	Status int `gorm:"column:status" json:"status"`
+	Count  int  `gorm:"column:count" json:"count"`
 
 	TimeCreate time.Time `gorm:"column:time_create" json:"timeCreate"`
 	TimeUpdate time.Time `gorm:"column:time_update" json:"timeUpdate"`
@@ -41,6 +42,7 @@ func CreateDynamicAPI(suffixPath string, name string, comment string, content st
 		Comment:    comment,
 		Content:    content,
 		Status:     status,
+		Count:		0,
 		UserID:     userID,
 		TimeCreate: timeNow,
 		TimeUpdate: timeNow,
@@ -57,7 +59,7 @@ func CreateDynamicAPI(suffixPath string, name string, comment string, content st
 }
 
 // UpdateDynamicAPI 更新一个接口
-func UpdateDynamicAPI(id int64, suffixPath string, name string, comment string, content string, status int) (*DynamicAPI, error) {
+func UpdateDynamicAPI(id int64, suffixPath string, name string, comment string, content string, status int, count int) (*DynamicAPI, error) {
 	dynamicAPI := &DynamicAPI{
 		ID:         id,
 		SuffixPath: suffixPath,
@@ -68,13 +70,17 @@ func UpdateDynamicAPI(id int64, suffixPath string, name string, comment string, 
 		TimeUpdate: time.Now(),
 	}
 
+	if count > 0 {
+		dynamicAPI.Count = count
+	}
+
 	err := dbOrmDefault.Model(&DynamicAPI{}).Update(dynamicAPI).Error
 	if err != nil {
 		fmt.Println(err)
 		return nil, err
-	} else {
-		initDynamicAPIMap()
 	}
+
+	initDynamicAPIMap()
 	return dynamicAPI, nil
 }
 
