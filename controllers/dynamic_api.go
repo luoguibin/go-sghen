@@ -179,6 +179,11 @@ func (c *DynamicAPIController) GetDynamicDataByPath() {
 							c.respToJSON(data)
 							return
 						}
+					default:
+						data[models.STR_CODE] = models.CODE_ERR
+						data[models.STR_MSG] = "操作失败"
+						c.respToJSON(data)
+						return
 					}
 				}
 			}
