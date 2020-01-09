@@ -62,7 +62,17 @@ func (c *PeotryController) QueryPeotry() {
 
 func (c *PeotryController) QueryPopularPeotry() {
 	data := c.GetResponseData()
-	list, err := models.QueryPopularPeotry()
+	limit, err := c.GetInt("limit", 5)
+	if err != nil {
+		data[models.STR_CODE] = models.CODE_ERR
+		data[models.STR_MSG] = "参数错误"
+		c.respToJSON(data)
+		return
+	}
+	if limit > 20 {
+		limit = 20
+	}
+	list, err := models.QueryPopularPeotry(limit)
 	if err == nil {
 		for _, peotry := range list {
 			comments, e := models.QueryCommentByTypeID(peotry.ID)

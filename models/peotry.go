@@ -137,14 +137,13 @@ func QueryPeotry(userID int64, setId int, page int, limit int, content string) (
 }
 
 // QueryPopularPeotry ...
-func QueryPopularPeotry() ([]*Peotry, error) {
+func QueryPopularPeotry(limit int) ([]*Peotry, error) {
 	comments := make([]*Comment, 0)
-	limit := 10
 
 	db := dbOrmDefault.Model(&Comment{})
 	db = db.Select("type_id, count(*) as repeat_count")
 	db = db.Where("to_id=? AND content=?", -1, "praise")
-	db = db.Group("type_id").Order("repeat_count DESC")
+	db = db.Group("type_id").Having("repeat_count > 1").Order("repeat_count DESC")
 	err := db.Limit(limit).Find(&comments).Error
 
 	if err != nil {
