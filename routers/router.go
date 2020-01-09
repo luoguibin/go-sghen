@@ -45,6 +45,7 @@ func init() {
 			beego.NSRouter("/create", &controllers.PeotryController{}, "post:CreatePeotry"),
 			beego.NSRouter("/update", &controllers.PeotryController{}, "post:UpdatePeotry"),
 			beego.NSRouter("/delete", &controllers.PeotryController{}, "post:DeletePeotry"),
+			beego.NSRouter("/add-temp", &controllers.PeotryController{}, "get:AddTempPeotry"),
 		),
 		beego.NSNamespace("/peotry-set",
 			beego.NSRouter("/query", &controllers.PeotrySetController{}, "get:QueryPeotrySet"),

@@ -54,9 +54,14 @@ func initSystemPeotry(isDefault bool) {
 		content := value.Get("content").String()
 		end := value.Get("end").String()
 		image := value.Get("image").String()
+		// todo: check the image json string if valid
 		CreatePeotry(userId, int(setId), title, time, content, end, image)
 		return true
 	})
+}
+
+func AddTempPeotry() {
+	initSystemPeotry(false)
 }
 
 // CreatePeotry 创建诗词

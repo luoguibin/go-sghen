@@ -19,6 +19,12 @@ type PeotryController struct {
 	BaseController
 }
 
+func (c *PeotryController) AddTempPeotry() {
+	data := c.GetResponseData()
+	models.AddTempPeotry()
+	c.respToJSON(data)
+}
+
 func (c *PeotryController) QueryPeotry() {
 	data := c.GetResponseData()
 	params := &getQueryPeotryParams{}
