@@ -134,14 +134,36 @@ func (c *DynamicAPIController) GetDynamicDataByPath() {
 					switch orderName {
 					case "limit":
 						limit := c.GetString("limit", "20")
-						sqlStr = strings.Replace(sqlStr, "${limit}", limit, -1)
+						r, _ := regexp.Compile("^[0-9]+$")
+						if limit != "0" && r.MatchString(limit) {
+							sqlStr = strings.Replace(sqlStr, "${limit}", limit, -1)
+						} else {
+							data[models.STR_CODE] = models.CODE_ERR
+							data[models.STR_MSG] = "操作失败"
+							c.respToJSON(data)
+							return
+						}
 					case "offset":
 						offset := c.GetString("offset", "0")
-						sqlStr = strings.Replace(sqlStr, "${offset}", offset, -1)
+						r, _ := regexp.Compile("^[0-9]+$")
+						if offset != "0" && r.MatchString(offset) {
+							sqlStr = strings.Replace(sqlStr, "${offset}", offset, -1)
+						} else {
+							data[models.STR_CODE] = models.CODE_ERR
+							data[models.STR_MSG] = "操作失败"
+							c.respToJSON(data)
+							return
+						}
 					case "id":
 						id := c.GetString("id", "0")
-						if id != "0" {
+						r, _ := regexp.Compile("^[0-9]+$")
+						if id != "0" && r.MatchString(id) {
 							sqlStr = strings.Replace(sqlStr, "${id}", id, -1)
+						} else {
+							data[models.STR_CODE] = models.CODE_ERR
+							data[models.STR_MSG] = "操作失败"
+							c.respToJSON(data)
+							return
 						}
 					case "datas":
 						datas := c.GetString("datas", "")
