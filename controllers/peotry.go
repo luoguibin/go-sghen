@@ -19,9 +19,17 @@ type PeotryController struct {
 	BaseController
 }
 
+// AddTempPeotry 添加系统临时诗词
 func (c *PeotryController) AddTempPeotry() {
 	data := c.GetResponseData()
-	models.AddTempPeotry()
+	userLevel := c.Ctx.Input.GetData("level").(int)
+
+	if userLevel < 9 {
+		data[models.STR_CODE] = models.CODE_ERR
+		data[models.STR_MSG] = "用户权限不够"
+	} else {
+		models.AddTempPeotry()
+	}
 	c.respToJSON(data)
 }
 
