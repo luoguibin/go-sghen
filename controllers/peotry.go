@@ -4,13 +4,7 @@ import (
 	"go-sghen/helper"
 	"go-sghen/models"
 
-	"crypto/md5"
-	"encoding/base64"
-	"encoding/hex"
 	"encoding/json"
-	"errors"
-	"io/ioutil"
-	"strconv"
 	"strings"
 )
 
@@ -109,44 +103,26 @@ func (c *PeotryController) CreatePeotry() {
 
 		if err == nil {
 			if set.UserID == 0 || set.UserID == params.UserID {
-				imgDatas := make([]string, 0)
-				fileNames := make([]string, 0)
-				errDatas := make([]string, 0)
+				imageNames := make([]string, 0)
 
-				err := json.Unmarshal(c.Ctx.Input.RequestBody, &imgDatas)
-
-				if err == nil {
-					for index, imgData := range imgDatas {
-						if index > 9 {
+				// 判断是否有图片
+				if len(strings.TrimSpace(params.ImageNames)) > 0 {
+					err := json.Unmarshal([]byte(params.ImageNames), &imageNames)
+					if err == nil {
+						if len(imageNames) > 10 {
 							data[models.STR_MSG] = "诗歌图片超过10张，只保存前10张"
-							break
+							imageNames = imageNames[0:10]
 						}
-						fileName, err := savePeotryimage(imgData)
-
-						if err == nil {
-							fileNames = append(fileNames, fileName)
-						} else {
-							msg := "第" + strconv.Itoa(index+1) + "张图片保存失败：" + err.Error()
-							errDatas = append(errDatas, msg)
-						}
+					} else {
+						data[models.STR_MSG] = "诗词图片列表解析失败"
 					}
-				} else {
-					data[models.STR_MSG] = "请求成功，未添加图片"
 				}
 
-				fileNameByte, _ := json.Marshal(fileNames)
-
 				timeStr := helper.GetNowDateTime()
-				pId, err := models.CreatePeotry(params.UserID, params.SetID, params.Title, timeStr, params.Content, params.End, string(fileNameByte[:]))
+				pId, err := models.CreatePeotry(params.UserID, params.SetID, params.Title, timeStr, params.Content, params.End, params.ImageNames)
 
 				if err == nil {
-					if len(errDatas) == 0 {
-						data[models.STR_DATA] = pId
-					} else {
-						data[models.STR_CODE] = models.CODE_ERR
-						data[models.STR_MSG] = "保存诗歌图片失败"
-						data[models.STR_DATA] = errDatas
-					}
+					data[models.STR_DATA] = pId
 				} else {
 					data[models.STR_CODE] = models.CODE_ERR
 					data[models.STR_MSG] = "创建诗歌失败"
@@ -252,43 +228,4 @@ func (c *PeotryController) DeletePeotry() {
 	}
 
 	c.respToJSON(data)
-}
-
-// savePeotryimage ...
-func savePeotryimage(baseStr string) (string, error) {
-	if len(baseStr) == 0 {
-		return "", errors.New("空数据")
-	}
-
-	baseIndex := strings.Index(baseStr, "base64")
-	if baseIndex < 15 {
-		return "", errors.New("数据错误")
-	}
-
-	format := baseStr[11 : baseIndex-1]
-
-	data, err := base64.StdEncoding.DecodeString(baseStr[baseIndex+7:])
-	if err != nil {
-		return "", err
-	}
-
-	path := models.MConfig.PathTypeMap["peotry"]
-	isExist, err := helper.PathExists(path)
-	if !isExist {
-		isMade := helper.MkdirAll(path)
-		if !isMade {
-			return "", err
-		}
-	}
-
-	h := md5.New()
-	h.Write([]byte(baseStr))
-	fileRename := hex.EncodeToString(h.Sum(nil))
-	fileName := fileRename + "." + format
-	err2 := ioutil.WriteFile(path+fileName, data, 0666)
-	if err2 != nil {
-		return "", err2
-	}
-
-	return fileName, nil
 }

@@ -3,8 +3,6 @@ package controllers
 import (
 	"crypto/md5"
 	"encoding/hex"
-	"encoding/json"
-	"errors"
 	"go-sghen/helper"
 	"go-sghen/models"
 	"io"
@@ -18,11 +16,12 @@ type FileUploaderController struct {
 	BaseController
 }
 
-// FileUpload ...
+// FileUpload 文件上传
 func (c *FileUploaderController) FileUpload() {
 	data := c.GetResponseData()
 
-	// 上传的文件存储在maxMemory大小的内存里面，如果文件大小超过了maxMemory，那么剩下的部分将存储在系统的临时文件中
+	// 上传的文件存储在maxMemory大小的内存里面
+	// 如果文件大小超过了maxMemory，那么剩下的部分将存储在系统的临时文件中
 	c.Ctx.Request.ParseMultipartForm(32 << 20)
 	// c.GetFile("file")	// 单文件
 	// contentType := c.Ctx.Request.Header.Get("Content-Type")
@@ -31,12 +30,11 @@ func (c *FileUploaderController) FileUpload() {
 		data[models.STR_CODE] = models.CODE_ERR
 		data[models.STR_MSG] = "获取上传文件列表失败"
 		c.respToJSON(data)
+		return
 	}
 	fileHeaders, err := c.GetFiles("file") // 多文件
 
 	if err != nil {
-		// fmt.Println("file upload getFiles() err")
-		// fmt.Println(err)
 		data[models.STR_CODE] = models.CODE_ERR
 		data[models.STR_MSG] = "获取上传文件列表失败"
 		c.respToJSON(data)
@@ -51,7 +49,7 @@ func (c *FileUploaderController) FileUpload() {
 
 	path, ok := models.MConfig.PathTypeMap[pathType]
 	if !ok {
-		path = models.MConfig.PathTypeMap["peotry"]
+		path = models.MConfig.PathTypeMap["normal"]
 	}
 
 	isExist, _ := helper.PathExists(path)
@@ -59,7 +57,7 @@ func (c *FileUploaderController) FileUpload() {
 		isMade := helper.MkdirAll(path)
 		if !isMade {
 			data[models.STR_CODE] = models.CODE_ERR
-			data[models.STR_MSG] = "创建文件夹失败"
+			data[models.STR_MSG] = "系统内部错误"
 			c.respToJSON(data)
 			return
 		}
@@ -90,7 +88,6 @@ func (c *FileUploaderController) FileUpload() {
 	}
 
 	list := make([]string, 0)
-
 	for index, v := range fileHeaders {
 		fileName := v.Filename
 		file, err := v.Open()
@@ -138,45 +135,7 @@ func (c *FileUploaderController) FileUpload() {
 			return
 		}
 	}
-
-	if pathType == "peotry" {
-		id, err := c.GetInt64("id")
-		userId := c.Ctx.Input.GetData("userId").(int64)
-		if err == nil && userId > 0 {
-			err := checkSavePeotryImage(id, userId, list)
-			if err != nil {
-				data[models.STR_CODE] = models.CODE_ERR
-				data[models.STR_MSG] = err.Error()
-				c.respToJSON(data)
-				return
-			}
-		}
-	}
 	data[models.STR_DATA] = list
 
 	c.respToJSON(data)
-}
-
-// checkSavePeotryImage ...
-func checkSavePeotryImage(id int64, userId int64, imgList []string) error {
-	peotry, err := models.QueryPeotryByID(id)
-	if err == nil {
-		if peotry.UserID == userId {
-			l := len(imgList)
-			imgsByte, err := json.Marshal(imgList)
-			if err != nil {
-				return err
-			}
-
-			err = models.SavePeotryImage(id, string(imgsByte[:]), l)
-			if err != nil {
-				return errors.New("更新诗歌的图片失败")
-			} else {
-				return err
-			}
-		} else {
-			return errors.New("禁止更新非本人创建的诗歌的图片")
-		}
-	}
-	return errors.New("未获取到对应id的诗歌")
 }

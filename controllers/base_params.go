@@ -111,6 +111,7 @@ type getCreatePeotryParams struct {
 	SetID   int    `form:"setId" valid:"Required"`
 	Title   string `form:"title"`
 	Content string `form:"content" valid:"Required"`
+	ImageNames  string `form:"imageNames"`
 	End     string `form:"end"`
 }
 
