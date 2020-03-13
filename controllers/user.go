@@ -64,7 +64,7 @@ func (c *UserController) LoginUser() {
 				smsErr := checkSmsCode(params.ID, params.Code)
 				if smsErr != nil {
 					data[models.STR_CODE] = models.CODE_ERR
-					data[models.STR_MSG] = err.Error()
+					data[models.STR_MSG] = smsErr.Error()
 					c.respToJSON(data)
 					return
 				}
