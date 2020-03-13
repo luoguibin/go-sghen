@@ -23,41 +23,12 @@ func (c *UserController) CreateUser() {
 	params := &getCreateUserParams{}
 
 	if c.CheckFormParams(data, params) {
-		if models.MConfig.SGHENENV == "prod" {
-			smsCode, err := models.QuerySmsCode(params.ID)
-			if err != nil && !strings.Contains(err.Error(), "record not found") {
-				data[models.STR_CODE] = models.CODE_ERR
-				data[models.STR_MSG] = "验证码服务错误"
-				c.respToJSON(data)
-				return
-			}
-			if smsCode == nil {
-				data[models.STR_CODE] = models.CODE_ERR
-				data[models.STR_MSG] = "请重新发送验证码"
-				c.respToJSON(data)
-				return
-			}
-			if smsCode.Code != params.Code {
-				data[models.STR_CODE] = models.CODE_ERR
-				if smsCode.CountRead >= 2 {
-					data[models.STR_MSG] = "验证码错误，请重新发送"
-					models.DeleteSmsCode(smsCode.ID)
-				} else {
-					data[models.STR_MSG] = "验证码错误"
-					smsCode.CountRead = smsCode.CountRead + 1
-					models.SaveSmsCode(smsCode.ID, smsCode.Code, smsCode.CountRead, smsCode.TimeLife)
-				}
-				c.respToJSON(data)
-				return
-			}
-			timeVal := helper.GetMillisecond() - smsCode.TimeCreate
-			if timeVal < 0 || timeVal > smsCode.TimeLife {
-				data[models.STR_CODE] = models.CODE_ERR
-				data[models.STR_MSG] = "验证码已过有效期"
-				c.respToJSON(data)
-				return
-			}
-			models.DeleteSmsCode(params.ID)
+		err := checkSmsCode(params.ID, params.Code)
+		if err != nil {
+			data[models.STR_CODE] = models.CODE_ERR
+			data[models.STR_MSG] = err.Error()
+			c.respToJSON(data)
+			return
 		}
 
 		user, err := models.CreateUser(params.ID, params.Pw, params.Name, 1)
@@ -87,7 +58,20 @@ func (c *UserController) LoginUser() {
 		user, err := models.QueryUser(params.ID)
 
 		if err == nil {
-			compare := strings.Compare(user.Password, params.Pw)
+			compare := -1
+			// 优先判断是否启动验证码登陆
+			if len(strings.TrimSpace(params.Code)) > 0 {
+				smsErr := checkSmsCode(params.ID, params.Code)
+				if smsErr != nil {
+					data[models.STR_CODE] = models.CODE_ERR
+					data[models.STR_MSG] = err.Error()
+					c.respToJSON(data)
+					return
+				}
+				compare = 0
+			} else {
+				compare = strings.Compare(user.Password, params.Pw)
+			}
 
 			if compare == 0 {
 				createUserToken(user, data)
@@ -97,7 +81,7 @@ func (c *UserController) LoginUser() {
 			}
 		} else {
 			data[models.STR_CODE] = models.CODE_ERR
-			data[models.STR_MSG] = "用户账号或密码错误"
+			data[models.STR_MSG] = "用户账号错误或用户不存在"
 		}
 	}
 	c.respToJSON(data)
@@ -196,6 +180,35 @@ func (c *UserController) DeleteUser() {
 	}
 
 	c.respToJSON(data)
+}
+
+// checkSmsCode prod模式校验验证码
+func checkSmsCode(ID int64, Code string) error {
+	if models.MConfig.SGHENENV != "prod" {
+		return nil
+	}
+	smsCode, err := models.QuerySmsCode(ID)
+	if err != nil && !strings.Contains(err.Error(), "record not found") {
+		return errors.New("验证码服务错误")
+	}
+	if smsCode == nil {
+		return errors.New("请重新发送验证码")
+	}
+	if smsCode.Code != Code {
+		if smsCode.CountRead >= 2 {
+			models.DeleteSmsCode(smsCode.ID)
+			return errors.New("验证码错误，请重新发送")
+		}
+		smsCode.CountRead = smsCode.CountRead + 1
+		models.SaveSmsCode(smsCode.ID, smsCode.Code, smsCode.CountRead, smsCode.TimeLife)
+		return errors.New("验证码错误")
+	}
+	timeVal := helper.GetMillisecond() - smsCode.TimeCreate
+	if timeVal < 0 || timeVal > smsCode.TimeLife {
+		return errors.New("验证码已过有效期")
+	}
+	models.DeleteSmsCode(ID)
+	return nil
 }
 
 // createUserToken 创建用户token，基于json web token
