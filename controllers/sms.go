@@ -3,6 +3,7 @@ package controllers
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"go-sghen/helper"
 	"go-sghen/models"
 	"io/ioutil"
@@ -47,16 +48,6 @@ func (c *SmsController) SendSmsCode() {
 			return
 		}
 
-		sdkAppID := models.MConfig.SmsSdkAppID
-		appKey := models.MConfig.SmsAppKey
-		if sdkAppID == 0 || len(appKey) == 0 {
-			data[models.STR_CODE] = models.CODE_ERR
-			data[models.STR_MSG] = "验证码服务尚未运行"
-			models.SaveSmsCode(params.Phone, "1234", 0, 2*60*1000)
-			c.respToJSON(data)
-			return
-		}
-
 		smsCode, err := models.QuerySmsCode(params.Phone)
 		if err != nil && !strings.Contains(err.Error(), "record not found") {
 			data[models.STR_CODE] = models.CODE_ERR
@@ -75,56 +66,63 @@ func (c *SmsController) SendSmsCode() {
 			}
 		}
 		models.SaveSmsCode(params.Phone, "", 0, 2*60*1000)
-
-		random := helper.GetMicrosecond()
-		time := time.Now().Unix()
 		codeStr := helper.RandomNum4()
-		text := "appkey=" + appKey + "&random=" + strconv.FormatInt(random, 10) + "&time=" + strconv.FormatInt(time, 10) + "&mobile=" + strconv.FormatInt(params.Phone, 10)
-		url := "https://yun.tim.qq.com/v5/tlssmssvr/sendsms?sdkappid=" + strconv.Itoa(sdkAppID) + "&random=" + strconv.FormatInt(random, 10)
-
-		requestbody := make(map[string]interface{})
-		tel := make(map[string]interface{})
-		requestbody["params"] = []string{codeStr}
-		requestbody["sig"] = helper.Sha256(text)
-		requestbody["sign"] = "Sghen三行"
-		tel["mobile"] = strconv.FormatInt(params.Phone, 10)
-		tel["nationcode"] = "86"
-		requestbody["tel"] = tel
-		requestbody["time"] = time
-		requestbody["tpl_id"] = 442430
-
-		bytesData, err := json.Marshal(requestbody)
-
-		resp, err := http.Post(url, "application/json", bytes.NewReader(bytesData))
-		if err != nil {
-			models.MConfig.MLogger.Error(err.Error())
-
+		smsErr := sendSmsCode(params.Phone, codeStr)
+		if smsErr != nil {
 			data[models.STR_CODE] = models.CODE_ERR
-			data[models.STR_MSG] = "验证码服务掉线"
-			c.respToJSON(data)
-			models.DeleteSmsCode(params.Phone)
-			return
-		}
-		defer resp.Body.Close()
-		body, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			data[models.STR_CODE] = models.CODE_ERR
-			data[models.STR_MSG] = err.Error()
+			data[models.STR_MSG] = smsErr.Error()
 		} else {
-			var smsResult SmsResult
-			json.Unmarshal(body, &smsResult)
-
-			if smsResult.Result != 0 {
+			_, err := models.SaveSmsCode(params.Phone, codeStr, 0, 2*60*1000)
+			if err != nil {
 				data[models.STR_CODE] = models.CODE_ERR
-				data[models.STR_MSG] = smsResult.Errmsg
-			} else {
-				_, err := models.SaveSmsCode(params.Phone, codeStr, 0, 2*60*1000)
-				if err != nil {
-					data[models.STR_CODE] = models.CODE_ERR
-					data[models.STR_MSG] = "验证码服务错误"
-				}
+				data[models.STR_MSG] = "验证码服务错误"
 			}
 		}
 	}
 	c.respToJSON(data)
+}
+
+func sendSmsCode(phone int64, codeStr string) error {
+	sdkAppID := models.MConfig.SmsSdkAppID
+	appKey := models.MConfig.SmsAppKey
+	if sdkAppID == 0 || len(appKey) == 0 {
+		return errors.New("验证码服务尚未运行")
+	}
+
+	random := helper.GetMicrosecond()
+	time := time.Now().Unix()
+
+	text := "appkey=" + appKey + "&random=" + strconv.FormatInt(random, 10) + "&time=" + strconv.FormatInt(time, 10) + "&mobile=" + strconv.FormatInt(phone, 10)
+	url := "https://yun.tim.qq.com/v5/tlssmssvr/sendsms?sdkappid=" + strconv.Itoa(sdkAppID) + "&random=" + strconv.FormatInt(random, 10)
+
+	requestbody := make(map[string]interface{})
+	tel := make(map[string]interface{})
+	requestbody["params"] = []string{codeStr}
+	requestbody["sig"] = helper.Sha256(text)
+	requestbody["sign"] = "Sghen三行"
+	tel["mobile"] = strconv.FormatInt(phone, 10)
+	tel["nationcode"] = "86"
+	requestbody["tel"] = tel
+	requestbody["time"] = time
+	requestbody["tpl_id"] = 442430
+
+	bytesData, err := json.Marshal(requestbody)
+
+	resp, err := http.Post(url, "application/json", bytes.NewReader(bytesData))
+	if err != nil {
+		models.MConfig.MLogger.Error(err.Error())
+		return errors.New("验证码服务掉线")
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+	var smsResult SmsResult
+	json.Unmarshal(body, &smsResult)
+
+	if smsResult.Result != 0 {
+		return errors.New(smsResult.Errmsg)
+	}
+	return nil
 }

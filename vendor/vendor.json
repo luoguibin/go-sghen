@@ -111,6 +111,12 @@
 			"revisionTime": "2018-03-08T03:36:59Z"
 		},
 		{
+			"checksumSHA1": "0ImTDcqf5YojFuGU7lT5Xnn4f70=",
+			"path": "github.com/robfig/cron",
+			"revision": "208b4f76bfdd237a814619382b19c85097fa9142",
+			"revisionTime": "2020-03-16T17:39:45Z"
+		},
+		{
 			"checksumSHA1": "+aq6vfX37dIMIqeWaE5tgf0v3fE=",
 			"path": "github.com/tidwall/gjson",
 			"revision": "1e3f6aeaa5bad08d777ea7807b279a07885dd8b2",

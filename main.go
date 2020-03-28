@@ -1,6 +1,7 @@
 package main
 
 import (
+	"go-sghen/controllers"
 	"go-sghen/models"
 	_ "go-sghen/routers"
 
@@ -11,7 +12,7 @@ import (
 func main() {
 	beego.SetStaticPath("file", "./file")
 	// os.Setenv("ZONEINFO", "./lib/time/zoneinfo.zip")
-
+	controllers.InitTask()
 	models.InitGorm()
 	db := models.GetDb()
 	defer db.Close()
