@@ -15,45 +15,13 @@ func (c *CommentController) CreateComment() {
 	params := &getCreateCommentParams{}
 
 	if c.CheckFormParams(data, params) {
-		if params.ToID < 0 {
-			comment, _ := models.QueryCommentByTypeIDFromID(params.TypeID, params.FromID, params.ToID)
+		comment, err := models.CreateComment(params.Type, params.TypeID, params.FromID, params.ToID, params.Content)
 
-			if comment == nil {
-				comment = &models.Comment{
-					Type:    params.Type,
-					TypeID:  params.TypeID,
-					FromID:  params.FromID,
-					ToID:    params.ToID,
-					Content: params.Content,
-				}
-				comment, err := models.CreateComment(params.Type, params.TypeID, params.FromID, params.ToID, params.Content)
-
-				if err == nil {
-					data[models.STR_DATA] = comment.ID
-				} else {
-					data[models.STR_CODE] = models.CODE_ERR
-					data[models.STR_MSG] = "操作失败"
-				}
-			} else {
-				comment.Content = params.Content
-				err := models.SaveComment(comment)
-
-				if err != nil {
-					data[models.STR_CODE] = models.CODE_ERR
-					data[models.STR_MSG] = "操作失败"
-				} else {
-					data[models.STR_DATA] = comment.ID
-				}
-			}
+		if err == nil {
+			data[models.STR_DATA] = comment
 		} else {
-			comment, err := models.CreateComment(params.Type, params.TypeID, params.FromID, params.ToID, params.Content)
-
-			if err == nil {
-				data[models.STR_DATA] = comment.ID
-			} else {
-				data[models.STR_CODE] = models.CODE_ERR
-				data[models.STR_MSG] = "评论提交失败"
-			}
+			data[models.STR_CODE] = models.CODE_ERR
+			data[models.STR_MSG] = "评论提交失败"
 		}
 	}
 

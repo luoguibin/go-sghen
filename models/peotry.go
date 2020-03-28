@@ -54,9 +54,14 @@ func initSystemPeotry(isDefault bool) {
 		content := value.Get("content").String()
 		end := value.Get("end").String()
 		image := value.Get("image").String()
+		// todo: check the image json string if valid
 		CreatePeotry(userId, int(setId), title, time, content, end, image)
 		return true
 	})
+}
+
+func AddTempPeotry() {
+	initSystemPeotry(false)
 }
 
 // CreatePeotry 创建诗词
@@ -137,14 +142,13 @@ func QueryPeotry(userID int64, setId int, page int, limit int, content string) (
 }
 
 // QueryPopularPeotry ...
-func QueryPopularPeotry() ([]*Peotry, error) {
+func QueryPopularPeotry(limit int) ([]*Peotry, error) {
 	comments := make([]*Comment, 0)
-	limit := 10
 
 	db := dbOrmDefault.Model(&Comment{})
 	db = db.Select("type_id, count(*) as repeat_count")
 	db = db.Where("to_id=? AND content=?", -1, "praise")
-	db = db.Group("type_id").Order("repeat_count DESC")
+	db = db.Group("type_id").Having("repeat_count > 1").Order("repeat_count DESC")
 	err := db.Limit(limit).Find(&comments).Error
 
 	if err != nil {

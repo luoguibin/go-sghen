@@ -9,6 +9,7 @@ type PeotrySetController struct {
 	BaseController
 }
 
+// 查询用户的选集和系统默认选集
 func (c *PeotrySetController) QueryPeotrySet() {
 	data := c.GetResponseData()
 	params := &getQueryPoetrySetParams{}
@@ -24,12 +25,6 @@ func (c *PeotrySetController) QueryPeotrySet() {
 		}
 	}
 
-	c.respToJSON(data)
-}
-
-// QueryPopularPeotrySet 获取热门选集
-func (c *PeotrySetController) QueryPopularPeotrySet() {
-	data := c.GetResponseData()
 	c.respToJSON(data)
 }
 

@@ -40,13 +40,14 @@ func (c *SmsController) SendSmsCode() {
 			return
 		}
 
-		user, _ := models.QueryUser(params.Phone)
-		if user != nil {
-			data[models.STR_CODE] = models.CODE_ERR
-			data[models.STR_MSG] = "该账号已注册"
-			c.respToJSON(data)
-			return
-		}
+		// 注释该段代码，改为通用验证
+		// user, _ := models.QueryUser(params.Phone)
+		// if user != nil {
+		// 	data[models.STR_CODE] = models.CODE_ERR
+		// 	data[models.STR_MSG] = "该账号已注册"
+		// 	c.respToJSON(data)
+		// 	return
+		// }
 
 		smsCode, err := models.QuerySmsCode(params.Phone)
 		if err != nil && !strings.Contains(err.Error(), "record not found") {
