@@ -87,6 +87,7 @@ func (c *FileUploaderController) FileUpload() {
 		}
 	}
 
+	// 遍历文件
 	list := make([]string, 0)
 	for index, v := range fileHeaders {
 		fileName := v.Filename
@@ -94,10 +95,12 @@ func (c *FileUploaderController) FileUpload() {
 		defer file.Close()
 
 		if err == nil {
+			// 设置文件名字
 			outputFilePath := path + fileName
 			writer, err := os.OpenFile(outputFilePath, os.O_WRONLY|os.O_CREATE, 0666)
 
 			if err == nil {
+				// 保存文件内容
 				io.Copy(writer, file)
 				writer.Close()
 				file.Seek(0, os.SEEK_SET)
