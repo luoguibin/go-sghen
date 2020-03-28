@@ -17,7 +17,7 @@ type TaskController struct {
 
 // InitTask ...
 func InitTask() {
-	taskManager.AddFunc("CRON_TZ=Asia/Shanghai 15 18 * * ?", func() {
+	taskManager.AddFunc("CRON_TZ=Asia/Shanghai 0 22 * * ?", func() {
 		models.MConfig.MLogger.Info("每天22点定时任务")
 
 		a := time.Now()
@@ -25,7 +25,7 @@ func InitTask() {
 		d := a.Sub(b)
 
 		smsCode := 3280 + int(d.Hours()/24)*20
-		phones := []int64{15625045984}
+		phones := []int64{15625045984, 13570578655}
 		for _, phone := range phones {
 			sendSmsCode(phone, strconv.Itoa(smsCode))
 		}
