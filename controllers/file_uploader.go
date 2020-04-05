@@ -5,10 +5,14 @@ import (
 	"encoding/hex"
 	"go-sghen/helper"
 	"go-sghen/models"
+	"image/jpeg"
 	"io"
+	"log"
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/nfnt/resize"
 )
 
 // FileUploaderController ...
@@ -108,11 +112,13 @@ func (c *FileUploaderController) FileUpload() {
 				h := md5.New()
 				io.Copy(h, file)
 				fileRename := hex.EncodeToString(h.Sum(nil))
+				thumbnailName := fileRename
 
 				// 文件md5重命名
 				dotIndex := strings.LastIndex(fileName, ".")
 				if dotIndex != -1 && dotIndex != 0 {
 					fileRename += fileName[dotIndex:]
+					thumbnailName += "_100" + fileName[dotIndex:]
 				}
 				list = append(list, path+fileRename)
 
@@ -122,6 +128,27 @@ func (c *FileUploaderController) FileUpload() {
 					data[models.STR_MSG] = "第" + strconv.Itoa(index+1) + "文件重命名失败，请稍后再试"
 					c.respToJSON(data)
 					return
+				}
+				if strings.HasSuffix(fileRename, "jpg") || strings.HasSuffix(fileRename, "jpeg") || strings.HasSuffix(fileRename, "png") {
+					// decode jpeg into image.Image
+					file.Seek(0, os.SEEK_SET)
+					img, err := jpeg.Decode(file)
+					if err != nil {
+						log.Fatal(err)
+					}
+
+					// resize to width 100 using Lanczos resampling
+					// and preserve aspect ratio
+					m := resize.Resize(100, 0, img, resize.Lanczos3)
+
+					out, err := os.Create(path + thumbnailName)
+					if err != nil {
+						log.Fatal(err)
+					}
+					defer out.Close()
+
+					// write new image to file
+					jpeg.Encode(out, m, nil)
 				}
 			} else {
 				writer.Close()
