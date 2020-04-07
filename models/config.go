@@ -48,6 +48,7 @@ var (
 	STR_DETAIL = "detail"
 	STR_DATA   = "data"
 	STR_TOKEN  = "token"
+	STR_SGHEN_SESSION = "sghen-session-id"
 
 	CODE_OK        = 1000
 	CODE_ERR       = 1001

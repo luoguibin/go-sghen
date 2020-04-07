@@ -5,10 +5,12 @@ import (
 	"fmt"
 	"go-sghen/helper"
 	"go-sghen/models"
+	"net/http"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/astaxie/beego/context"
 	jwt "github.com/dgrijalva/jwt-go"
 )
 
@@ -33,7 +35,7 @@ func (c *UserController) CreateUser() {
 
 		user, err := models.CreateUser(params.ID, params.Pw, params.Name, 1)
 		if err == nil {
-			createUserToken(user, data)
+			createUserToken(c.Ctx, user, data)
 		} else {
 			data[models.STR_CODE] = models.CODE_ERR
 			errStr := err.Error()
@@ -74,7 +76,7 @@ func (c *UserController) LoginUser() {
 			}
 
 			if compare == 0 {
-				createUserToken(user, data)
+				createUserToken(c.Ctx, user, data)
 			} else {
 				data[models.STR_CODE] = models.CODE_ERR
 				data[models.STR_MSG] = "用户账号或密码错误"
@@ -212,7 +214,7 @@ func checkSmsCode(ID int64, Code string) error {
 }
 
 // createUserToken 创建用户token，基于json web token
-func createUserToken(user *models.User, data ResponseData) {
+func createUserToken(c *context.Context, user *models.User, data ResponseData) {
 	token := jwt.New(jwt.SigningMethodHS256)
 	claims := make(jwt.MapClaims)
 	claims["exp"] = time.Now().Add(time.Hour * time.Duration(24)).Unix()
@@ -230,7 +232,14 @@ func createUserToken(user *models.User, data ResponseData) {
 		return
 	}
 
-	user.Token = tokenString
+	uidCookie := &http.Cookie{
+		Name:     models.STR_SGHEN_SESSION,
+		Value:    tokenString,
+		HttpOnly: true,
+	}
+	http.SetCookie(c.ResponseWriter, uidCookie)
+
+	user.Token = "test-token" // tokenString
 	data[models.STR_DATA] = user
 }
 

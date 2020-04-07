@@ -2,8 +2,8 @@ package controllers
 
 import (
 	"fmt"
-	"go-sghen/models"
 	"go-sghen/helper"
+	"go-sghen/models"
 	"strconv"
 	"strings"
 
@@ -77,17 +77,17 @@ func (c *BaseController) GetResponseData() ResponseData {
 // CheckAccessToken 检测用户身份，通过后将相关信息写入Input对象
 func CheckAccessToken(ctx *context.Context) {
 	datas := ResponseData{}
-	token := ctx.Request.Header.Get("Authorization")
-
-	if len(token) <= 0 {
+	tokenCookie, err := ctx.Request.Cookie(models.STR_SGHEN_SESSION)
+	if err != nil {
 		datas[models.STR_CODE] = models.CODE_ERR
-		datas[models.STR_MSG] = "token不能为空"
+		datas[models.STR_MSG] = "会话ID为空"
 		ctx.ResponseWriter.Header().Set("Access-Control-Allow-Origin", "*")
 		ctx.Output.JSON(datas, false, true)
 		return
 	}
 
-	claims, err := CheckUserToken(token)
+	// token := ctx.Request.Header.Get("Authorization")
+	claims, err := CheckUserToken(tokenCookie.Value)
 	if err != nil {
 		datas[models.STR_CODE] = models.CODE_ERR_TOKEN
 		errStr := err.Error()

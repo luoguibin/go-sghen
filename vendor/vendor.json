@@ -123,6 +123,12 @@
 			"revisionTime": "2020-03-16T17:39:45Z"
 		},
 		{
+			"checksumSHA1": "3JBPxvZn52LORHX9F382xpkt1sA=",
+			"path": "github.com/satori/go.uuid",
+			"revision": "b2ce2384e17bbe0c6d34077efa39dbab3e09123b",
+			"revisionTime": "2018-10-28T12:50:25Z"
+		},
+		{
 			"checksumSHA1": "+aq6vfX37dIMIqeWaE5tgf0v3fE=",
 			"path": "github.com/tidwall/gjson",
 			"revision": "1e3f6aeaa5bad08d777ea7807b279a07885dd8b2",
