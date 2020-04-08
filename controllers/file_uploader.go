@@ -5,7 +5,9 @@ import (
 	"encoding/hex"
 	"go-sghen/helper"
 	"go-sghen/models"
+	"image"
 	"image/jpeg"
+	"image/png"
 	"io"
 	"log"
 	"os"
@@ -132,14 +134,20 @@ func (c *FileUploaderController) FileUpload() {
 				if strings.HasSuffix(fileRename, "jpg") || strings.HasSuffix(fileRename, "jpeg") || strings.HasSuffix(fileRename, "png") {
 					// decode jpeg into image.Image
 					file.Seek(0, os.SEEK_SET)
-					img, err := jpeg.Decode(file)
+					var img image.Image
+					if strings.HasSuffix(fileRename, "png") {
+						img, err = png.Decode(file)
+					} else {
+						img, err = jpeg.Decode(file)
+					}
+
 					if err != nil {
 						log.Fatal(err)
 					}
 
 					// resize to width 100 using Lanczos resampling
 					// and preserve aspect ratio
-					m := resize.Resize(100, 0, img, resize.Lanczos3)
+					m := resize.Resize(100, 0, img, resize.NearestNeighbor)
 
 					out, err := os.Create(path + thumbnailName)
 					if err != nil {
@@ -148,7 +156,11 @@ func (c *FileUploaderController) FileUpload() {
 					defer out.Close()
 
 					// write new image to file
-					jpeg.Encode(out, m, nil)
+					if strings.HasSuffix(fileRename, "png") {
+						png.Encode(out, m)
+					} else {
+						jpeg.Encode(out, m, nil)
+					}
 				}
 			} else {
 				writer.Close()
