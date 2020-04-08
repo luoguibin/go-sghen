@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"go-sghen/helper"
 	"go-sghen/models"
-	"net/http"
 	"strconv"
 	"strings"
 	"time"
@@ -232,14 +231,14 @@ func createUserToken(c *context.Context, user *models.User, data ResponseData) {
 		return
 	}
 
-	uidCookie := &http.Cookie{
-		Name:     models.STR_SGHEN_SESSION,
-		Value:    tokenString,
-		HttpOnly: true,
-	}
-	http.SetCookie(c.ResponseWriter, uidCookie)
+	// uidCookie := &http.Cookie{
+	// 	Name:     models.STR_SGHEN_SESSION,
+	// 	Value:    tokenString,
+	// 	HttpOnly: true,
+	// }
+	// http.SetCookie(c.ResponseWriter, uidCookie)
 
-	user.Token = "test-token" // tokenString
+	user.Token = tokenString
 	data[models.STR_DATA] = user
 }
 
