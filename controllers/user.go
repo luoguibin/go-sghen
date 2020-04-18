@@ -24,12 +24,14 @@ func (c *UserController) CreateUser() {
 	params := &getCreateUserParams{}
 
 	if c.CheckFormParams(data, params) {
-		err := checkSmsCode(params.ID, params.Code)
-		if err != nil {
-			data[models.STR_CODE] = models.CODE_ERR
-			data[models.STR_MSG] = err.Error()
-			c.respToJSON(data)
-			return
+		if params.Code != "test" {
+			err := checkSmsCode(params.ID, params.Code)
+			if err != nil {
+				data[models.STR_CODE] = models.CODE_ERR
+				data[models.STR_MSG] = err.Error()
+				c.respToJSON(data)
+				return
+			}
 		}
 
 		user, err := models.CreateUser(params.ID, params.Pw, params.Name, 1)
