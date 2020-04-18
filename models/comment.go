@@ -24,7 +24,7 @@ func (c Comment) TableName() string {
 func initSystemComment() {
 	tx := dbOrmDefault.Model(&Comment{}).Begin()
 	tx.Create(Comment{
-		ID:         helper.GetMicrosecond(),
+		ID:         helper.NewUinqueID(),
 		Type:       0,
 		TypeID:     0,
 		FromID:     0,
@@ -37,9 +37,8 @@ func initSystemComment() {
 
 // CreateComment ...
 func CreateComment(Type int, typeID int64, fromID int64, toID int64, content string) (*Comment, error) {
-	curTime := helper.GetMicrosecond()
 	comment := &Comment{
-		ID:         curTime,
+		ID:         helper.NewUinqueID(),
 		Type:       Type,
 		TypeID:     typeID,
 		FromID:     fromID,

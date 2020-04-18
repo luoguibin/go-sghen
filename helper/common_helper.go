@@ -3,9 +3,13 @@ package helper
 import (
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/astaxie/beego/context"
 )
+
+// 初始化ID基数，若服务重启，会产生ID的冲突bug
+var InitMicrosecond = time.Now().UnixNano() / 1e3
 
 //IsPhone 判断是否为手机号码
 func IsPhone(phone string) bool {
@@ -25,4 +29,10 @@ func GetRequestIP(ctx *context.Context) string {
 		ip = "127.0.0.1"
 	}
 	return ip
+}
+
+// NewUinqueID 获取唯一ID
+func NewUinqueID() int64 {
+	InitMicrosecond = InitMicrosecond + 1
+	return InitMicrosecond
 }

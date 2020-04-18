@@ -40,7 +40,7 @@ func (c *CommentController) QueryComments() {
 			data[models.STR_DATA] = comments
 		} else {
 			data[models.STR_CODE] = models.CODE_ERR
-			data[models.STR_MSG] = "评论提交失败"
+			data[models.STR_MSG] = "评论查询失败"
 		}
 	}
 	c.respToJSON(data)

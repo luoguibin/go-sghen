@@ -66,9 +66,9 @@ func AddTempPeotry() {
 
 // CreatePeotry 创建诗词
 func CreatePeotry(userId int64, setId int, title string, time string, content string, end string, images string) (int64, error) {
-	curTime := helper.GetMicrosecond()
+	id := helper.NewUinqueID()
 	peotry := Peotry{
-		ID:         curTime,
+		ID:         id,
 		UserID:     userId,
 		SetID:      setId,
 		Title:      title,
@@ -87,9 +87,9 @@ func CreatePeotry(userId int64, setId int, title string, time string, content st
 	imgs := res.Array()
 	l := len(imgs)
 	if l > 0 {
-		SavePeotryImage(curTime, images, l)
+		SavePeotryImage(id, images, l)
 	}
-	return curTime, nil
+	return id, nil
 }
 
 // UpdatePeotry ...

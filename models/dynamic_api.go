@@ -32,7 +32,7 @@ func (u DynamicAPI) TableName() string {
 
 // CreateDynamicAPI 创建一个接口
 func CreateDynamicAPI(suffixPath string, name string, comment string, content string, status int, userID int64) (*DynamicAPI, error) {
-	id := helper.GetMicrosecond()
+	id := helper.NewUinqueID()
 	timeNow := time.Now()
 
 	dynamicAPI := &DynamicAPI{
