@@ -35,32 +35,33 @@ func (params *getCommonParams) Valid(v *validation.Validation) {
 
 // user create和login共用输入结构体
 type getCreateUserParams struct {
-	ID   int64  `form:"id" valid:"Required"`
-	Pw   string `form:"pw" valid:"Required"`
-	Name string `form:"name"`
-	Code string `form:"code"`
+	Account string `form:"account" valid:"Required"`
+	Pw      string `form:"pw" valid:"Required"`
+	Name    string `form:"name"`
+	Type    int    `form:"type"`
+	Code    string `form:"code"`
 }
 
 func (params *getCreateUserParams) Valid(v *validation.Validation) {
-	if params.ID <= 0 {
-		v.SetError("id", "不能为空")
+	if len(strings.TrimSpace(params.Account)) == 0 {
+		v.SetError("account", "不能为空")
 	} else if len(strings.TrimSpace(params.Pw)) == 0 {
 		v.SetError("pw", "不能为空")
+	} else if params.Type < 0 || params.Type > 1 {
+		v.SetError("type", "账号类型错误")
 	}
 }
 
 // user update和delete共用输入结构体
 type getUpdateUserParams struct {
-	ID      int64  `form:"id" json:"id" valid:"Required"`
-	Pw      string `form:"pw" json:"pw"`
-	Name    string `form:"name" json:"name"`
-	IconURL string `form:"iconUrl" json:"iconUrl"`
+	Pw     string `form:"pw" json:"pw"`
+	Name   string `form:"name" json:"name"`
+	Avatar string `form:"avatar" json:"avatar"`
+	Mobile string `form:"mobile" json:"mobile"`
+	Mood   string `form:"mood" json:"mood"`
 }
 
 func (params *getUpdateUserParams) Valid(v *validation.Validation) {
-	if params.ID <= 0 {
-		v.SetError("user id", "不能为空")
-	}
 }
 
 // user query输入结构体
@@ -107,12 +108,12 @@ func (params *getQueryPeotryParams) Valid(v *validation.Validation) {
 
 // peotry create输入结构体
 type getCreatePeotryParams struct {
-	UserID  int64  `form:"userId" valid:"Required"`
-	SetID   int    `form:"setId" valid:"Required"`
-	Title   string `form:"title"`
-	Content string `form:"content" valid:"Required"`
-	ImageNames  string `form:"imageNames"`
-	End     string `form:"end"`
+	UserID     int64  `form:"userId" valid:"Required"`
+	SetID      int    `form:"setId" valid:"Required"`
+	Title      string `form:"title"`
+	Content    string `form:"content" valid:"Required"`
+	ImageNames string `form:"imageNames"`
+	End        string `form:"end"`
 }
 
 func (params *getCreatePeotryParams) Valid(v *validation.Validation) {
