@@ -43,16 +43,17 @@ var (
 )
 
 var (
-	STR_CODE   = "code"
-	STR_MSG    = "msg"
-	STR_DETAIL = "detail"
-	STR_DATA   = "data"
-	STR_TOKEN  = "token"
+	STR_CODE          = "code"
+	STR_MSG           = "msg"
+	STR_DETAIL        = "detail"
+	STR_DATA          = "data"
+	STR_TOKEN         = "token"
 	STR_SGHEN_SESSION = "sghen-session-id"
 
-	CODE_OK        = 1000
-	CODE_ERR       = 1001
-	CODE_ERR_TOKEN = 1002
+	CODE_MAINTENANCE = 999
+	CODE_OK          = 1000
+	CODE_ERR         = 1001
+	CODE_ERR_TOKEN   = 1002
 )
 
 func init() {

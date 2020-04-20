@@ -48,6 +48,14 @@ func (c *BaseController) TestGet() {
 	c.respToJSON(data)
 }
 
+func (c *BaseController) GetPageConfig() {
+	data := c.GetResponseData()
+	data[models.STR_CODE] = models.CODE_MAINTENANCE
+	data[models.STR_DATA] = "服务器维护中"
+
+	c.respToJSON(data)
+}
+
 // CheckFormParams 检测表单信息
 func (c *BaseController) CheckFormParams(data ResponseData, params interface{}) bool {
 	// 验证参数是否异常
