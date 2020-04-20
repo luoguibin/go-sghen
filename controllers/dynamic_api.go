@@ -141,116 +141,131 @@ func (c *DynamicAPIController) GetDynamicDataByPath() {
 	// pathKeys := strings.Split(splat, "/")
 	dynamicAPI, ok := models.MConfig.DynamicAPIMap[suffixPath]
 	// fmt.Println("DynamicAPI", suffixPath, ok, dynamicAPI, c.Ctx.Request.URL)
-	if ok {
-		if dynamicAPI.Status == 1 {
-			sqlStr := dynamicAPI.Content
-			r, _ := regexp.Compile("\\$\\{[0-9a-zA-Z_]{1,}\\}")
-			keyNames := r.FindAllStringSubmatch(sqlStr, -1)
-			if len(keyNames) > 0 {
-				for _, keyName0 := range keyNames {
-					keyName := keyName0[0]
-					orderName := keyName[2 : len(keyName)-1]
-
-					switch orderName {
-					case "limit":
-						limit := c.GetString("limit", "20")
-						r, _ := regexp.Compile("^[0-9]+$")
-						if limit != "0" && r.MatchString(limit) {
-							sqlStr = strings.Replace(sqlStr, "${limit}", limit, -1)
-						} else {
-							data[models.STR_CODE] = models.CODE_ERR
-							data[models.STR_MSG] = "操作失败"
-							c.respToJSON(data)
-							return
-						}
-					case "offset":
-						offset := c.GetString("offset", "0")
-						r, _ := regexp.Compile("^[0-9]+$")
-						if offset != "0" && r.MatchString(offset) {
-							sqlStr = strings.Replace(sqlStr, "${offset}", offset, -1)
-						} else {
-							data[models.STR_CODE] = models.CODE_ERR
-							data[models.STR_MSG] = "操作失败"
-							c.respToJSON(data)
-							return
-						}
-					case "id":
-						id := c.GetString("id", "0")
-						r, _ := regexp.Compile("^[0-9]+$")
-						if id != "0" && r.MatchString(id) {
-							sqlStr = strings.Replace(sqlStr, "${id}", id, -1)
-						} else {
-							data[models.STR_CODE] = models.CODE_ERR
-							data[models.STR_MSG] = "操作失败"
-							c.respToJSON(data)
-							return
-						}
-					case "datas":
-						datas := c.GetString("datas", "")
-						r, _ := regexp.Compile("^[0-9,]+$")
-						if len(datas) > 0 && r.MatchString(datas) {
-							// datasStr := strings.Join(datas,  ",")
-							sqlStr = strings.Replace(sqlStr, "${datas}", datas, -1)
-						} else {
-							data[models.STR_CODE] = models.CODE_ERR
-							data[models.STR_MSG] = "操作失败"
-							c.respToJSON(data)
-							return
-						}
-					case "date0":
-						date0 := c.GetString("date0", "")
-						r, _ := regexp.Compile("^[0-9\\-:\\s]+$")
-						if len(date0) > 0 && r.MatchString(date0) {
-							// datasStr := strings.Join(datas,  ",")
-							sqlStr = strings.Replace(sqlStr, "${date0}", date0, -1)
-						} else {
-							data[models.STR_CODE] = models.CODE_ERR
-							data[models.STR_MSG] = "操作失败"
-							c.respToJSON(data)
-							return
-						}
-					case "date1":
-						date1 := c.GetString("date1", "")
-						r, _ := regexp.Compile("^[0-9\\-:\\s]+$")
-						if len(date1) > 0 && r.MatchString(date1) {
-							// datasStr := strings.Join(datas,  ",")
-							sqlStr = strings.Replace(sqlStr, "${date1}", date1, -1)
-						} else {
-							data[models.STR_CODE] = models.CODE_ERR
-							data[models.STR_MSG] = "操作失败"
-							c.respToJSON(data)
-							return
-						}
-					default:
-						data[models.STR_CODE] = models.CODE_ERR
-						data[models.STR_MSG] = "操作失败"
-						c.respToJSON(data)
-						return
-					}
-				}
-			}
-
-			// fmt.Println(sqlStr)
-
-			list, err := models.GetDynamicData(sqlStr)
-			dynamicAPI.Count = dynamicAPI.Count + 1
-			models.UpdateDynamicAPI(dynamicAPI.ID, dynamicAPI.SuffixPath, dynamicAPI.Name, dynamicAPI.Comment, dynamicAPI.Content, dynamicAPI.Status, dynamicAPI.Count)
-			if err != nil {
-				data[models.STR_CODE] = models.CODE_ERR
-				data[models.STR_MSG] = "操作失败"
-				data[models.STR_DETAIL] = err
-			} else {
-				data[models.STR_DATA] = list
-			}
-		} else {
-			data[models.STR_CODE] = models.CODE_ERR
-			data[models.STR_MSG] = "接口未加载"
-		}
-	} else {
+	if !ok {
 		data[models.STR_CODE] = models.CODE_ERR
 		data[models.STR_MSG] = "接口未加载或未定义"
+		c.respToJSON(data)
+		return
 	}
 
+	if dynamicAPI.Status < 1 {
+		data[models.STR_CODE] = models.CODE_ERR
+		data[models.STR_MSG] = "接口未加载"
+		c.respToJSON(data)
+		return
+	}
+
+	cacheData, cachedOk := models.MConfig.DynamicCachedDataMap[suffixPath]
+	if dynamicAPI.Status == 2 && cachedOk {
+		// 读取缓存数据
+		data[models.STR_DATA] = cacheData
+		c.respToJSON(data)
+		return
+	}
+
+	sqlStr := dynamicAPI.Content
+	r, _ := regexp.Compile("\\$\\{[0-9a-zA-Z_]{1,}\\}")
+	keyNames := r.FindAllStringSubmatch(sqlStr, -1)
+	if len(keyNames) > 0 {
+		for _, keyName0 := range keyNames {
+			keyName := keyName0[0]
+			orderName := keyName[2 : len(keyName)-1]
+
+			switch orderName {
+			case "limit":
+				limit := c.GetString("limit", "20")
+				r, _ := regexp.Compile("^[0-9]+$")
+				if limit != "0" && r.MatchString(limit) {
+					sqlStr = strings.Replace(sqlStr, "${limit}", limit, -1)
+				} else {
+					data[models.STR_CODE] = models.CODE_ERR
+					data[models.STR_MSG] = "操作失败"
+					c.respToJSON(data)
+					return
+				}
+			case "offset":
+				offset := c.GetString("offset", "0")
+				r, _ := regexp.Compile("^[0-9]+$")
+				if offset != "0" && r.MatchString(offset) {
+					sqlStr = strings.Replace(sqlStr, "${offset}", offset, -1)
+				} else {
+					data[models.STR_CODE] = models.CODE_ERR
+					data[models.STR_MSG] = "操作失败"
+					c.respToJSON(data)
+					return
+				}
+			case "id":
+				id := c.GetString("id", "0")
+				r, _ := regexp.Compile("^[0-9]+$")
+				if id != "0" && r.MatchString(id) {
+					sqlStr = strings.Replace(sqlStr, "${id}", id, -1)
+				} else {
+					data[models.STR_CODE] = models.CODE_ERR
+					data[models.STR_MSG] = "操作失败"
+					c.respToJSON(data)
+					return
+				}
+			case "datas":
+				datas := c.GetString("datas", "")
+				r, _ := regexp.Compile("^[0-9,]+$")
+				if len(datas) > 0 && r.MatchString(datas) {
+					// datasStr := strings.Join(datas,  ",")
+					sqlStr = strings.Replace(sqlStr, "${datas}", datas, -1)
+				} else {
+					data[models.STR_CODE] = models.CODE_ERR
+					data[models.STR_MSG] = "操作失败"
+					c.respToJSON(data)
+					return
+				}
+			case "date0":
+				date0 := c.GetString("date0", "")
+				r, _ := regexp.Compile("^[0-9\\-:\\s]+$")
+				if len(date0) > 0 && r.MatchString(date0) {
+					// datasStr := strings.Join(datas,  ",")
+					sqlStr = strings.Replace(sqlStr, "${date0}", date0, -1)
+				} else {
+					data[models.STR_CODE] = models.CODE_ERR
+					data[models.STR_MSG] = "操作失败"
+					c.respToJSON(data)
+					return
+				}
+			case "date1":
+				date1 := c.GetString("date1", "")
+				r, _ := regexp.Compile("^[0-9\\-:\\s]+$")
+				if len(date1) > 0 && r.MatchString(date1) {
+					// datasStr := strings.Join(datas,  ",")
+					sqlStr = strings.Replace(sqlStr, "${date1}", date1, -1)
+				} else {
+					data[models.STR_CODE] = models.CODE_ERR
+					data[models.STR_MSG] = "操作失败"
+					c.respToJSON(data)
+					return
+				}
+			default:
+				data[models.STR_CODE] = models.CODE_ERR
+				data[models.STR_MSG] = "操作失败"
+				c.respToJSON(data)
+				return
+			}
+		}
+	}
+
+	// fmt.Println(sqlStr)
+
+	list, err := models.GetDynamicData(sqlStr)
+	dynamicAPI.Count = dynamicAPI.Count + 1
+	models.UpdateDynamicAPI(dynamicAPI.ID, dynamicAPI.SuffixPath, dynamicAPI.Name, dynamicAPI.Comment, dynamicAPI.Content, dynamicAPI.Status, dynamicAPI.Count)
+	if err != nil {
+		data[models.STR_CODE] = models.CODE_ERR
+		data[models.STR_MSG] = "操作失败"
+		data[models.STR_DETAIL] = err
+	} else {
+		data[models.STR_DATA] = list
+
+		if dynamicAPI.Status == 2 && !scachedOk {
+			models.MConfig.DynamicCachedDataMap[suffixPath] = list
+		}
+	}
 	c.respToJSON(data)
 }
 

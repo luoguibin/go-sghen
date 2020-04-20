@@ -29,8 +29,9 @@ type Config struct {
 	SmsAppKey   string
 	SmsSdkAppID int
 
-	CodeMsgMap    map[int]string
-	DynamicAPIMap map[string]*DynamicAPI
+	CodeMsgMap           map[int]string
+	DynamicAPIMap        map[string]*DynamicAPI
+	DynamicCachedDataMap map[string]*interface{}
 
 	MLogger *logs.BeeLogger
 }
