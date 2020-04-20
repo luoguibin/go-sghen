@@ -28,12 +28,12 @@ func (u UserV2) TableName() string {
 // 初始化系统用户列表
 func initSystemUserV2() {
 	// 复制手机账号的数据
-	sqlStr := "INSERT INTO user_v2(mobile, user_pwd, user_name, avatar, level, time_create, time_update) SELECT id, password, name, icon_url, level, time_create, time_create FROM user WHERE id > 10000000000;"
+	// sqlStr := "INSERT INTO user_v2(mobile, user_pwd, user_name, avatar, level, time_create, time_update) SELECT id, password, name, icon_url, level, time_create, time_create FROM user WHERE id > 10000000000;"
 
-	// 复制个性化账号的数据
-	sqlStr := "INSERT INTO user_v2(user_account, user_pwd, user_name, avatar, level, time_create, time_update) SELECT id, password, name, icon_url, level, time_create, time_create FROM user WHERE id < 30000000000;"
+	// // 复制个性化账号的数据
+	// sqlStr := "INSERT INTO user_v2(user_account, user_pwd, user_name, avatar, level, time_create, time_update) SELECT id, password, name, icon_url, level, time_create, time_create FROM user WHERE id < 30000000000;"
 
-	dbOrmDefault.Model(&UserV2{}).Exec(sqlStr)
+	// dbOrmDefault.Model(&UserV2{}).Exec(sqlStr)
 
 	// usersJSON, err := ioutil.ReadFile("data/sys-account.json")
 	// if err != nil {
