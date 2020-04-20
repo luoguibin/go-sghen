@@ -24,7 +24,11 @@ type FileUploaderController struct {
 
 // FileUpload 文件上传
 func (c *FileUploaderController) FileUpload() {
-	data := c.GetResponseData()
+	data, isOk := c.GetResponseData()
+	if !isOk {
+		c.respToJSON(data)
+		return
+	}
 
 	// 上传的文件存储在maxMemory大小的内存里面
 	// 如果文件大小超过了maxMemory，那么剩下的部分将存储在系统的临时文件中

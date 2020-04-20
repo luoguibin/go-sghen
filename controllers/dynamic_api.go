@@ -13,7 +13,11 @@ type DynamicAPIController struct {
 
 // CreateDynamicAPI 新增
 func (c *DynamicAPIController) CreateDynamicAPI() {
-	data := c.GetResponseData()
+	data, isOk := c.GetResponseData()
+	if !isOk {
+		c.respToJSON(data)
+		return
+	}
 	params := &getCreateDynamicAPIParams{}
 
 	if c.CheckFormParams(data, params) {
@@ -42,7 +46,11 @@ func (c *DynamicAPIController) CreateDynamicAPI() {
 
 // UpdateDynamicAPI 更新
 func (c *DynamicAPIController) UpdateDynamicAPI() {
-	data := c.GetResponseData()
+	data, isOk := c.GetResponseData()
+	if !isOk {
+		c.respToJSON(data)
+		return
+	}
 	params := &getUpdateDynamicAPIParams{}
 
 	if c.CheckFormParams(data, params) {
@@ -68,7 +76,11 @@ func (c *DynamicAPIController) UpdateDynamicAPI() {
 
 // QueryDynamicAPI 查询
 func (c *DynamicAPIController) QueryDynamicAPI() {
-	data := c.GetResponseData()
+	data, isOk := c.GetResponseData()
+	if !isOk {
+		c.respToJSON(data)
+		return
+	}
 	params := &getQueryDynamicAPIParams{}
 
 	if c.CheckFormParams(data, params) {
@@ -90,7 +102,11 @@ func (c *DynamicAPIController) QueryDynamicAPI() {
 
 // DeleteDynamicAPI 删除
 func (c *DynamicAPIController) DeleteDynamicAPI() {
-	data := c.GetResponseData()
+	data, isOk := c.GetResponseData()
+	if !isOk {
+		c.respToJSON(data)
+		return
+	}
 	params := &getDeleteDynamicAPIParams{}
 
 	if c.CheckFormParams(data, params) {
@@ -115,7 +131,11 @@ func (c *DynamicAPIController) DeleteDynamicAPI() {
 
 // GetDynamicDataByPath 获取数据
 func (c *DynamicAPIController) GetDynamicDataByPath() {
-	data := c.GetResponseData()
+	data, isOk := c.GetResponseData()
+	if !isOk {
+		c.respToJSON(data)
+		return
+	}
 
 	suffixPath := c.Ctx.Input.Param(":splat")
 	// pathKeys := strings.Split(splat, "/")
@@ -236,7 +256,11 @@ func (c *DynamicAPIController) GetDynamicDataByPath() {
 
 // PostDynamicData 更改数据
 func (c *DynamicAPIController) PostDynamicData() {
-	data := c.GetResponseData()
+	data, isOk := c.GetResponseData()
+	if !isOk {
+		c.respToJSON(data)
+		return
+	}
 
 	c.respToJSON(data)
 }

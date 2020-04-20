@@ -20,7 +20,11 @@ type UserController struct {
 
 // CreateUser 创建用户
 func (c *UserController) CreateUser() {
-	data := c.GetResponseData()
+	data, isOk := c.GetResponseData()
+	if !isOk {
+		c.respToJSON(data)
+		return
+	}
 	params := &getCreateUserParams{}
 
 	if c.CheckFormParams(data, params) {
@@ -54,7 +58,11 @@ func (c *UserController) CreateUser() {
 
 // LoginUser 登录
 func (c *UserController) LoginUser() {
-	data := c.GetResponseData()
+	data, isOk := c.GetResponseData()
+	if !isOk {
+		c.respToJSON(data)
+		return
+	}
 	params := &getCreateUserParams{}
 
 	if c.CheckFormParams(data, params) {
@@ -92,7 +100,11 @@ func (c *UserController) LoginUser() {
 
 // QueryUser 查询user，限制level等级为5以下的user
 func (c *UserController) QueryUser() {
-	data := c.GetResponseData()
+	data, isOk := c.GetResponseData()
+	if !isOk {
+		c.respToJSON(data)
+		return
+	}
 	params := &getQueryUserParams{}
 
 	if c.CheckFormParams(data, params) {
@@ -114,7 +126,11 @@ func (c *UserController) QueryUser() {
 
 // QueryUsers 查询users，输入ids的json
 func (c *UserController) QueryUsers() {
-	data := c.GetResponseData()
+	data, isOk := c.GetResponseData()
+	if !isOk {
+		c.respToJSON(data)
+		return
+	}
 	params := &getQueryUsersParams{}
 
 	if c.CheckFormParams(data, params) {
@@ -148,7 +164,11 @@ func (c *UserController) QueryUsers() {
 
 // UpdateUser 更新user
 func (c *UserController) UpdateUser() {
-	data := c.GetResponseData()
+	data, isOk := c.GetResponseData()
+	if !isOk {
+		c.respToJSON(data)
+		return
+	}
 	params := &getUpdateUserParams{}
 
 	if c.CheckFormParams(data, params) {
@@ -171,7 +191,11 @@ func (c *UserController) UpdateUser() {
 
 // DeleteUser 删除user
 func (c *UserController) DeleteUser() {
-	data := c.GetResponseData()
+	data, isOk := c.GetResponseData()
+	if !isOk {
+		c.respToJSON(data)
+		return
+	}
 	params := &getUpdateUserParams{}
 
 	if c.CheckFormParams(data, params) {

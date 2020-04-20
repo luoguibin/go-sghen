@@ -29,7 +29,11 @@ type SmsResult struct {
 
 // SendSmsCode 发送短信验证码
 func (c *SmsController) SendSmsCode() {
-	data := c.GetResponseData()
+	data, isOk := c.GetResponseData()
+	if !isOk {
+		c.respToJSON(data)
+		return
+	}
 	params := &getSmsSendParams{}
 
 	if c.CheckFormParams(data, params) {

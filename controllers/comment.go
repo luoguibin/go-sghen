@@ -11,7 +11,12 @@ type CommentController struct {
 
 // CreateComment ...
 func (c *CommentController) CreateComment() {
-	data := c.GetResponseData()
+	data, isOk := c.GetResponseData()
+	if !isOk {
+		c.respToJSON(data)
+		return
+	}
+
 	params := &getCreateCommentParams{}
 
 	if c.CheckFormParams(data, params) {
@@ -30,7 +35,11 @@ func (c *CommentController) CreateComment() {
 
 // QueryComments ...
 func (c *CommentController) QueryComments() {
-	data := c.GetResponseData()
+	data, isOk := c.GetResponseData()
+	if !isOk {
+		c.respToJSON(data)
+		return
+	}
 	params := &getQueryCommentParams{}
 
 	if c.CheckFormParams(data, params) {
@@ -48,7 +57,11 @@ func (c *CommentController) QueryComments() {
 
 // DeleteComment ...
 func (c *CommentController) DeleteComment() {
-	data := c.GetResponseData()
+	data, isOk := c.GetResponseData()
+	if !isOk {
+		c.respToJSON(data)
+		return
+	}
 	params := &getDeleteCommentParams{}
 
 	if c.CheckFormParams(data, params) {

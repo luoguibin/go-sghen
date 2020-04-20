@@ -11,7 +11,11 @@ type PeotrySetController struct {
 
 // 查询用户的选集和系统默认选集
 func (c *PeotrySetController) QueryPeotrySet() {
-	data := c.GetResponseData()
+	data, isOk := c.GetResponseData()
+	if !isOk {
+		c.respToJSON(data)
+		return
+	}
 	params := &getQueryPoetrySetParams{}
 
 	if c.CheckFormParams(data, params) {
@@ -30,7 +34,11 @@ func (c *PeotrySetController) QueryPeotrySet() {
 
 // CreatePeotrySet 创建选集
 func (c *PeotrySetController) CreatePeotrySet() {
-	data := c.GetResponseData()
+	data, isOk := c.GetResponseData()
+	if !isOk {
+		c.respToJSON(data)
+		return
+	}
 	params := &getCreatePoetrySetParams{}
 
 	if c.CheckFormParams(data, params) {
@@ -50,7 +58,11 @@ func (c *PeotrySetController) CreatePeotrySet() {
 
 // DeletePeotrySet 删除选集
 func (c *PeotrySetController) DeletePeotrySet() {
-	data := c.GetResponseData()
+	data, isOk := c.GetResponseData()
+	if !isOk {
+		c.respToJSON(data)
+		return
+	}
 	params := &getDeletePoetrySetParams{}
 
 	if c.CheckFormParams(data, params) {

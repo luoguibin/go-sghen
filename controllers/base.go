@@ -42,16 +42,18 @@ func (c *BaseController) respToJSON(data ResponseData) {
 
 // TestGet 基础测试调用
 func (c *BaseController) TestGet() {
-	data := c.GetResponseData()
+	data, isOk := c.GetResponseData()
+	if !isOk {
+		c.respToJSON(data)
+		return
+	}
 	data["ip"] = helper.GetRequestIP(c.Ctx)
 
 	c.respToJSON(data)
 }
 
 func (c *BaseController) GetPageConfig() {
-	data := c.GetResponseData()
-	data[models.STR_CODE] = models.CODE_MAINTENANCE
-	data[models.STR_DATA] = "服务器维护中"
+	data, _ := c.GetResponseData()
 
 	c.respToJSON(data)
 }
@@ -78,8 +80,12 @@ func (c *BaseController) CheckFormParams(data ResponseData, params interface{}) 
 type ResponseData map[string]interface{}
 
 // GetResponseData 获取请求返回体
-func (c *BaseController) GetResponseData() ResponseData {
-	return ResponseData{models.STR_CODE: models.CODE_OK}
+func (c *BaseController) GetResponseData() (ResponseData, bool) {
+	// return ResponseData{models.STR_CODE: models.CODE_OK}, true
+	return ResponseData{
+		models.STR_CODE: models.CODE_MAINTENANCE,
+		models.STR_DATA: "服务器维护中",
+	}, false
 }
 
 // CheckAccessToken 检测用户身份，通过后将相关信息写入Input对象

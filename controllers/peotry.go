@@ -15,7 +15,11 @@ type PeotryController struct {
 
 // AddTempPeotry 添加系统临时诗词
 func (c *PeotryController) AddTempPeotry() {
-	data := c.GetResponseData()
+	data, isOk := c.GetResponseData()
+	if !isOk {
+		c.respToJSON(data)
+		return
+	}
 	userLevel := c.Ctx.Input.GetData("level").(int)
 
 	if userLevel < 9 {
@@ -28,7 +32,11 @@ func (c *PeotryController) AddTempPeotry() {
 }
 
 func (c *PeotryController) QueryPeotry() {
-	data := c.GetResponseData()
+	data, isOk := c.GetResponseData()
+	if !isOk {
+		c.respToJSON(data)
+		return
+	}
 	params := &getQueryPeotryParams{}
 
 	if c.CheckFormParams(data, params) {
@@ -69,7 +77,11 @@ func (c *PeotryController) QueryPeotry() {
 }
 
 func (c *PeotryController) QueryPopularPeotry() {
-	data := c.GetResponseData()
+	data, isOk := c.GetResponseData()
+	if !isOk {
+		c.respToJSON(data)
+		return
+	}
 	limit, err := c.GetInt("limit", 5)
 	if err != nil {
 		data[models.STR_CODE] = models.CODE_ERR
@@ -95,7 +107,11 @@ func (c *PeotryController) QueryPopularPeotry() {
 
 // CreatePeotry ...
 func (c *PeotryController) CreatePeotry() {
-	data := c.GetResponseData()
+	data, isOk := c.GetResponseData()
+	if !isOk {
+		c.respToJSON(data)
+		return
+	}
 	params := &getCreatePeotryParams{}
 
 	if c.CheckFormParams(data, params) {
@@ -142,7 +158,11 @@ func (c *PeotryController) CreatePeotry() {
 
 // UpdatePeotry ...
 func (c *PeotryController) UpdatePeotry() {
-	data := c.GetResponseData()
+	data, isOk := c.GetResponseData()
+	if !isOk {
+		c.respToJSON(data)
+		return
+	}
 	params := &getUpdatePeotryParams{}
 
 	if c.CheckFormParams(data, params) {
@@ -199,7 +219,11 @@ func (c *PeotryController) UpdatePeotry() {
 
 // DeletePeotry ...
 func (c *PeotryController) DeletePeotry() {
-	data := c.GetResponseData()
+	data, isOk := c.GetResponseData()
+	if !isOk {
+		c.respToJSON(data)
+		return
+	}
 	params := &getDeletePeotryParams{}
 
 	if c.CheckFormParams(data, params) {
