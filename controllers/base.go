@@ -81,11 +81,11 @@ type ResponseData map[string]interface{}
 
 // GetResponseData 获取请求返回体
 func (c *BaseController) GetResponseData() (ResponseData, bool) {
-	// return ResponseData{models.STR_CODE: models.CODE_OK}, true
-	return ResponseData{
-		models.STR_CODE: models.CODE_MAINTENANCE,
-		models.STR_DATA: "服务器维护中",
-	}, false
+	return ResponseData{models.STR_CODE: models.CODE_OK}, true
+	// return ResponseData{
+	// 	models.STR_CODE: models.CODE_MAINTENANCE,
+	// 	models.STR_DATA: "服务器维护中",
+	// }, false
 }
 
 // CheckAccessToken 检测用户身份，通过后将相关信息写入Input对象
