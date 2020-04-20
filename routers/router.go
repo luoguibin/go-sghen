@@ -32,8 +32,8 @@ func init() {
 	// 路由定义
 	nsv1 := beego.NewNamespace("/v1",
 		beego.NSNamespace("/common",
-		beego.NSRouter("/page-config", &controllers.BaseController{}, "GET:GetPageConfig"),
-		)
+			beego.NSRouter("/page-config", &controllers.BaseController{}, "GET:GetPageConfig"),
+		),
 		beego.NSNamespace("/user",
 			beego.NSRouter("/create", &controllers.UserController{}, "post:CreateUser"),
 			beego.NSRouter("/login", &controllers.UserController{}, "post:LoginUser"),
