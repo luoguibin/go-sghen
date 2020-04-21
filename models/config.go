@@ -29,9 +29,9 @@ type Config struct {
 	SmsAppKey   string
 	SmsSdkAppID int
 
-	CodeMsgMap           map[int]string
-	DynamicAPIMap        map[string]*DynamicAPI
-	DynamicCachedDataMap map[string]*interface{}
+	CodeMsgMap       map[int]string
+	DynamicAPIMap    map[string]*DynamicAPI
+	DynamicCachedMap map[string]*[]interface{}
 
 	MLogger *logs.BeeLogger
 }
@@ -110,13 +110,25 @@ func initPathTypeMap() {
 
 func initDynamicAPIMap() {
 	MConfig.DynamicAPIMap = make(map[string]*DynamicAPI, 0)
-	dynamicAPIs, _, _, _, _, err := QueryDynamicAPI(0, "", "", "", 1, 0, 100, 1)
-	if err == nil {
-		for _, dynamicAPI := range dynamicAPIs {
+	if MConfig.DynamicCachedMap == nil {
+		MConfig.DynamicCachedMap = make(map[string]*[]interface{}, 0)
+	}
+	apis0, _, _, _, _, err0 := QueryDynamicAPI(0, "", "", "", 1, 0, 100, 1)
+	if err0 == nil {
+		for _, dynamicAPI := range apis0 {
 			MConfig.DynamicAPIMap[dynamicAPI.SuffixPath] = dynamicAPI
 		}
 	} else {
-		fmt.Println("init DynamicAPIMap error", err)
+		fmt.Println("init status=1 DynamicAPIMap error", err0)
+	}
+
+	apis1, _, _, _, _, err1 := QueryDynamicAPI(0, "", "", "", 2, 0, 100, 1)
+	if err1 == nil {
+		for _, dynamicAPI := range apis1 {
+			MConfig.DynamicAPIMap[dynamicAPI.SuffixPath] = dynamicAPI
+		}
+	} else {
+		fmt.Println("init status=2 DynamicAPIMap error", err1)
 	}
 	// fmt.Println(len(MConfig.DynamicAPIMap), MConfig.DynamicAPIMap)
 }

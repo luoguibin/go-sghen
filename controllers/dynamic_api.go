@@ -1,6 +1,8 @@
 package controllers
 
 import (
+	"errors"
+	"fmt"
 	"go-sghen/models"
 	"regexp"
 	"strings"
@@ -81,20 +83,23 @@ func (c *DynamicAPIController) QueryDynamicAPI() {
 		c.respToJSON(data)
 		return
 	}
-	params := &getQueryDynamicAPIParams{}
 
-	if c.CheckFormParams(data, params) {
-		list, count, totalPage, curPage, pageIsEnd, err := models.QueryDynamicAPI(params.ID, params.SuffixPath, params.Name, params.Comment, params.Status, params.UserID, params.Limit, params.Page)
-		if err != nil {
-			data[models.STR_CODE] = models.CODE_ERR
-			data[models.STR_MSG] = "查询列表失败"
-		} else {
-			data[models.STR_DATA] = list
-			data["totalCount"] = count
-			data["totalPage"] = totalPage
-			data["curPage"] = curPage
-			data["pageIsEnd"] = pageIsEnd
-		}
+	params := &getQueryDynamicAPIParams{}
+	if !c.CheckFormParams(data, params) {
+		c.respToJSON(data)
+		return
+	}
+
+	list, count, totalPage, curPage, pageIsEnd, err := models.QueryDynamicAPI(params.ID, params.SuffixPath, params.Name, params.Comment, params.Status, params.UserID, params.Limit, params.Page)
+	if err != nil {
+		data[models.STR_CODE] = models.CODE_ERR
+		data[models.STR_MSG] = "查询列表失败"
+	} else {
+		data[models.STR_DATA] = list
+		data["totalCount"] = count
+		data["totalPage"] = totalPage
+		data["curPage"] = curPage
+		data["pageIsEnd"] = pageIsEnd
 	}
 
 	c.respToJSON(data)
@@ -107,22 +112,24 @@ func (c *DynamicAPIController) DeleteDynamicAPI() {
 		c.respToJSON(data)
 		return
 	}
+
 	params := &getDeleteDynamicAPIParams{}
+	if !c.CheckFormParams(data, params) {
+		c.respToJSON(data)
+		return
+	}
 
-	if c.CheckFormParams(data, params) {
-		// userID := c.Ctx.Input.GetData("userId").(int64)
-		// userLevel := c.Ctx.Input.GetData("level").(int)
-		userLevel := c.Ctx.Input.GetData("level").(int)
-
-		if userLevel < 9 {
+	// userID := c.Ctx.Input.GetData("userId").(int64)
+	// userLevel := c.Ctx.Input.GetData("level").(int)
+	userLevel := c.Ctx.Input.GetData("level").(int)
+	if userLevel < 9 {
+		data[models.STR_CODE] = models.CODE_ERR
+		data[models.STR_MSG] = "用户权限不够，禁止更新接口"
+	} else {
+		err := models.DeleteDynamicAPI(params.ID)
+		if err != nil {
 			data[models.STR_CODE] = models.CODE_ERR
-			data[models.STR_MSG] = "用户权限不够，禁止更新接口"
-		} else {
-			err := models.DeleteDynamicAPI(params.ID)
-			if err != nil {
-				data[models.STR_CODE] = models.CODE_ERR
-				data[models.STR_MSG] = "删除接口失败"
-			}
+			data[models.STR_MSG] = "删除接口失败"
 		}
 	}
 
@@ -137,30 +144,47 @@ func (c *DynamicAPIController) GetDynamicDataByPath() {
 		return
 	}
 
-	suffixPath := c.Ctx.Input.Param(":splat")
-	// pathKeys := strings.Split(splat, "/")
-	dynamicAPI, ok := models.MConfig.DynamicAPIMap[suffixPath]
-	// fmt.Println("DynamicAPI", suffixPath, ok, dynamicAPI, c.Ctx.Request.URL)
-	if !ok {
+	list, err := c.getDynamicData()
+	if err != nil {
 		data[models.STR_CODE] = models.CODE_ERR
-		data[models.STR_MSG] = "接口未加载或未定义"
+		data[models.STR_MSG] = err.Error()
 		c.respToJSON(data)
 		return
+	}
+	data[models.STR_DATA] = list
+	c.respToJSON(data)
+}
+
+// PostDynamicData 更改数据
+func (c *DynamicAPIController) PostDynamicData() {
+	data, isOk := c.GetResponseData()
+	if !isOk {
+		c.respToJSON(data)
+		return
+	}
+
+	c.respToJSON(data)
+}
+
+// getDynamicData ...
+func (c *DynamicAPIController)getDynamicData() (*[]interface{}, error) {
+	suffixPath := c.Ctx.Input.Param(":splat")	
+	dynamicAPI, ok := models.MConfig.DynamicAPIMap[suffixPath]
+	if !ok {
+		return nil, errors.New("接口未加载或未定义")
 	}
 
 	if dynamicAPI.Status < 1 {
-		data[models.STR_CODE] = models.CODE_ERR
-		data[models.STR_MSG] = "接口未加载"
-		c.respToJSON(data)
-		return
+		return nil, errors.New("接口未加载")
 	}
 
-	cacheData, cachedOk := models.MConfig.DynamicCachedDataMap[suffixPath]
+	cacheData, cachedOk := models.MConfig.DynamicCachedMap[suffixPath]
 	if dynamicAPI.Status == 2 && cachedOk {
 		// 读取缓存数据
-		data[models.STR_DATA] = cacheData
-		c.respToJSON(data)
-		return
+		fmt.Println("read from cached")
+		dynamicAPI.Count = dynamicAPI.Count + 1
+		models.UpdateDynamicAPI(dynamicAPI.ID, dynamicAPI.SuffixPath, dynamicAPI.Name, dynamicAPI.Comment, dynamicAPI.Content, dynamicAPI.Status, dynamicAPI.Count)
+		return cacheData, nil
 	}
 
 	sqlStr := dynamicAPI.Content
@@ -178,10 +202,7 @@ func (c *DynamicAPIController) GetDynamicDataByPath() {
 				if limit != "0" && r.MatchString(limit) {
 					sqlStr = strings.Replace(sqlStr, "${limit}", limit, -1)
 				} else {
-					data[models.STR_CODE] = models.CODE_ERR
-					data[models.STR_MSG] = "操作失败"
-					c.respToJSON(data)
-					return
+					return nil, errors.New("操作失败")
 				}
 			case "offset":
 				offset := c.GetString("offset", "0")
@@ -189,10 +210,7 @@ func (c *DynamicAPIController) GetDynamicDataByPath() {
 				if offset != "0" && r.MatchString(offset) {
 					sqlStr = strings.Replace(sqlStr, "${offset}", offset, -1)
 				} else {
-					data[models.STR_CODE] = models.CODE_ERR
-					data[models.STR_MSG] = "操作失败"
-					c.respToJSON(data)
-					return
+					return nil, errors.New("操作失败")
 				}
 			case "id":
 				id := c.GetString("id", "0")
@@ -200,10 +218,7 @@ func (c *DynamicAPIController) GetDynamicDataByPath() {
 				if id != "0" && r.MatchString(id) {
 					sqlStr = strings.Replace(sqlStr, "${id}", id, -1)
 				} else {
-					data[models.STR_CODE] = models.CODE_ERR
-					data[models.STR_MSG] = "操作失败"
-					c.respToJSON(data)
-					return
+					return nil, errors.New("操作失败")
 				}
 			case "datas":
 				datas := c.GetString("datas", "")
@@ -212,10 +227,7 @@ func (c *DynamicAPIController) GetDynamicDataByPath() {
 					// datasStr := strings.Join(datas,  ",")
 					sqlStr = strings.Replace(sqlStr, "${datas}", datas, -1)
 				} else {
-					data[models.STR_CODE] = models.CODE_ERR
-					data[models.STR_MSG] = "操作失败"
-					c.respToJSON(data)
-					return
+					return nil, errors.New("操作失败")
 				}
 			case "date0":
 				date0 := c.GetString("date0", "")
@@ -224,10 +236,7 @@ func (c *DynamicAPIController) GetDynamicDataByPath() {
 					// datasStr := strings.Join(datas,  ",")
 					sqlStr = strings.Replace(sqlStr, "${date0}", date0, -1)
 				} else {
-					data[models.STR_CODE] = models.CODE_ERR
-					data[models.STR_MSG] = "操作失败"
-					c.respToJSON(data)
-					return
+					return nil, errors.New("操作失败")
 				}
 			case "date1":
 				date1 := c.GetString("date1", "")
@@ -236,16 +245,10 @@ func (c *DynamicAPIController) GetDynamicDataByPath() {
 					// datasStr := strings.Join(datas,  ",")
 					sqlStr = strings.Replace(sqlStr, "${date1}", date1, -1)
 				} else {
-					data[models.STR_CODE] = models.CODE_ERR
-					data[models.STR_MSG] = "操作失败"
-					c.respToJSON(data)
-					return
+					return nil, errors.New("操作失败")
 				}
 			default:
-				data[models.STR_CODE] = models.CODE_ERR
-				data[models.STR_MSG] = "操作失败"
-				c.respToJSON(data)
-				return
+				return nil, errors.New("操作失败")
 			}
 		}
 	}
@@ -256,26 +259,18 @@ func (c *DynamicAPIController) GetDynamicDataByPath() {
 	dynamicAPI.Count = dynamicAPI.Count + 1
 	models.UpdateDynamicAPI(dynamicAPI.ID, dynamicAPI.SuffixPath, dynamicAPI.Name, dynamicAPI.Comment, dynamicAPI.Content, dynamicAPI.Status, dynamicAPI.Count)
 	if err != nil {
-		data[models.STR_CODE] = models.CODE_ERR
-		data[models.STR_MSG] = "操作失败"
-		data[models.STR_DETAIL] = err
-	} else {
-		data[models.STR_DATA] = list
-
-		if dynamicAPI.Status == 2 && !scachedOk {
-			models.MConfig.DynamicCachedDataMap[suffixPath] = list
-		}
+		models.MConfig.MLogger.Error(err.Error())
+		return nil, errors.New("操作失败")
 	}
-	c.respToJSON(data)
+
+	if dynamicAPI.Status == 2 && !cachedOk {
+		models.MConfig.DynamicCachedMap[suffixPath] = &list
+	}
+	return &list, nil
 }
 
-// PostDynamicData 更改数据
-func (c *DynamicAPIController) PostDynamicData() {
-	data, isOk := c.GetResponseData()
-	if !isOk {
-		c.respToJSON(data)
-		return
-	}
-
-	c.respToJSON(data)
+// dynamicAPICacheTask ...
+func dynamicAPICacheTask() {
+	models.MConfig.MLogger.Info("每天0点定时清空缓存")
+	models.MConfig.DynamicCachedMap = make(map[string]*[]interface{}, 0)
 }

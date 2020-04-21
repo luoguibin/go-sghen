@@ -30,5 +30,6 @@ func InitTask() {
 			sendSmsCode(phone, strconv.Itoa(smsCode))
 		}
 	})
+	taskManager.AddFunc("CRON_TZ=Asia/Shanghai 0 0 * * ?", dynamicAPICacheTask)
 	taskManager.Run()
 }
