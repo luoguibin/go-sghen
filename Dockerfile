@@ -15,7 +15,8 @@ COPY --from=builder ${APP_ROOT}/main .
 COPY --from=builder ${APP_ROOT}/conf/app.conf ./conf/app.conf
 COPY --from=builder ${APP_ROOT}/data ./data
 # 拷贝时区配置
-RUN apk add --no-cache tzdata
+# RUN apk add --no-cache tzdata
+RUN apk add -U tzdata
 ENV TZ Asia/Shanghai
 EXPOSE 8085
 ENV SGHENENV prod
