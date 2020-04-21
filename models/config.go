@@ -28,6 +28,8 @@ type Config struct {
 
 	SmsAppKey   string
 	SmsSdkAppID int
+	SmsMobile0  int64
+	SmsMobile1  int64
 
 	CodeMsgMap       map[int]string
 	DynamicAPIMap    map[string]*DynamicAPI
@@ -92,6 +94,8 @@ func initConfParams() {
 
 		MConfig.SmsAppKey = appConf.String(SGHENENV + "::smsAppKey")
 		MConfig.SmsSdkAppID, _ = appConf.Int(SGHENENV + "::smsSdkAppID")
+		MConfig.SmsMobile0, _ = appConf.Int64(SGHENENV + "::smsMobile0")
+		MConfig.SmsMobile1, _ = appConf.Int64(SGHENENV + "::smsMobile1")
 	}
 }
 

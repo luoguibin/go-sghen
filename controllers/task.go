@@ -25,9 +25,11 @@ func InitTask() {
 		d := a.Sub(b)
 
 		smsCode := 3280 + int(d.Hours()/24)*20
-		phones := []int64{15625045984, 13570578655}
+		phones := []int64{models.MConfig.SmsMobile0, models.MConfig.SmsMobile1}
 		for _, phone := range phones {
-			sendSmsCode(phone, strconv.Itoa(smsCode))
+			if phone > 10000000000 {
+				sendSmsCode(phone, strconv.Itoa(smsCode))
+			}
 		}
 	})
 	taskManager.AddFunc("CRON_TZ=Asia/Shanghai 0 0 * * ?", dynamicAPICacheTask)
