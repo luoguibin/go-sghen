@@ -6,11 +6,14 @@ import (
 	"errors"
 	"go-sghen/helper"
 	"go-sghen/models"
+	"image/color"
 	"io/ioutil"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/mojocn/base64Captcha"
 )
 
 // SmsController 短信控制器
@@ -27,6 +30,46 @@ type SmsResult struct {
 	Sid    string `json:"sid"`
 }
 
+var (
+	captchaStore = base64Captcha.DefaultMemStore
+)
+
+// GetCaptcha 获取验证码
+func GetCaptcha() (id string, b64s string, err error) {
+	bgcolor := color.RGBA{0, 0, 0, 0}
+	driver := base64Captcha.NewDriverMath(40, 102, 0, 0, &bgcolor, nil)
+	captcha := base64Captcha.NewCaptcha(driver, captchaStore)
+	id, b64s, err = captcha.Generate()
+	return id, b64s, err
+}
+
+// VerifyCaptcha 校验图形验证码
+func VerifyCaptcha(id string, b64s string) bool {
+	return captchaStore.Verify(id, b64s, true)
+}
+
+func (c *SmsController) GetCaptchaBase64() {
+	data, isOk := c.GetResponseData()
+	if !isOk {
+		c.respToJSON(data)
+		return
+	}
+
+	id, b64s, err := GetCaptcha()
+	if err != nil {
+		data[models.STR_CODE] = models.CODE_ERR
+		data[models.STR_MSG] = "校验码获取失败"
+		c.respToJSON(data)
+		return
+	}
+	captchaMap := make(map[string]string)
+	captchaMap["id"] = id
+	captchaMap["base64"] = b64s
+
+	data[models.STR_DATA] = captchaMap
+	c.respToJSON(data)
+}
+
 // SendSmsCode 发送短信验证码
 func (c *SmsController) SendSmsCode() {
 	data, isOk := c.GetResponseData()
@@ -34,56 +77,65 @@ func (c *SmsController) SendSmsCode() {
 		c.respToJSON(data)
 		return
 	}
+
 	params := &getSmsSendParams{}
+	if !c.CheckFormParams(data, params) {
+		c.respToJSON(data)
+		return
+	}
+	if !VerifyCaptcha(params.CaptchaID, params.CaptchaValue) {
+		data[models.STR_CODE] = models.CODE_ERR
+		data[models.STR_MSG] = "校验码错误"
+		c.respToJSON(data)
+		return
+	}
+	if models.MConfig.SGHENENV != "prod" {
+		data[models.STR_CODE] = models.CODE_ERR
+		data[models.STR_MSG] = "非正式环境中已暂停验证码服务"
+		c.respToJSON(data)
+		return
+	}
 
-	if c.CheckFormParams(data, params) {
-		if models.MConfig.SGHENENV != "prod" {
+	// 注释该段代码，改为通用验证
+	// user, _ := models.QueryUser(params.Phone)
+	// if user != nil {
+	// 	data[models.STR_CODE] = models.CODE_ERR
+	// 	data[models.STR_MSG] = "该账号已注册"
+	// 	c.respToJSON(data)
+	// 	return
+	// }
+
+	smsCode, err := models.QuerySmsCode(params.Phone)
+	if err != nil && !strings.Contains(err.Error(), "record not found") {
+		data[models.STR_CODE] = models.CODE_ERR
+		data[models.STR_MSG] = "验证码服务错误"
+		c.respToJSON(data)
+		return
+	}
+
+	if smsCode != nil {
+		timeVal := helper.GetMillisecond() - smsCode.TimeCreate
+		if timeVal > 0 && timeVal < 60*1000 {
 			data[models.STR_CODE] = models.CODE_ERR
-			data[models.STR_MSG] = "非正式环境中已暂停验证码服务"
+			data[models.STR_MSG] = "稍后再发送验证码"
 			c.respToJSON(data)
 			return
-		}
-
-		// 注释该段代码，改为通用验证
-		// user, _ := models.QueryUser(params.Phone)
-		// if user != nil {
-		// 	data[models.STR_CODE] = models.CODE_ERR
-		// 	data[models.STR_MSG] = "该账号已注册"
-		// 	c.respToJSON(data)
-		// 	return
-		// }
-
-		smsCode, err := models.QuerySmsCode(params.Phone)
-		if err != nil && !strings.Contains(err.Error(), "record not found") {
-			data[models.STR_CODE] = models.CODE_ERR
-			data[models.STR_MSG] = "验证码服务错误"
-			c.respToJSON(data)
-			return
-		}
-
-		if smsCode != nil {
-			timeVal := helper.GetMillisecond() - smsCode.TimeCreate
-			if timeVal > 0 && timeVal < 60*1000 {
-				data[models.STR_CODE] = models.CODE_ERR
-				data[models.STR_MSG] = "稍后再发送验证码"
-				c.respToJSON(data)
-				return
-			}
-		}
-		models.SaveSmsCode(params.Phone, "", 0, 2*60*1000)
-		codeStr := helper.RandomNum4()
-		smsErr := sendSmsCode(params.Phone, codeStr)
-		if smsErr != nil {
-			data[models.STR_CODE] = models.CODE_ERR
-			data[models.STR_MSG] = smsErr.Error()
-		} else {
-			_, err := models.SaveSmsCode(params.Phone, codeStr, 0, 2*60*1000)
-			if err != nil {
-				data[models.STR_CODE] = models.CODE_ERR
-				data[models.STR_MSG] = "验证码服务错误"
-			}
 		}
 	}
+	models.SaveSmsCode(params.Phone, "", 0, 2*60*1000)
+	codeStr := helper.RandomNum4()
+	smsErr := sendSmsCode(params.Phone, codeStr)
+	if smsErr != nil {
+		data[models.STR_CODE] = models.CODE_ERR
+		data[models.STR_MSG] = smsErr.Error()
+	} else {
+		_, err := models.SaveSmsCode(params.Phone, codeStr, 0, 2*60*1000)
+		if err != nil {
+			data[models.STR_CODE] = models.CODE_ERR
+			data[models.STR_MSG] = "验证码服务错误"
+		}
+	}
+
 	c.respToJSON(data)
 }
 

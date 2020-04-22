@@ -42,6 +42,20 @@ func (c *UserController) CreateUser() {
 			c.respToJSON(data)
 			return
 		}
+	} else {
+		data[models.STR_CODE] = models.CODE_ERR
+		data[models.STR_MSG] = "暂只支持手机账号注册"
+		c.respToJSON(data)
+		return
+	}
+
+	user0, err := models.QueryUser(params.Account, mobile)
+	fmt.Println(user0, err)
+	if err != nil {
+		data[models.STR_CODE] = models.CODE_ERR
+		data[models.STR_MSG] = "该账号已被注册"
+		c.respToJSON(data)
+		return
 	}
 
 	user, err := models.CreateUser(params.Account, mobile, params.Pw, params.Name, "", "", 1)

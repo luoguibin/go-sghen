@@ -67,6 +67,7 @@ func init() {
 			beego.NSRouter("/post", &controllers.DynamicAPIController{}, "post:PostDynamicData"),
 		),
 		beego.NSNamespace("/sms/",
+			beego.NSRouter("/captcha", &controllers.SmsController{}, "get:GetCaptchaBase64"),
 			beego.NSRouter("/send", &controllers.SmsController{}, "post:SendSmsCode"),
 		),
 		beego.NSRouter("/upload", &controllers.FileUploaderController{}, "post:FileUpload"),

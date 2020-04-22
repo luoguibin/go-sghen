@@ -11,12 +11,20 @@ import (
 // getSmsSendParams 短信验证码
 type getSmsSendParams struct {
 	Phone int64 `form:"phone" valid:"Required"`
+	CaptchaID string `form:"captchaId" valid:"Required"`
+	CaptchaValue string `form:"captchaValue" valid:"Required"`
 }
 
 func (params *getSmsSendParams) Valid(v *validation.Validation) {
 	phoneStr := strconv.FormatInt(params.Phone, 10)
-	if helper.IsPhone(phoneStr) == false {
+	if !helper.IsPhone(phoneStr) {
 		v.SetError("phone", "请输入正确的手机号码")
+	}
+	if len(params.CaptchaID) == 0 {
+		v.SetError("captchaId", "校验码ID错误")
+	}
+	if len(params.CaptchaValue) == 0 {
+		v.SetError("cap", "校验码错误")
 	}
 }
 

@@ -117,6 +117,12 @@
 			"revisionTime": "2018-03-08T03:36:59Z"
 		},
 		{
+			"checksumSHA1": "JCt8pO+6t8Nz89+FmNoBPEC6bGo=",
+			"path": "github.com/mojocn/base64Captcha",
+			"revision": "b59c8f14c2c364cb68cca60b3b04cb70af6c1802",
+			"revisionTime": "2020-03-30T08:25:38Z"
+		},
+		{
 			"checksumSHA1": "6z9MgcvNbdVGsAIvv6BHA1uALQA=",
 			"path": "github.com/nfnt/resize",
 			"revision": "83c6a9932646f83e3267f353373d47347b6036b2",
