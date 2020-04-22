@@ -99,6 +99,18 @@
 			"revisionTime": "2017-06-09T00:35:04Z"
 		},
 		{
+			"checksumSHA1": "Rz+jeTntp13wrnlqUfEaRsnuHrI=",
+			"path": "github.com/golang/freetype/raster",
+			"revision": "e2365dfdc4a05e4b8299a783240d4a7d5a65d4e4",
+			"revisionTime": "2017-06-09T00:35:04Z"
+		},
+		{
+			"checksumSHA1": "kukfJu1TyH0z6fyc9Dh4hw/PnBM=",
+			"path": "github.com/golang/freetype/truetype",
+			"revision": "e2365dfdc4a05e4b8299a783240d4a7d5a65d4e4",
+			"revisionTime": "2017-06-09T00:35:04Z"
+		},
+		{
 			"checksumSHA1": "lnXCQ0W+TUrintwU69ljmXf5o+k=",
 			"path": "github.com/gorilla/websocket",
 			"revision": "483fb8d7c32fcb4b5636cd293a92e3935932e2f4",
@@ -175,6 +187,18 @@
 		{
 			"checksumSHA1": "lf+8UarpiYN1Ev5PDn7dWdqXa6o=",
 			"path": "golang.org/x/image/bmp",
+			"revision": "58c23975cae11f062d4b3b0c143fe248faac195d",
+			"revisionTime": "2019-12-14T02:27:13Z"
+		},
+		{
+			"checksumSHA1": "CQYQ8wELyxPMRYOTDLELVtude/M=",
+			"path": "golang.org/x/image/font",
+			"revision": "58c23975cae11f062d4b3b0c143fe248faac195d",
+			"revisionTime": "2019-12-14T02:27:13Z"
+		},
+		{
+			"checksumSHA1": "euzvwlMLxyD0hwc+raoVsDLv6j4=",
+			"path": "golang.org/x/image/math/fixed",
 			"revision": "58c23975cae11f062d4b3b0c143fe248faac195d",
 			"revisionTime": "2019-12-14T02:27:13Z"
 		},
