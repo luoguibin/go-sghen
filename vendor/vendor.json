@@ -93,6 +93,12 @@
 			"revisionTime": "2014-07-17T18:29:41Z"
 		},
 		{
+			"checksumSHA1": "v1xQNKTln7CWuv11S3up6FBRZLI=",
+			"path": "github.com/golang/freetype",
+			"revision": "e2365dfdc4a05e4b8299a783240d4a7d5a65d4e4",
+			"revisionTime": "2017-06-09T00:35:04Z"
+		},
+		{
 			"checksumSHA1": "lnXCQ0W+TUrintwU69ljmXf5o+k=",
 			"path": "github.com/gorilla/websocket",
 			"revision": "483fb8d7c32fcb4b5636cd293a92e3935932e2f4",
