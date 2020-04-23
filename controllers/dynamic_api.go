@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"errors"
-	"fmt"
 	"go-sghen/models"
 	"regexp"
 	"strings"
@@ -167,13 +166,13 @@ func (c *DynamicAPIController) PostDynamicData() {
 }
 
 // getDynamicData ...
-func (c *DynamicAPIController)getDynamicData() (*[]interface{}, error) {
-	suffixPath := c.Ctx.Input.Param(":splat")	
-	dynamicAPI, ok := models.MConfig.DynamicAPIMap[suffixPath]
+func (c *DynamicAPIController) getDynamicData() (*[]interface{}, error) {
+	suffixPath := c.Ctx.Input.Param(":splat")
+	dynamicAPI0, ok := models.MConfig.DynamicAPIMap.Load(suffixPath)
 	if !ok {
 		return nil, errors.New("接口未加载或未定义")
 	}
-
+	dynamicAPI := (dynamicAPI0).(*models.DynamicAPI)
 	if dynamicAPI.Status < 1 {
 		return nil, errors.New("接口未加载")
 	}
@@ -181,7 +180,6 @@ func (c *DynamicAPIController)getDynamicData() (*[]interface{}, error) {
 	cacheData, cachedOk := models.MConfig.DynamicCachedMap[suffixPath]
 	if dynamicAPI.Status == 2 && cachedOk {
 		// 读取缓存数据
-		fmt.Println("read from cached")
 		dynamicAPI.Count = dynamicAPI.Count + 1
 		models.UpdateDynamicAPI(dynamicAPI.ID, dynamicAPI.SuffixPath, dynamicAPI.Name, dynamicAPI.Comment, dynamicAPI.Content, dynamicAPI.Status, dynamicAPI.Count)
 		return cacheData, nil
