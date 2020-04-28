@@ -33,18 +33,5 @@ func InitGorm() {
 		initSystemPeotrySet()
 	}
 
-	db0, err0 := gorm.Open("mysql", MConfig.dBUsername+":"+MConfig.dBPassword+"@tcp("+MConfig.dBHost+")/"+MConfig.dBName0+"?charset=utf8&parseTime=True&loc=Asia%2FShanghai")
-	if err0 != nil {
-		MConfig.MLogger.Error(err0.Error())
-		fmt.Println(err0)
-		return
-	}
-
-	db0.DB().SetMaxIdleConns(MConfig.dBMaxIdle)
-	db0.DB().SetMaxOpenConns(MConfig.dBMaxConn)
-	db0.SingularTable(true) //禁用创建表名自动添加负数形式
-	db0.AutoMigrate()
-	dbOrmDynamic = db0
-
-	initDynamicAPIMap()
+	InitDynamicAPIMap()
 }

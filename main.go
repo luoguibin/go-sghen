@@ -12,13 +12,12 @@ import (
 func main() {
 	beego.SetStaticPath("file", "./file")
 	// os.Setenv("ZONEINFO", "./lib/time/zoneinfo.zip")
-	go controllers.InitTask()
+
 	models.InitGorm()
 	db := models.GetDb()
 	defer db.Close()
 
-	db0 := models.GetDb0()
-	defer db0.Close()
+	go controllers.InitTask()
 
 	beego.Run()
 }

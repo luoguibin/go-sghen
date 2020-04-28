@@ -34,7 +34,7 @@ type Config struct {
 
 	CodeMsgMap       map[int]string
 	DynamicAPIMap    sync.Map
-	DynamicCachedMap map[string]*[]interface{}
+	DynamicCachedMap map[string]*interface{}
 
 	MLogger *logs.BeeLogger
 }
@@ -113,10 +113,10 @@ func initPathTypeMap() {
 	MConfig.PathTypeMap["icon"] = "./file/user/icon/"
 }
 
-func initDynamicAPIMap() {
+func InitDynamicAPIMap() {
 	// MConfig.DynamicAPIMap = &sync.Map{}
 	if MConfig.DynamicCachedMap == nil {
-		MConfig.DynamicCachedMap = make(map[string]*[]interface{}, 0)
+		MConfig.DynamicCachedMap = make(map[string]*interface{}, 0)
 	}
 	apis0, _, _, _, _, err0 := QueryDynamicAPI(0, "", "", "", 1, 0, 100, 1)
 	if err0 == nil {
@@ -148,8 +148,4 @@ func initLog() {
 
 func GetDb() *gorm.DB {
 	return dbOrmDefault
-}
-
-func GetDb0() *gorm.DB {
-	return dbOrmDynamic
 }

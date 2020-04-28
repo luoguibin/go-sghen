@@ -1,7 +1,6 @@
 package models
 
 import (
-	"fmt"
 	"go-sghen/helper"
 	"time"
 )
@@ -16,7 +15,7 @@ type DynamicAPI struct {
 	Content string `gorm:"column:content;type:mediumtext" json:"content"`
 
 	Status int `gorm:"column:status" json:"status"`
-	Count  int  `gorm:"column:count" json:"count"`
+	Count  int `gorm:"column:count" json:"count"`
 
 	TimeCreate time.Time `gorm:"column:time_create" json:"timeCreate"`
 	TimeUpdate time.Time `gorm:"column:time_update" json:"timeUpdate"`
@@ -42,20 +41,14 @@ func CreateDynamicAPI(suffixPath string, name string, comment string, content st
 		Comment:    comment,
 		Content:    content,
 		Status:     status,
-		Count:		0,
+		Count:      0,
 		UserID:     userID,
 		TimeCreate: timeNow,
 		TimeUpdate: timeNow,
 	}
 
 	err := dbOrmDefault.Model(&DynamicAPI{}).Create(dynamicAPI).Error
-	if err != nil {
-		fmt.Println(err)
-		return nil, err
-	} else if status == 1 {
-		initDynamicAPIMap()
-	}
-	return dynamicAPI, nil
+	return dynamicAPI, err
 }
 
 // UpdateDynamicAPI 更新一个接口
@@ -75,13 +68,7 @@ func UpdateDynamicAPI(id int64, suffixPath string, name string, comment string, 
 	}
 
 	err := dbOrmDefault.Model(&DynamicAPI{}).Update(dynamicAPI).Error
-	if err != nil {
-		fmt.Println(err)
-		return nil, err
-	}
-
-	initDynamicAPIMap()
-	return dynamicAPI, nil
+	return dynamicAPI, err
 }
 
 // QueryDynamicAPI 查询接口列表
@@ -131,6 +118,15 @@ func QueryDynamicAPI(id int64, suffixPath string, name string, comment string, s
 	return nil, 0, 0, 0, 0, err
 }
 
+// QueryOneDynamicAPI 查询接口列表
+func QueryOneDynamicAPI(id int64) (*DynamicAPI, error) {
+	dynamicAPI := &DynamicAPI{
+		ID: id,
+	}
+	err := dbOrmDefault.Model(&DynamicAPI{}).Find(&dynamicAPI).Error
+	return dynamicAPI, err
+}
+
 // DeleteDynamicAPI 删除接口
 func DeleteDynamicAPI(id int64) error {
 	dynamicAPI := &DynamicAPI{
@@ -138,10 +134,6 @@ func DeleteDynamicAPI(id int64) error {
 	}
 
 	err := dbOrmDefault.Model(&DynamicAPI{}).Delete(&dynamicAPI).Error
-
-	if err == nil {
-		initDynamicAPIMap()
-	}
 	return err
 }
 
