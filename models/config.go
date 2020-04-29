@@ -115,9 +115,8 @@ func initPathTypeMap() {
 
 func InitDynamicAPIMap() {
 	// MConfig.DynamicAPIMap = &sync.Map{}
-	if MConfig.DynamicCachedMap == nil {
-		MConfig.DynamicCachedMap = make(map[string]*interface{}, 0)
-	}
+	MConfig.DynamicCachedMap = make(map[string]*interface{}, 0)
+
 	apis0, _, _, _, _, err0 := QueryDynamicAPI(0, "", "", "", 1, 0, 100, 1)
 	if err0 == nil {
 		for _, dynamicAPI := range apis0 {
