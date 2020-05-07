@@ -39,40 +39,59 @@ func (c *PeotryController) QueryPeotry() {
 	}
 	params := &getQueryPeotryParams{}
 
-	if c.CheckFormParams(data, params) {
-		if params.ID > 0 {
-			peotry, err := models.QueryPeotryByID(params.ID)
+	if !c.CheckFormParams(data, params) {
+		c.respToJSON(data)
+		return
+	}
 
-			if err == nil {
-				data[models.STR_DATA] = peotry
-			} else {
+	if params.ID > 0 {
+		peotry, err := models.QueryPeotryByID(params.ID)
+
+		if err != nil {
+			data[models.STR_CODE] = models.CODE_ERR
+			data[models.STR_MSG] = "未查询到对应id的诗歌"
+			c.respToJSON(data)
+			return
+		}
+
+		if params.NeedComment {
+			comments, err := models.QueryCommentByTypeID(peotry.ID)
+			if err != nil {
 				data[models.STR_CODE] = models.CODE_ERR
-				data[models.STR_MSG] = "未查询到对应id的诗歌"
+				data[models.STR_MSG] = "诗歌评论查询失败"
+				c.respToJSON(data)
+				return
 			}
-		} else {
-			list, count, totalPage, curPage, pageIsEnd, err := models.QueryPeotry(params.UserID, params.SetID, params.Page, params.Limit, params.Content)
+			peotry.Comments = comments
+		}
+		data[models.STR_DATA] = peotry
+		c.respToJSON(data)
+		return
+	} 
 
-			if err == nil {
-				if params.NeedComment {
-					for _, peotry := range list {
-						comments, e := models.QueryCommentByTypeID(peotry.ID)
-						if e == nil {
-							peotry.Comments = comments
-						}
-					}
+	// 诗词列表查询
+	list, count, totalPage, curPage, pageIsEnd, err := models.QueryPeotry(params.UserID, params.SetID, params.Page, params.Limit, params.Content)
+
+	if err == nil {
+		if params.NeedComment {
+			for _, peotry := range list {
+				comments, e := models.QueryCommentByTypeID(peotry.ID)
+				if e == nil {
+					peotry.Comments = comments
 				}
-
-				data[models.STR_DATA] = list
-				data["totalCount"] = count
-				data["totalPage"] = totalPage
-				data["curPage"] = curPage
-				data["pageIsEnd"] = pageIsEnd
-			} else {
-				data[models.STR_CODE] = models.CODE_ERR
-				data[models.STR_MSG] = "未查询到对应的诗歌"
 			}
 		}
+
+		data[models.STR_DATA] = list
+		data["totalCount"] = count
+		data["totalPage"] = totalPage
+		data["curPage"] = curPage
+		data["pageIsEnd"] = pageIsEnd
+	} else {
+		data[models.STR_CODE] = models.CODE_ERR
+		data[models.STR_MSG] = "未查询到对应的诗歌"
 	}
+	
 	c.respToJSON(data)
 }
 
