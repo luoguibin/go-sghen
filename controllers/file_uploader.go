@@ -185,3 +185,9 @@ func (c *FileUploaderController) FileUpload() {
 
 	c.respToJSON(data)
 }
+
+// FileDownload ...
+func (c *FileUploaderController) FileDownload() {
+	filename := c.GetString("filename", "temp.txt")
+	c.Ctx.Output.Download("./file/download/"+filename, filename)
+}

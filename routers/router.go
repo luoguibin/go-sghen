@@ -71,6 +71,7 @@ func init() {
 			beego.NSRouter("/send", &controllers.SmsController{}, "post:SendSmsCode"),
 		),
 		beego.NSRouter("/upload", &controllers.FileUploaderController{}, "post:FileUpload"),
+		beego.NSRouter("/download", &controllers.FileUploaderController{}, "get:FileDownload"),
 	)
 
 	beego.AddNamespace(nsv1)
