@@ -246,7 +246,7 @@ func (c *DynamicAPIController) getDynamicData() (*interface{}, error) {
 				case "offset":
 					offset := c.GetString("offset", "0")
 					r, _ := regexp.Compile("^[0-9]+$")
-					if offset != "0" && r.MatchString(offset) {
+					if r.MatchString(offset) {
 						sqlStr = strings.Replace(sqlStr, "${offset}", offset, -1)
 					} else {
 						return nil, errors.New("操作失败")
