@@ -10,7 +10,7 @@ type User struct {
 	ID int64 `gorm:"primary_key;AUTO_INCREMENT:id;" json:"id"`
 
 	UserAccount string `gorm:"index;size:50;comment:'用户个性化账号'" json:"account"`
-	Mobile      string `gorm:"index;size:50;comment:'手机账号'" json:"-"`
+	Mobile      string `gorm:"index;size:50;comment:'手机账号'" json:"phone"`
 	UserPWD     string `grom:"column:user_pwd;not null;comment:'登陆密码'" json:"-"`
 	Token       string `gorm:"-" json:"token,omitempty"`
 
