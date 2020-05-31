@@ -101,6 +101,7 @@ func (c *FileUploaderController) FileUpload() {
 	list := make([]string, 0)
 	for index, v := range fileHeaders {
 		fileName := v.Filename
+		// fmt.Println(fileName)
 		file, err := v.Open()
 		defer file.Close()
 
@@ -146,7 +147,10 @@ func (c *FileUploaderController) FileUpload() {
 					}
 
 					if err != nil {
-						log.Fatal(err)
+						data[models.STR_CODE] = models.CODE_ERR
+						data[models.STR_MSG] = "文件上传失败"
+						c.respToJSON(data)
+						return
 					}
 
 					// resize to width 100 using Lanczos resampling
