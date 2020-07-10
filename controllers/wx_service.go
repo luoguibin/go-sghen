@@ -96,7 +96,7 @@ func verifyLoginCode(code string) (WxLoginResult, error) {
 	url := "https://api.weixin.qq.com/sns/jscode2session?appid=" + wxAppID + "&secret=" + wxSecret + "&code=" + code + "&grant_type=authorization_code"
 
 	var result WxLoginResult
-	resp, err := http.Post(url, "application/json", nil)
+	resp, err := http.Get(url)
 	if err != nil {
 		models.MConfig.MLogger.Error(err.Error())
 		return result, errors.New("微信登录凭证校验错误")
