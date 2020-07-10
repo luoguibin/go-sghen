@@ -91,9 +91,9 @@ func (c *WxServiceController) BindWxUser() {
 
 // 微信登录凭证校验
 func verifyLoginCode(code string) (WxLoginResult, error) {
-	wxAppID := models.MConfig.WxAppID
-	wxSecret := models.MConfig.WxSecret
-	url := "https://api.weixin.qq.com/sns/jscode2session?appid=" + wxAppID + "&secret=" + wxSecret + "&code=" + code + "&grant_type=authorization_code"
+	wxAppID := "wx872447bf81e62160"                // models.MConfig.WxAppID
+	wxSecret := "9a52f2c23b3e42fef9e89e5229fe100e" // models.MConfig.WxSecret
+	url := "https://api.weixin.qq.com/sns/jscode2session?appid=" + wxAppID + "&secret=" + wxSecret + "&js_code=" + code + "&grant_type=authorization_code"
 
 	var result WxLoginResult
 	resp, err := http.Get(url)
