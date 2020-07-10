@@ -40,6 +40,11 @@ func init() {
 			beego.NSRouter("/update", &controllers.UserController{}, "post:UpdateUser"),
 			beego.NSRouter("/delete", &controllers.UserController{}, "post:DeleteUser"),
 		),
+		beego.NSNamespace("/wx",
+			beego.NSRouter("/login", &controllers.WxServiceController{}, "post:LoginWxUser"),
+			beego.NSRouter("/bind", &controllers.WxServiceController{}, "post:BindWxUser"),
+		),
+
 		beego.NSNamespace("/peotry",
 			beego.NSRouter("/query", &controllers.PeotryController{}, "get:QueryPeotry"),
 			beego.NSRouter("/query-popular", &controllers.PeotryController{}, "get:QueryPopularPeotry"),

@@ -138,7 +138,7 @@ func (c *UserController) UpdateUser() {
 	if c.CheckFormParams(data, params) {
 		userID := c.Ctx.Input.GetData("userId").(int64)
 
-		_, err := models.UpdateUser(userID, params.Mobile, params.Pw, params.Name, params.Avatar, params.Mood)
+		_, err := models.UpdateUser(userID, params.Pw, params.Name, params.Avatar, params.Mood)
 		if err != nil {
 			data[models.STR_CODE] = models.CODE_ERR
 			data[models.STR_MSG] = "更新用户信息失败"

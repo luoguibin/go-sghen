@@ -32,6 +32,9 @@ type Config struct {
 	SmsMobile0  int64
 	SmsMobile1  int64
 
+	WxAppID		string
+	WxSecret	string
+
 	CodeMsgMap       map[int]string
 	DynamicAPIMap    sync.Map
 	DynamicCachedMap map[string]*interface{}
@@ -97,6 +100,9 @@ func initConfParams() {
 		MConfig.SmsSdkAppID, _ = appConf.Int(SGHENENV + "::smsSdkAppID")
 		MConfig.SmsMobile0, _ = appConf.Int64(SGHENENV + "::smsMobile0")
 		MConfig.SmsMobile1, _ = appConf.Int64(SGHENENV + "::smsMobile1")
+
+		MConfig.WxAppID = appConf.String(SGHENENV + "::wxAppID")
+		MConfig.WxSecret = appConf.String(SGHENENV + "::wxSecret")
 	}
 }
 

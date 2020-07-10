@@ -10,8 +10,8 @@ import (
 
 // getSmsSendParams 短信验证码
 type getSmsSendParams struct {
-	Phone int64 `form:"phone" valid:"Required"`
-	CaptchaID string `form:"captchaId" valid:"Required"`
+	Phone        int64  `form:"phone" valid:"Required"`
+	CaptchaID    string `form:"captchaId" valid:"Required"`
 	CaptchaValue string `form:"captchaValue" valid:"Required"`
 }
 
@@ -60,12 +60,23 @@ func (params *getCreateUserParams) Valid(v *validation.Validation) {
 	}
 }
 
+// user create和login共用输入结构体
+type getWxLoginParams struct {
+	Code string `form:"code" valid:"Required"`
+	Type string `form:"type"`
+}
+
+func (params *getWxLoginParams) Valid(v *validation.Validation) {
+	if len(strings.TrimSpace(params.Code)) == 0 {
+		v.SetError("code", "不能为空")
+	}
+}
+
 // user update和delete共用输入结构体
 type getUpdateUserParams struct {
 	Pw     string `form:"pw" json:"pw"`
 	Name   string `form:"name" json:"name"`
 	Avatar string `form:"avatar" json:"avatar"`
-	Mobile string `form:"mobile" json:"mobile"`
 	Mood   string `form:"mood" json:"mood"`
 }
 

@@ -1,6 +1,7 @@
 package models
 
 import (
+	"errors"
 	"strings"
 	"time"
 )
@@ -87,7 +88,7 @@ func CreateUser(userAccount, mobile, userPWD, userName, avatar, mood string, lev
 }
 
 // UpdateUser ...
-func UpdateUser(id int64, mobile, userPWD, userName, avatar, mood string) (*User, error) {
+func UpdateUser(id int64, userPWD, userName, avatar, mood string) (*User, error) {
 	user := &User{
 		ID: id,
 	}
@@ -97,9 +98,6 @@ func UpdateUser(id int64, mobile, userPWD, userName, avatar, mood string) (*User
 		return user, err
 	}
 
-	if len(strings.TrimSpace(mobile)) > 0 {
-		user.Mobile = mobile
-	}
 	if len(strings.TrimSpace(userPWD)) > 0 {
 		user.UserPWD = userPWD
 	}
@@ -115,6 +113,31 @@ func UpdateUser(id int64, mobile, userPWD, userName, avatar, mood string) (*User
 	user.TimeUpdate = time.Now()
 
 	err = dbOrmDefault.Model(&User{}).Save(user).Error
+	return user, err
+}
+
+// UpdateUserAccount ...
+func UpdateUserAccount(id int64, account, mobile string) (*User, error) {
+	user := &User{
+		ID: id,
+	}
+
+	err := dbOrmDefault.Model(&User{}).Find(user).Error
+	if err != nil {
+		return user, err
+	}
+
+	if len(strings.TrimSpace(account)) > 0 {
+		user.UserAccount = account
+	} else if len(strings.TrimSpace(mobile)) > 0 {
+		user.Mobile = mobile
+	} else {
+		return user, errors.New("参数不完整")
+	}
+
+	user.TimeUpdate = time.Now()
+	err = dbOrmDefault.Model(&User{}).Save(user).Error
+
 	return user, err
 }
 
