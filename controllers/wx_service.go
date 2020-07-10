@@ -32,15 +32,15 @@ func (c *WxServiceController) LoginWxUser() {
 		return
 	}
 
-	if models.MConfig.SGHENENV != "prod" {
-		data[models.STR_CODE] = models.CODE_ERR
-		data[models.STR_MSG] = "非正式环境中不支持小程序登陆服务"
+	params := &getWxLoginParams{}
+	if !c.CheckFormParams(data, params) {
 		c.respToJSON(data)
 		return
 	}
 
-	params := &getWxLoginParams{}
-	if !c.CheckFormParams(data, params) {
+	if models.MConfig.SGHENENV != "prod" {
+		data[models.STR_CODE] = models.CODE_ERR
+		data[models.STR_MSG] = "非正式环境中不支持小程序登陆服务"
 		c.respToJSON(data)
 		return
 	}
@@ -93,7 +93,7 @@ func (c *WxServiceController) BindWxUser() {
 func verifyLoginCode(code string) (WxLoginResult, error) {
 	wxAppID := models.MConfig.WxAppID
 	wxSecret := models.MConfig.WxSecret
-	url := "https://api.weixin.qq.com/sns/jscode2session?appid=" + wxAppID + "&secret=" + wxSecret + "&code" + code + "&grant_type=authorization_code"
+	url := "https://api.weixin.qq.com/sns/jscode2session?appid=" + wxAppID + "&secret=" + wxSecret + "&code=" + code + "&grant_type=authorization_code"
 
 	var result WxLoginResult
 	resp, err := http.Post(url, "application/json", nil)
