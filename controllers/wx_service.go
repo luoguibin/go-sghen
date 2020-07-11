@@ -115,7 +115,7 @@ func (c *WxServiceController) BindWxUser() {
 	}
 
 	userID := c.Ctx.Input.GetData("userId").(int64)
-	_, err := models.UpdateUserAccount(userID, result.OpenID, "")
+	_, err = models.UpdateUserAccount(userID, result.OpenID, "")
 	if err != nil {
 		data[models.STR_CODE] = models.CODE_ERR
 		data[models.STR_MSG] = err.Error()
