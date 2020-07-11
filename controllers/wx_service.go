@@ -70,6 +70,7 @@ func (c *WxServiceController) LoginWxUser() {
 	if err != nil {
 		// 账号不存在时应提示是否关联
 		if gorm.IsRecordNotFoundError(err) {
+			data[models.STR_CODE] = models.CODE_NOT_FOUND
 			data[models.STR_MSG] = "用户不存在"
 			// user, err := models.CreateUser(result.OpenID, "", "", params.Name, "", "", 1)
 		} else {
@@ -86,7 +87,40 @@ func (c *WxServiceController) LoginWxUser() {
 
 // BindWxUser 绑定微信用户
 func (c *WxServiceController) BindWxUser() {
-	c.LoginWxUser()
+	data, isOk := c.GetResponseData()
+	if !isOk {
+		c.respToJSON(data)
+		return
+	}
+
+	params := &getWxLoginParams{}
+	if !c.CheckFormParams(data, params) {
+		c.respToJSON(data)
+		return
+	}
+
+	if models.MConfig.SGHENENV != "prod" {
+		data[models.STR_CODE] = models.CODE_ERR
+		data[models.STR_MSG] = "非正式环境中不支持小程序登陆服务"
+		c.respToJSON(data)
+		return
+	}
+
+	result, err := verifyLoginCode(params.Code)
+	if err != nil {
+		data[models.STR_CODE] = models.CODE_ERR
+		data[models.STR_MSG] = err.Error()
+		c.respToJSON(data)
+		return
+	}
+
+	userID := c.Ctx.Input.GetData("userId").(int64)
+	_, err := models.UpdateUserAccount(userID, result.OpenID, "")
+	if err != nil {
+		data[models.STR_CODE] = models.CODE_ERR
+		data[models.STR_MSG] = err.Error()
+	}
+	c.respToJSON(data)
 }
 
 // 微信登录凭证校验
