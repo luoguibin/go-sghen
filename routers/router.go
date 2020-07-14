@@ -41,7 +41,7 @@ func init() {
 			beego.NSRouter("/delete", &controllers.UserController{}, "post:DeleteUser"),
 		),
 		beego.NSNamespace("/wx",
-			beego.NSRouter("/create", &controllers.WxServiceController{}, "post:CreateWxUser"),
+			beego.NSRouter("/user/create", &controllers.WxServiceController{}, "post:CreateWxUser"),
 			beego.NSRouter("/login", &controllers.WxServiceController{}, "post:LoginWxUser"),
 			beego.NSRouter("/bind", &controllers.WxServiceController{}, "post:BindWxUser"),
 		),
