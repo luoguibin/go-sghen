@@ -6,6 +6,7 @@ import (
 	"go-sghen/models"
 	"io/ioutil"
 	"net/http"
+	"strings"
 
 	"github.com/jinzhu/gorm"
 )
@@ -22,6 +23,62 @@ type WxLoginResult struct {
 	UnionID    string `json:"unionid"`     // 用户在开放平台的唯一标识符，在满足 UnionID 下发条件的情况下会返回，详见 UnionID 机制说明。
 	ErrCode    int    `json:"errcode"`     // 错误码
 	ErrMsg     string `json:"errmsg"`      // 错误信息
+}
+
+// CreateWxUser 通过微信注册
+func (c *WxServiceController) CreateWxUser() {
+	data, isOk := c.GetResponseData()
+	if !isOk {
+		c.respToJSON(data)
+		return
+	}
+
+	params := &getCreateUserParams{}
+	if !c.CheckFormParams(data, params) {
+		c.respToJSON(data)
+		return
+	}
+
+	if len(strings.TrimSpace(params.Code)) == 0 ||
+		len(strings.TrimSpace(params.Name)) == 0 ||
+		len(strings.TrimSpace(params.Avatar)) == 0 {
+		data[models.STR_CODE] = models.CODE_ERR
+		data[models.STR_MSG] = "参数错误"
+		c.respToJSON(data)
+		return
+	}
+
+	result, err := verifyLoginCode(params.Code)
+	if err != nil {
+		data[models.STR_CODE] = models.CODE_ERR
+		data[models.STR_MSG] = err.Error()
+		c.respToJSON(data)
+		return
+	}
+
+	_, err = models.QueryUser(result.OpenID, "")
+	if err != nil {
+		data[models.STR_CODE] = models.CODE_ERR
+		data[models.STR_MSG] = "该微信已被绑定注册"
+		c.respToJSON(data)
+		return
+	}
+
+	user, err := models.CreateUser(result.OpenID, "", params.Pw, params.Name, params.Avatar, "", 1)
+	if err == nil {
+		createUserToken(c.Ctx, user, data)
+	} else {
+		data[models.STR_CODE] = models.CODE_ERR
+		errStr := err.Error()
+
+		if strings.Contains(errStr, "PRIMARY") {
+			data[models.STR_MSG] = "该微信已被绑定注册"
+		} else {
+			data[models.STR_MSG] = "微信绑定注册失败"
+		}
+	}
+
+	c.respToJSON(data)
 }
 
 // LoginWxUser 微信登录凭证校验入口

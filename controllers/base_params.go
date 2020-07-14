@@ -48,6 +48,7 @@ type getCreateUserParams struct {
 	Name    string `form:"name"`
 	Type    int    `form:"type"`
 	Code    string `form:"code"`
+	Avatar  string `form:"avatar"`
 }
 
 func (params *getCreateUserParams) Valid(v *validation.Validation) {
@@ -56,6 +57,8 @@ func (params *getCreateUserParams) Valid(v *validation.Validation) {
 	} else if len(strings.TrimSpace(params.Pw)) == 0 {
 		v.SetError("pw", "不能为空")
 	} else if params.Type < 0 || params.Type > 1 {
+		// 0手机账号
+		// 1普通账号
 		v.SetError("type", "账号类型错误")
 	}
 }

@@ -49,8 +49,7 @@ func (c *UserController) CreateUser() {
 		return
 	}
 
-	user0, err := models.QueryUser(params.Account, mobile)
-	fmt.Println(user0, err)
+	_, err := models.QueryUser(params.Account, mobile)
 	if err != nil {
 		data[models.STR_CODE] = models.CODE_ERR
 		data[models.STR_MSG] = "该账号已被注册"
