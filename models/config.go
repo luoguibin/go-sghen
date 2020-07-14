@@ -32,8 +32,8 @@ type Config struct {
 	SmsMobile0  int64
 	SmsMobile1  int64
 
-	WxAppID		string
-	WxSecret	string
+	WxAppID  string
+	WxSecret string
 
 	CodeMsgMap       map[int]string
 	DynamicAPIMap    sync.Map
@@ -61,6 +61,7 @@ var (
 	CODE_OK          = 1000
 	CODE_ERR         = 1001
 	CODE_ERR_TOKEN   = 1002
+	CODE_NOT_FOUND   = 2001
 )
 
 func init() {
