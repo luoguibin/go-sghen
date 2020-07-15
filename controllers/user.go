@@ -50,7 +50,7 @@ func (c *UserController) CreateUser() {
 	}
 
 	_, err := models.QueryUser(params.Account, mobile)
-	if err != nil {
+	if err == nil {
 		data[models.STR_CODE] = models.CODE_ERR
 		data[models.STR_MSG] = "该账号已被注册"
 		c.respToJSON(data)

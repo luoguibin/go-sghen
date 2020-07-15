@@ -57,7 +57,7 @@ func (c *WxServiceController) CreateWxUser() {
 	}
 
 	_, err = models.QueryUser(result.OpenID, "")
-	if err != nil {
+	if err == nil {
 		data[models.STR_CODE] = models.CODE_ERR
 		data[models.STR_MSG] = "该微信已被绑定注册"
 		c.respToJSON(data)
