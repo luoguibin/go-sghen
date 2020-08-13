@@ -13,7 +13,8 @@ import (
 type Config struct {
 	SGHENENV string
 
-	JwtSecretKey string
+	JwtSecretKey      string
+	JwtExpireDuration int64 // 单位秒(S)
 
 	PathTypeMap    map[string]string
 	MaxUploadSize  int
@@ -83,6 +84,7 @@ func initConfParams() {
 	fmt.Println("initConfParams::" + SGHENENV)
 
 	MConfig = Config{}
+	MConfig.JwtExpireDuration = 7 * 24 * 60 * 60
 	if appConf != nil {
 		MConfig.SGHENENV = SGHENENV
 		MConfig.JwtSecretKey = appConf.String(SGHENENV + "::jwtSecretKey")
