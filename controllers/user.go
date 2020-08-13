@@ -204,8 +204,9 @@ func checkSmsCode(mobile, Code string) error {
 func createUserToken(c *context.Context, user *models.User, data ResponseData) {
 	token := jwt.New(jwt.SigningMethodHS256)
 	claims := make(jwt.MapClaims)
-	claims["exp"] = models.MConfig.JwtExpireDuration
-	claims["iat"] = time.Now().Unix()
+	nowTime := time.Now().Unix()
+	claims["exp"] = nowTime + models.MConfig.JwtExpireDuration
+	claims["iat"] = nowTime
 	claims["userId"] = strconv.FormatInt(user.ID, 10)
 	claims["userName"] = user.UserName
 	claims["uLevel"] = strconv.Itoa(user.Level)
