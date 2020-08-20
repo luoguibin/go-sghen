@@ -186,7 +186,7 @@ func (params *getDeletePeotryParams) Valid(v *validation.Validation) {
 
 // peotryset query输入结构体
 type getQueryPoetrySetParams struct {
-	UserID int64 `form:"userId" valid:"Required"`
+	UserID int64 `form:"userId"`
 }
 
 func (params *getQueryPoetrySetParams) Valid(v *validation.Validation) {
