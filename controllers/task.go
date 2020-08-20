@@ -17,8 +17,8 @@ type TaskController struct {
 
 // InitTask ...
 func InitTask() {
-	taskManager.AddFunc("CRON_TZ=Asia/Shanghai 0 22 * * ?", func() {
-		models.MConfig.MLogger.Info("每天22点定时任务")
+	taskManager.AddFunc("CRON_TZ=Asia/Shanghai 0 23 * * ?", func() {
+		models.MConfig.MLogger.Info("每天23点定时任务")
 
 		a := time.Now()
 		b, _ := time.Parse("2006-01-02", "2020-03-17")
