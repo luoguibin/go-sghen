@@ -190,8 +190,8 @@ type getQueryPoetrySetParams struct {
 }
 
 func (params *getQueryPoetrySetParams) Valid(v *validation.Validation) {
-	if params.UserID == 0 {
-		v.SetError("set id", "不能为空")
+	if params.UserID < 0 {
+		v.SetError("set id", "参数错误")
 	}
 }
 
