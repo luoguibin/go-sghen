@@ -20,7 +20,7 @@ func (c *CommentController) CreateComment() {
 	params := &getCreateCommentParams{}
 
 	if c.CheckFormParams(data, params) {
-		comment, err := models.CreateComment(params.Type, params.TypeID, params.FromID, params.ToID, params.Content)
+		comment, err := models.CreateComment(params.Type, params.TypeID, params.TypeUserID, params.FromID, params.ToID, params.Content)
 
 		if err == nil {
 			data[models.STR_DATA] = comment

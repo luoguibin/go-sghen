@@ -219,11 +219,12 @@ func (params *getDeletePoetrySetParams) Valid(v *validation.Validation) {
 
 // comment create输入结构体
 type getCreateCommentParams struct {
-	Type    int    `form:"type" json:"type" valid:"Required"`
-	TypeID  int64  `form:"typeId" json:"typeId" valid:"Required"`
-	FromID  int64  `form:"fromId" json:"fromId" valid:"Required"`
-	ToID    int64  `form:"toId" json:"toId" valid:"Required"`
-	Content string `form:"content" json:"content" valid:"Required"`
+	Type       int    `form:"type" json:"type" valid:"Required"`
+	TypeID     int64  `form:"typeId" json:"typeId" valid:"Required"`
+	TypeUserID int64  `form:"typeUserId" json:"typeUserId" valid:"Required"`
+	FromID     int64  `form:"fromId" json:"fromId" valid:"Required"`
+	ToID       int64  `form:"toId" json:"toId" valid:"Required"`
+	Content    string `form:"content" json:"content" valid:"Required"`
 }
 
 func (params *getCreateCommentParams) Valid(v *validation.Validation) {
@@ -231,6 +232,8 @@ func (params *getCreateCommentParams) Valid(v *validation.Validation) {
 		v.SetError("type", "不能为空")
 	} else if params.TypeID <= 0 {
 		v.SetError("typeId", "不能为空")
+	} else if params.TypeUserID <= 0 {
+		v.SetError("typeUserId", "不能为空")
 	} else if params.FromID <= 0 {
 		v.SetError("fromId", "不能为空")
 	} else if len(strings.TrimSpace(params.Content)) == 0 {
