@@ -337,3 +337,29 @@ func (params *getDeleteDynamicAPIParams) Valid(v *validation.Validation) {
 		v.SetError("set id", "不能为空")
 	}
 }
+
+type getCreateResumeParams struct {
+	PersonalInfos string `form:"personalInfos"`
+	SkillJob      string `form:"skillJob"`
+	Educations    string `form:"educations"`
+	Experiences   string `form:"experiences"`
+	Projects      string `form:"projects"`
+	Descriptions  string `form:"descriptions"`
+	Hobby         string `form:"hobby"`
+}
+
+func (params *getCreateResumeParams) Valid(v *validation.Validation) {
+	total := len(params.PersonalInfos)
+	total += len(params.SkillJob)
+	total += len(params.Educations)
+	total += len(params.Experiences)
+	total += len(params.Projects)
+	total += len(params.Descriptions)
+	total += len(params.Hobby)
+
+	if total == 0 {
+		v.SetError("params", "不能为空")
+	} else if total > 100000 {
+		v.SetError("params", "参数太长")
+	}
+}
