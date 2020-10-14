@@ -57,7 +57,7 @@ func GetResume(userID int64) (*Resume, error) {
 	resume := &Resume{
 		UserID: userID,
 	}
-	err := dbOrmDefault.Model(&Resume{}).Find(resume).Error
+	err := dbOrmDefault.Model(&Resume{}).Where(resume).Find(resume).Error
 	if err == nil {
 		return resume, nil
 	}
@@ -67,7 +67,6 @@ func GetResume(userID int64) (*Resume, error) {
 // UpdateResume ...
 func UpdateResume(userID int64, personalInfos, skillJob, educations, experiences, projects, descriptions, hobby string) error {
 	resume := &Resume{
-		UserID:     userID,
 		UpdateTime: time.Now(),
 	}
 	if len(personalInfos) != 0 {
@@ -92,7 +91,7 @@ func UpdateResume(userID int64, personalInfos, skillJob, educations, experiences
 		resume.Hobby = hobby
 	}
 
-	err := dbOrmDefault.Model(&Resume{}).Update(resume).Error
+	err := dbOrmDefault.Model(&Resume{}).Where("user_id=?", userID).Update(resume).Error
 	return err
 }
 
@@ -101,6 +100,6 @@ func DeleteResume(userID int64) error {
 	resume := &Resume{
 		UserID: userID,
 	}
-	err := dbOrmDefault.Model(&Resume{}).Delete(resume).Error
+	err := dbOrmDefault.Model(&Resume{}).Where(resume).Delete(resume).Error
 	return err
 }
