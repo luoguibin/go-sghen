@@ -109,11 +109,10 @@ func (c *UserController) LoginUser() {
 			}
 			compare = 0
 		} else {
-			pw := params.Pw
 			if len(strings.TrimSpace(params.Random)) > 0 {
-				pw = helper.MD5(user.UserPWD + params.Random)
+				user.UserPWD = helper.MD5(user.UserPWD + params.Random)
 			}
-			compare = strings.Compare(user.UserPWD, pw)
+			compare = strings.Compare(user.UserPWD, params.Pw)
 		}
 
 		if compare == 0 {
