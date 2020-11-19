@@ -49,6 +49,7 @@ type getCreateUserParams struct {
 	Type    int    `form:"type"`
 	Code    string `form:"code"`
 	Avatar  string `form:"avatar"`
+	Random  string `form:"random"`
 }
 
 func (params *getCreateUserParams) Valid(v *validation.Validation) {
