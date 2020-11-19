@@ -20,6 +20,10 @@ func init() {
 
 	// 设置路由过滤器，校验身份
 	beego.InsertFilter("*", beego.BeforeRouter, func(ctx *context.Context) {
+		if strings.Index(ctx.Request.URL.Path, "/auth/") > -1 {
+			controllers.CheckAccessToken(ctx)
+			return
+		}
 		flag := ctx.Request.Method == "POST"
 		flag = flag && strings.Index(ctx.Request.URL.Path, "login") == -1
 		flag = flag && strings.Index(ctx.Request.URL.Path, "/user/create") == -1
@@ -75,6 +79,12 @@ func init() {
 		beego.NSNamespace("/sms/",
 			beego.NSRouter("/captcha", &controllers.SmsController{}, "get:GetCaptchaBase64"),
 			beego.NSRouter("/send", &controllers.SmsController{}, "post:SendSmsCode"),
+		),
+		beego.NSNamespace("/auth/resume/",
+			beego.NSRouter("/create", &controllers.ResumeController{}, "post:CreateResume"),
+			beego.NSRouter("/detail", &controllers.ResumeController{}, "get:GetResumeDetail"),
+			beego.NSRouter("/update", &controllers.ResumeController{}, "post:UpdateResume"),
+			beego.NSRouter("/delete", &controllers.ResumeController{}, "post:DeleteResume"),
 		),
 		beego.NSRouter("/upload", &controllers.FileUploaderController{}, "post:FileUpload"),
 		beego.NSRouter("/download", &controllers.FileUploaderController{}, "get:FileDownload"),

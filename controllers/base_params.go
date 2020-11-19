@@ -187,12 +187,12 @@ func (params *getDeletePeotryParams) Valid(v *validation.Validation) {
 
 // peotryset query输入结构体
 type getQueryPoetrySetParams struct {
-	UserID int64 `form:"userId" valid:"Required"`
+	UserID int64 `form:"userId"`
 }
 
 func (params *getQueryPoetrySetParams) Valid(v *validation.Validation) {
-	if params.UserID == 0 {
-		v.SetError("set id", "不能为空")
+	if params.UserID < 0 {
+		v.SetError("set id", "参数错误")
 	}
 }
 
@@ -220,11 +220,12 @@ func (params *getDeletePoetrySetParams) Valid(v *validation.Validation) {
 
 // comment create输入结构体
 type getCreateCommentParams struct {
-	Type    int    `form:"type" json:"type" valid:"Required"`
-	TypeID  int64  `form:"typeId" json:"typeId" valid:"Required"`
-	FromID  int64  `form:"fromId" json:"fromId" valid:"Required"`
-	ToID    int64  `form:"toId" json:"toId" valid:"Required"`
-	Content string `form:"content" json:"content" valid:"Required"`
+	Type       int    `form:"type" json:"type" valid:"Required"`
+	TypeID     int64  `form:"typeId" json:"typeId" valid:"Required"`
+	TypeUserID int64  `form:"typeUserId" json:"typeUserId" valid:"Required"`
+	FromID     int64  `form:"fromId" json:"fromId" valid:"Required"`
+	ToID       int64  `form:"toId" json:"toId" valid:"Required"`
+	Content    string `form:"content" json:"content" valid:"Required"`
 }
 
 func (params *getCreateCommentParams) Valid(v *validation.Validation) {
@@ -232,6 +233,8 @@ func (params *getCreateCommentParams) Valid(v *validation.Validation) {
 		v.SetError("type", "不能为空")
 	} else if params.TypeID <= 0 {
 		v.SetError("typeId", "不能为空")
+	} else if params.TypeUserID <= 0 {
+		v.SetError("typeUserId", "不能为空")
 	} else if params.FromID <= 0 {
 		v.SetError("fromId", "不能为空")
 	} else if len(strings.TrimSpace(params.Content)) == 0 {
@@ -333,5 +336,31 @@ type getDeleteDynamicAPIParams struct {
 func (params *getDeleteDynamicAPIParams) Valid(v *validation.Validation) {
 	if params.ID <= 0 {
 		v.SetError("set id", "不能为空")
+	}
+}
+
+type getCreateResumeParams struct {
+	PersonalInfos string `form:"personalInfos"`
+	SkillJob      string `form:"skillJob"`
+	Educations    string `form:"educations"`
+	Experiences   string `form:"experiences"`
+	Projects      string `form:"projects"`
+	Descriptions  string `form:"descriptions"`
+	Hobby         string `form:"hobby"`
+}
+
+func (params *getCreateResumeParams) Valid(v *validation.Validation) {
+	total := len(params.PersonalInfos)
+	total += len(params.SkillJob)
+	total += len(params.Educations)
+	total += len(params.Experiences)
+	total += len(params.Projects)
+	total += len(params.Descriptions)
+	total += len(params.Hobby)
+
+	if total == 0 {
+		v.SetError("params", "不能为空")
+	} else if total > 100000 {
+		v.SetError("params", "参数太长")
 	}
 }

@@ -232,7 +232,7 @@ func createUserToken(c *context.Context, user *models.User, data ResponseData) {
 	// http.SetCookie(c.ResponseWriter, uidCookie)
 
 	user.Token = tokenString
-	data["exipreDuration"] = models.MConfig.JwtExpireDuration
+	data["expireDuration"] = models.MConfig.JwtExpireDuration
 	data[models.STR_DATA] = user
 }
 
