@@ -364,3 +364,22 @@ func (params *getCreateResumeParams) Valid(v *validation.Validation) {
 		v.SetError("params", "参数太长")
 	}
 }
+
+type getUpdateSysMsgParams struct {
+	ID int64 `form:"id"`
+}
+
+func (params *getUpdateSysMsgParams) Valid(v *validation.Validation) {
+	if params.ID <= 0 {
+		v.SetError("set id", "不能为空")
+	}
+}
+
+type getQuerySysMsgParams struct {
+	Page   int `form:"page"`
+	Limit  int `form:"limit"`
+	Status int `form:"status"`
+}
+
+func (params *getQuerySysMsgParams) Valid(v *validation.Validation) {
+}
