@@ -60,6 +60,9 @@ func (c *UserController) CreateUser() {
 	user, err := models.CreateUser(params.Account, mobile, params.Pw, params.Name, "", "", 1)
 	if err == nil {
 		createUserToken(c.Ctx, user, data)
+
+		// 首次创建用户，写入消息
+		models.CreateSysMsg(user.ID, models.MODULE_USER_CREATE, "")
 	} else {
 		data[models.STR_CODE] = models.CODE_ERR
 		errStr := err.Error()

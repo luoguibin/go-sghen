@@ -22,10 +22,11 @@ func (c *SysMsgContronller) QuerySysMsgs() {
 	}
 
 	userID := c.Ctx.Input.GetData("userId").(int64)
-	list, err := models.GetSysMsgs(userID, params.Status, params.Page, params.Limit)
+	list, count, err := models.GetSysMsgs(userID, params.Status, params.Page, params.Limit)
 
 	if err == nil {
 		data[models.STR_DATA] = list
+		data["count"] = count
 	} else {
 		data[models.STR_CODE] = models.CODE_ERR
 		data[models.STR_MSG] = "未查询到消息"

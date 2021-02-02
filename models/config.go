@@ -63,6 +63,10 @@ var (
 	CODE_ERR         = 1001
 	CODE_ERR_TOKEN   = 1002
 	CODE_NOT_FOUND   = 2001
+
+	MODULE_SYS         = 1000
+	MODULE_USER        = 2000
+	MODULE_USER_CREATE = 2001
 )
 
 func init() {

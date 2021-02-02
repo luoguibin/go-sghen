@@ -2,6 +2,7 @@ package models
 
 import (
 	"errors"
+	"go-sghen/helper"
 	"strings"
 	"time"
 )
@@ -72,6 +73,7 @@ func initSystemUser() {
 // CreateUser ...
 func CreateUser(userAccount, mobile, userPWD, userName, avatar, mood string, level int) (*User, error) {
 	user := &User{
+		ID:          helper.NewUinqueID(),
 		UserAccount: userAccount,
 		Mobile:      mobile,
 		UserPWD:     userPWD,

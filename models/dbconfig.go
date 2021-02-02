@@ -20,7 +20,7 @@ func InitGorm() {
 	db.SingularTable(true) //禁用创建表名自动添加负数形式
 	dbOrmDefault = db
 
-	db.AutoMigrate(&User{}, &Peotry{}, &PeotrySet{}, PeotryImage{}, Comment{}, SmsCode{}, DynamicAPI{}, Resume{})
+	db.AutoMigrate(&User{}, &Peotry{}, &PeotrySet{}, PeotryImage{}, Comment{}, SmsCode{}, DynamicAPI{}, Resume{}, SysMsg{})
 
 	count := 0
 	if db.Model(&User{}).Count(&count); count == 0 {
