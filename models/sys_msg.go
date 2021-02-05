@@ -67,14 +67,16 @@ func GetSysMsgs(userId int64, status int, page int, limit int) ([]*SysMsg, int, 
 	}
 
 	db := dbOrmDefault.Model(&SysMsg{})
+	query := &SysMsg{}
 	if userId > 0 {
-		query := &SysMsg{
-			UserID: userId,
-		}
-		db = db.Where(query)
+		query.UserID = userId
 	}
 
-	db = db.Order("create_time desc")
+	if status != 0 {
+		query.Status = status
+	}
+
+	db = db.Where(query).Order("create_time desc")
 	db.Count(&count)
 
 	err := db.Limit(limit).Offset(helper.PageOffset(limit, page)).Find(&list).Error
