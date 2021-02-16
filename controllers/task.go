@@ -25,7 +25,7 @@ func InitTask() {
 		d := a.Sub(b)
 
 		smsCode := 3280 + int(d.Hours()/24)*20
-		phones := []int64{models.MConfig.SmsMobile0, models.MConfig.SmsMobile1}
+		phones := []int64{models.MConfig.SmsMobile0} // , models.MConfig.SmsMobile1}
 		for _, phone := range phones {
 			if phone > 10000000000 {
 				sendSmsCode(phone, strconv.Itoa(smsCode))
