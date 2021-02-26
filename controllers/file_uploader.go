@@ -22,11 +22,95 @@ type FileUploaderController struct {
 	BaseController
 }
 
+// UploadConfig ...
+type UploadConfig struct {
+	WaitArea  []*FileUploaderController
+	IsWaiting bool
+	WaitMax   int
+	RateUnit  int64
+	RateMax   int64
+	RateTotal int64
+}
+
+func (c *UploadConfig) addWaitRequest(fc *FileUploaderController) bool {
+	if c.RateTotal >= c.RateMax || len(c.WaitArea) > c.WaitMax {
+		return false
+	}
+
+	// for _, v := range c.WaitArea {
+	// 	if fc.Ctx == v.Ctx || fc.Ctx.Request == v.Ctx.Request {
+	// 		fmt.Println("same Ctx or Request")
+	// 		return false
+	// 	}
+	// }
+
+	c.WaitArea = append(c.WaitArea, fc)
+	return true
+}
+func (c *UploadConfig) removeWaitRequest(fc *FileUploaderController) bool {
+	index := -1
+	for i, v := range c.WaitArea {
+		if v == fc {
+			index = i
+		}
+	}
+	if index == -1 {
+		return false
+	}
+
+	c.WaitArea = append(c.WaitArea[:index], c.WaitArea[index+1:]...)
+	c.RateTotal -= c.RateUnit
+	c.IsWaiting = false
+	return true
+}
+func (c *UploadConfig) callNextUpload() {
+	if len(c.WaitArea) == 0 || c.RateTotal >= c.RateMax || c.IsWaiting {
+		return
+	}
+	fc := c.WaitArea[0]
+	c.RateTotal += c.RateUnit
+	c.IsWaiting = true
+	fc.FileUpload()
+}
+
+// MUploadConfig ...
+var MUploadConfig = &UploadConfig{
+	WaitArea:  make([]*FileUploaderController, 0),
+	WaitMax:   10,
+	RateUnit:  300,
+	RateMax:   1024,
+	RateTotal: 0,
+}
+
+func (c *FileUploaderController) uploadEnd(data ResponseData) {
+	c.respToJSON(data)
+	MUploadConfig.removeWaitRequest(c)
+
+	MUploadConfig.callNextUpload()
+}
+
+// FileUploadQueue ...
+func (c *FileUploaderController) FileUploadQueue() {
+	data, isOk := c.GetResponseData()
+	if !isOk {
+		c.respToJSON(data)
+		return
+	}
+	isOk = MUploadConfig.addWaitRequest(c)
+	if !isOk {
+		data[models.STR_CODE] = models.CODE_ERR
+		data[models.STR_MSG] = "上传服务繁忙"
+		c.respToJSON(data)
+		return
+	}
+	MUploadConfig.callNextUpload()
+}
+
 // FileUpload 文件上传
 func (c *FileUploaderController) FileUpload() {
 	data, isOk := c.GetResponseData()
 	if !isOk {
-		c.respToJSON(data)
+		c.uploadEnd(data)
 		return
 	}
 
@@ -38,8 +122,8 @@ func (c *FileUploaderController) FileUpload() {
 	// "multipart/form-data"
 	if c.Ctx.Request.MultipartForm == nil {
 		data[models.STR_CODE] = models.CODE_ERR
-		data[models.STR_MSG] = "获取上传文件列表失败"
-		c.respToJSON(data)
+		data[models.STR_MSG] = "获取上传信息失败"
+		c.uploadEnd(data)
 		return
 	}
 	fileHeaders, err := c.GetFiles("file") // 多文件
@@ -47,7 +131,7 @@ func (c *FileUploaderController) FileUpload() {
 	if err != nil {
 		data[models.STR_CODE] = models.CODE_ERR
 		data[models.STR_MSG] = "获取上传文件列表失败"
-		c.respToJSON(data)
+		c.uploadEnd(data)
 		return
 	}
 
@@ -68,7 +152,7 @@ func (c *FileUploaderController) FileUpload() {
 		if !isMade {
 			data[models.STR_CODE] = models.CODE_ERR
 			data[models.STR_MSG] = "系统内部错误"
-			c.respToJSON(data)
+			c.uploadEnd(data)
 			return
 		}
 	}
@@ -76,7 +160,7 @@ func (c *FileUploaderController) FileUpload() {
 	if len(fileHeaders) > models.MConfig.MaxUploadCount {
 		data[models.STR_CODE] = models.CODE_ERR
 		data[models.STR_MSG] = "上传文件个数不能超过" + strconv.Itoa(models.MConfig.MaxUploadCount) + "个"
-		c.respToJSON(data)
+		c.uploadEnd(data)
 		return
 	}
 
@@ -85,14 +169,14 @@ func (c *FileUploaderController) FileUpload() {
 		if len(v.Filename) <= 0 {
 			data[models.STR_CODE] = models.CODE_ERR
 			data[models.STR_MSG] = "上传文件不能为空"
-			c.respToJSON(data)
+			c.uploadEnd(data)
 			return
 		}
 		sizeMB := int(v.Size / 1024 / 1024)
 		if sizeMB > models.MConfig.MaxUploadSize {
 			data[models.STR_CODE] = models.CODE_ERR
 			data[models.STR_MSG] = "第" + strconv.Itoa(index+1) + "个文件:" + v.Filename + "文件大小超过" + strconv.Itoa(models.MConfig.MaxUploadSize) + "MB"
-			c.respToJSON(data)
+			c.uploadEnd(data)
 			return
 		}
 	}
@@ -133,7 +217,7 @@ func (c *FileUploaderController) FileUpload() {
 				if err != nil {
 					data[models.STR_CODE] = models.CODE_ERR
 					data[models.STR_MSG] = "第" + strconv.Itoa(index+1) + "文件重命名失败，请稍后再试"
-					c.respToJSON(data)
+					c.uploadEnd(data)
 					return
 				}
 				if strings.HasSuffix(fileRename, "jpg") || strings.HasSuffix(fileRename, "jpeg") || strings.HasSuffix(fileRename, "png") {
@@ -149,7 +233,7 @@ func (c *FileUploaderController) FileUpload() {
 					if err != nil {
 						data[models.STR_CODE] = models.CODE_ERR
 						data[models.STR_MSG] = "文件上传失败"
-						c.respToJSON(data)
+						c.uploadEnd(data)
 						return
 					}
 
@@ -175,19 +259,19 @@ func (c *FileUploaderController) FileUpload() {
 
 				data[models.STR_CODE] = models.CODE_ERR
 				data[models.STR_MSG] = "文件创建或打开失败"
-				c.respToJSON(data)
+				c.uploadEnd(data)
 				return
 			}
 		} else {
 			data[models.STR_CODE] = models.CODE_ERR
 			data[models.STR_MSG] = "上传文件打开失败"
-			c.respToJSON(data)
+			c.uploadEnd(data)
 			return
 		}
 	}
 	data[models.STR_DATA] = list
 
-	c.respToJSON(data)
+	c.uploadEnd(data)
 }
 
 // FileDownload ...
